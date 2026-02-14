@@ -153,6 +153,7 @@ int main() {
         ImGui::Text("3D View Controls:");
         ImGui::SliderFloat("Rotation X", &renderer.rotationX, -180.0f, 180.0f);
         ImGui::SliderFloat("Rotation Y", &renderer.rotationY, -180.0f, 180.0f);
+        ImGui::SliderFloat("Rotation Z", &renderer.rotationZ, -180.0f, 180.0f);
         ImGui::SliderFloat("Scale", &renderer.scale, 0.3f, 2.0f, "%.2f");
 
         ImGui::Separator();

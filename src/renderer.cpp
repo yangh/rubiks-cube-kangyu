@@ -107,6 +107,7 @@ ImVec2 CubeRenderer::project(float x, float y, float z, ImVec2 center, float sca
     // Isometric-style projection
     float angleX = rotationX * M_PI / 180.0f;
     float angleY = rotationY * M_PI / 180.0f;
+    float angleZ = rotationZ * M_PI / 180.0f;
 
     // Rotate around X axis
     float y1 = y * cosf(angleX) - z * sinf(angleX);
@@ -116,9 +117,13 @@ ImVec2 CubeRenderer::project(float x, float y, float z, ImVec2 center, float sca
     float x2 = x * cosf(angleY) + z1 * sinf(angleY);
     float z2 = -x * sinf(angleY) + z1 * cosf(angleY);
 
+    // Rotate around Z axis (in the XY plane)
+    float x3 = x2 * cosf(angleZ) - y1 * sinf(angleZ);
+    float y3 = x2 * sinf(angleZ) + y1 * cosf(angleZ);
+
     return ImVec2(
-        center.x + x2 * scale,
-        center.y + y1 * scale
+        center.x + x3 * scale,
+        center.y + y3 * scale
     );
 }
 
