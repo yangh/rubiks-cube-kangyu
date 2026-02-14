@@ -91,6 +91,25 @@ int main() {
         ImVec2 size = ImGui::GetContentRegionAvail();
         ImVec2 center(cursor.x + size.x / 2.0f, cursor.y + size.y / 2.0f);
 
+        // Handle mouse drag for rotation
+        // Use MouseDelta instead of GetMouseDragDelta to get per-frame delta, not accumulated
+        ImGuiIO& io = ImGui::GetIO();
+        if (ImGui::IsWindowHovered()) {
+            // Left mouse button: rotate around X and Y axes
+            if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+                renderer.rotationY += io.MouseDelta.x * 0.2f;
+                renderer.rotationX += io.MouseDelta.y * 0.2f;
+            }
+            // Right mouse button: rotate around Z axis
+            if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
+                renderer.rotationZ += io.MouseDelta.x * 0.3f;
+            }
+            // Mouse wheel: also rotate around Z axis
+            if (io.MouseWheel != 0.0f) {
+                renderer.rotationZ += io.MouseWheel * 15.0f;
+            }
+        }
+
         // Draw 3D cube
         renderer.draw3D(drawList, center, renderer.scale);
 

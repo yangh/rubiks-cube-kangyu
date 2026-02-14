@@ -32,31 +32,28 @@ void CubeRenderer::draw2D(ImDrawList* drawList, ImVec2 offset, float scale) {
     float gap = 3.0f * scale;
     float faceSize = stickerSize * 3.0f + gap * 2.0f;
 
-    // Net layout: [Up] / [Left][Front][Right][Back] / [Down]
+    // Standard cross-shaped layout: Up above Front, Left beside Front
     // Face spacing
     float spacing = faceSize + gap;
 
-    // Shift entire layout left by half a face width
-    float xOffset = -0.5f * faceSize;
-
     // Draw in order: Up, Left, Front, Right, Down, Back
     drawFace(drawList, cube_.getUp(),
-            ImVec2(offset.x + xOffset, offset.y - spacing),
-            stickerSize, gap);
-    drawFace(drawList, cube_.getLeft(),
-            ImVec2(offset.x + xOffset - spacing, offset.y),
+            ImVec2(offset.x, offset.y - spacing),
             stickerSize, gap);
     drawFace(drawList, cube_.getFront(),
-            ImVec2(offset.x + xOffset, offset.y),
+            ImVec2(offset.x - spacing, offset.y),
+            stickerSize, gap);
+    drawFace(drawList, cube_.getLeft(),
+            ImVec2(offset.x + spacing, offset.y),
             stickerSize, gap);
     drawFace(drawList, cube_.getRight(),
-            ImVec2(offset.x + xOffset + spacing, offset.y),
+            ImVec2(offset.x + spacing * 2, offset.y),
             stickerSize, gap);
     drawFace(drawList, cube_.getDown(),
-            ImVec2(offset.x + xOffset, offset.y + spacing),
+            ImVec2(offset.x, offset.y + spacing),
             stickerSize, gap);
     drawFace(drawList, cube_.getBack(),
-            ImVec2(offset.x + xOffset + spacing * 2, offset.y),
+            ImVec2(offset.x + spacing * 3, offset.y),
             stickerSize, gap);
 }
 
