@@ -9,8 +9,11 @@ public:
     CubeRenderer();
     ~CubeRenderer() = default;
 
-    // Render cube using ImGui draw list
-    void draw(ImDrawList* drawList, ImVec2 offset, float scale);
+    // Render 2D unfolded cube net view
+    void draw2D(ImDrawList* drawList, ImVec2 offset, float scale);
+
+    // Render 3D isometric view
+    void draw3D(ImDrawList* drawList, ImVec2 offset, float scale);
 
     void executeMove(Move move);
     void reset();
@@ -29,6 +32,13 @@ private:
     // Draw a 2D face (unfolded cube net view)
     void drawFace(ImDrawList* drawList, const std::array<Color, 9>& face,
                  ImVec2 offset, float size, float gap);
+
+    // Draw a 3D face
+    void draw3DFace(ImDrawList* drawList, const std::array<Color, 9>& face,
+                    const ImVec2 (&vertices)[4], ImVec2 center, float scale);
+
+    // Get face color for 3D drawing
+    ImU32 getFaceColor(Color color);
 };
 
 #endif // RENDERER_H
