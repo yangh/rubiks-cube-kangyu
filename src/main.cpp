@@ -98,7 +98,7 @@ int main() {
         if (ImGui::IsWindowHovered()) {
             // Left mouse button: rotate around X and Y axes
             if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
-                renderer.rotationY += io.MouseDelta.x * 0.2f;
+                renderer.rotationY -= io.MouseDelta.x * 0.2f;
                 renderer.rotationX += io.MouseDelta.y * 0.2f;
             }
             // Right mouse button: rotate around Z axis

@@ -16,8 +16,8 @@ void CubeRenderer::reset() {
 }
 
 void CubeRenderer::resetView() {
-    rotationX = -30.0f;
-    rotationY = 45.0f;
+    rotationX = -160.0f;
+    rotationY = 15.0f;
     rotationZ = 0.0f;
     scale = 3.1f;
     scale2D = 0.8f;

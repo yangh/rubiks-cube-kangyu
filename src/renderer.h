@@ -20,8 +20,8 @@ public:
     void resetView();  // Reset 3D view parameters to defaults
     bool isSolved() const;
 
-    float rotationX = -30.0f;
-    float rotationY = 45.0f;
+    float rotationX = -160.0f;
+    float rotationY = 15.0f;
     float rotationZ = 0.0f;
     float scale = 3.1f;
     float scale2D = 0.8f;  // 2D view zoom level
