@@ -58,9 +58,9 @@ void CubeRenderer::draw3D(ImDrawList* drawList, ImVec2 offset, float scale) {
 
     // Define vertices for each face (before rotation)
     // Cube centered at origin, extending from -1 to +1
-    struct FaceDef {
-        const std::array<Color, 9>& face;
-        const ImVec2 vertices[4];
+    struct FaceDrawInfo {
+        int faceIndex;  // 0:Front, 1:Back, 2:Left, 3:Right, 4:Up, 5:Down
+        float centerX, centerY, centerZ;  // Face center in 3D space
     };
 
     // Front face: z = +1
@@ -93,14 +93,56 @@ void CubeRenderer::draw3D(ImDrawList* drawList, ImVec2 offset, float scale) {
         ImVec2(-1, -1), ImVec2(-1, 1), ImVec2(1, 1), ImVec2(1, -1)
     };
 
-    // Draw faces (order for simple depth sorting)
-    // This is a simplified painter's algorithm - not perfect but works for this view
-    draw3DFace(drawList, cube_.getBack(), backVerts, offset, size);
-    draw3DFace(drawList, cube_.getDown(), downVerts, offset, size);
-    draw3DFace(drawList, cube_.getLeft(), leftVerts, offset, size);
-    draw3DFace(drawList, cube_.getRight(), rightVerts, offset, size);
-    draw3DFace(drawList, cube_.getUp(), upVerts, offset, size);
-    draw3DFace(drawList, cube_.getFront(), frontVerts, offset, size);
+    // Calculate rotated face centers for depth sorting
+    float angleX = rotationX * M_PI / 180.0f;
+    float angleY = rotationY * M_PI / 180.0f;
+
+    // Function to rotate a 3D point
+    auto rotatePoint = [](float x, float y, float z, float ax, float ay) -> std::array<float, 3> {
+        float y1 = y * cosf(ax) - z * sinf(ax);
+        float z1 = y * sinf(ax) + z * cosf(ax);
+        float x2 = x * cosf(ay) + z1 * sinf(ay);
+        float z2 = -x * sinf(ay) + z1 * cosf(ay);
+        return {x2, y1, z2};
+    };
+
+    auto getDepth = [&](float x, float y, float z) -> float {
+        auto rotated = rotatePoint(x, y, z, angleX, angleY);
+        return rotated[2];  // Depth is z after rotation
+    };
+
+    // Create face draw information
+    FaceDrawInfo faces[6] = {
+        {0, 0, 0, 1},
+        {1, 0, 0, -1},
+        {2, -1, 0, 0},
+        {3, 1, 0, 0},
+        {4, 0, 1, 0},
+        {5, 0, -1, 0}
+    };
+
+    // Sort faces by depth (far to near)
+    int indices[6] = {0, 1, 2, 3, 4, 5};
+    for (int i = 0; i < 6; ++i) {
+        for (int j = i + 1; j < 6; ++j) {
+            float depthI = getDepth(faces[indices[i]].centerX, faces[indices[i]].centerY, faces[indices[i]].centerZ);
+            float depthJ = getDepth(faces[indices[j]].centerX, faces[indices[j]].centerY, faces[indices[j]].centerZ);
+            if (depthI < depthJ) {  // Smaller z = farther
+                std::swap(indices[i], indices[j]);
+            }
+        }
+    }
+
+    // Draw faces in sorted order (far to near)
+    for (int i = 0; i < 6; ++i) {
+        int idx = indices[i];
+        if (idx == 0) draw3DFace(drawList, cube_.getFront(), frontVerts, offset, size);
+        else if (idx == 1) draw3DFace(drawList, cube_.getBack(), backVerts, offset, size);
+        else if (idx == 2) draw3DFace(drawList, cube_.getLeft(), leftVerts, offset, size);
+        else if (idx == 3) draw3DFace(drawList, cube_.getRight(), rightVerts, offset, size);
+        else if (idx == 4) draw3DFace(drawList, cube_.getUp(), upVerts, offset, size);
+        else if (idx == 5) draw3DFace(drawList, cube_.getDown(), downVerts, offset, size);
+    }
 }
 
 ImVec2 CubeRenderer::project(float x, float y, float z, ImVec2 center, float scale) {
@@ -191,7 +233,7 @@ void CubeRenderer::draw3DFace(ImDrawList* drawList, const std::array<Color, 9>& 
                           IM_COL32(20, 20, 20, 255));
 
     // Draw 3x3 stickers on the face
-    // We need to interpolate positions for each sticker
+    // Each sticker is at a position in the face's local coordinate system
     for (int row = 0; row < 3; ++row) {
         for (int col = 0; col < 3; ++col) {
             int index = row * 3 + col;
@@ -201,26 +243,43 @@ void CubeRenderer::draw3DFace(ImDrawList* drawList, const std::array<Color, 9>& 
             // Get face color
             ImU32 stickerColor = getFaceColor(face[index]);
 
-            // Calculate sticker positions by interpolation
+            // Calculate sticker center position in 3D space
             float x = 0, y = 0, z = 0;
-            float sx = 0, sy = 0, sz = 0;
 
-            if (face == cube_.getFront()) { z = 1; x = u; y = -v; sx = 0; sy = 0; sz = 0; }
-            else if (face == cube_.getBack()) { z = -1; x = u; y = -v; sx = 0; sy = 0; sz = 0; }
-            else if (face == cube_.getLeft()) { x = -1; y = u; z = v; sx = 0; sy = 0; sz = 0; }
-            else if (face == cube_.getRight()) { x = 1; y = u; z = v; sx = 0; sy = 0; sz = 0; }
-            else if (face == cube_.getUp()) { y = 1; x = u; z = -v; sx = 0; sy = 0; sz = 0; }
-            else if (face == cube_.getDown()) { y = -1; x = u; z = -v; sx = 0; sy = 0; sz = 0; }
+            if (face == cube_.getFront()) { z = 1; x = u; y = -v; }
+            else if (face == cube_.getBack()) { z = -1; x = -u; y = -v; }
+            else if (face == cube_.getLeft()) { x = -1; y = u; z = -v; }
+            else if (face == cube_.getRight()) { x = 1; y = -u; z = -v; }
+            else if (face == cube_.getUp()) { y = 1; x = u; z = -v; }
+            else if (face == cube_.getDown()) { y = -1; x = u; z = v; }
 
-            // Calculate sticker corners
+            // Calculate sticker corners relative to sticker center
             float stickerSize = 0.6f;
             float halfSize = stickerSize / 2.0f;
 
+            // Sticker corners in face-local coordinates (x, y offset from center)
+            float cornersLocal[4][2] = {
+                {-halfSize, halfSize},  // top-left
+                {halfSize, halfSize},   // top-right
+                {halfSize, -halfSize},  // bottom-right
+                {-halfSize, -halfSize}  // bottom-left
+            };
+
+            // Project all 4 corners to screen space
             ImVec2 corners[4];
-            corners[0] = project((x + sx) * 1.1f, (y + sy + halfSize) * 1.1f, (z + sz - halfSize) * 1.1f, center, size);
-            corners[1] = project((x + sx + halfSize) * 1.1f, (y + sy + halfSize) * 1.1f, (z + sz) * 1.1f, center, size);
-            corners[2] = project((x + sx + halfSize) * 1.1f, (y + sy - halfSize) * 1.1f, (z + sz) * 1.1f, center, size);
-            corners[3] = project((x + sx) * 1.1f, (y + sy - halfSize) * 1.1f, (z + sz - halfSize) * 1.1f, center, size);
+            for (int c = 0; c < 4; ++c) {
+                float cx = 0, cy = 0, cz = 0;
+
+                // Map local coordinates to 3D space based on face orientation
+                if (face == cube_.getFront()) { cz = 1; cx = x + cornersLocal[c][0]; cy = y + cornersLocal[c][1]; }
+                else if (face == cube_.getBack()) { cz = -1; cx = x - cornersLocal[c][0]; cy = y + cornersLocal[c][1]; }
+                else if (face == cube_.getLeft()) { cx = -1; cy = y + cornersLocal[c][0]; cz = z + cornersLocal[c][1]; }
+                else if (face == cube_.getRight()) { cx = 1; cy = y - cornersLocal[c][0]; cz = z + cornersLocal[c][1]; }
+                else if (face == cube_.getUp()) { cy = 1; cx = x + cornersLocal[c][0]; cz = z + cornersLocal[c][1]; }
+                else if (face == cube_.getDown()) { cy = -1; cx = x + cornersLocal[c][0]; cz = z - cornersLocal[c][1]; }
+
+                corners[c] = project(cx * 1.1f, cy * 1.1f, cz * 1.1f, center, size);
+            }
 
             // Draw sticker
             drawList->AddQuadFilled(corners[0], corners[1], corners[2], corners[3], stickerColor);
