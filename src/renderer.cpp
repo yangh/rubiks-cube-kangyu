@@ -15,6 +15,13 @@ void CubeRenderer::reset() {
     cube_.reset();
 }
 
+void CubeRenderer::resetView() {
+    rotationX = -30.0f;
+    rotationY = 45.0f;
+    rotationZ = 0.0f;
+    scale = 3.1f;
+}
+
 bool CubeRenderer::isSolved() const {
     return cube_.isSolved();
 }

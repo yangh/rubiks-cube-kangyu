@@ -17,12 +17,13 @@ public:
 
     void executeMove(Move move);
     void reset();
+    void resetView();  // Reset 3D view parameters to defaults
     bool isSolved() const;
 
     float rotationX = -30.0f;
     float rotationY = 45.0f;
     float rotationZ = 0.0f;
-    float scale = 0.7f;
+    float scale = 3.1f;
 
 private:
     RubiksCube cube_;

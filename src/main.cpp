@@ -73,6 +73,7 @@ int main() {
             if (ImGui::BeginMenu("File")) {
                 if (ImGui::MenuItem("Reset")) {
                     renderer.reset();
+                    renderer.resetView();
                 }
                 if (ImGui::MenuItem("Exit")) {
                     glfwSetWindowShouldClose(window, 1);
@@ -154,13 +155,14 @@ int main() {
         ImGui::SliderFloat("Rotation X", &renderer.rotationX, -180.0f, 180.0f);
         ImGui::SliderFloat("Rotation Y", &renderer.rotationY, -180.0f, 180.0f);
         ImGui::SliderFloat("Rotation Z", &renderer.rotationZ, -180.0f, 180.0f);
-        ImGui::SliderFloat("Scale", &renderer.scale, 0.3f, 2.0f, "%.2f");
+        ImGui::SliderFloat("Scale", &renderer.scale, 2.0f, 7.0f, "%.2f");
 
         ImGui::Separator();
 
         // Reset button
         if (ImGui::Button("Reset Cube", ImVec2(120, 0))) {
             renderer.reset();
+            renderer.resetView();
         }
 
         ImGui::Separator();
