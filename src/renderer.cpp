@@ -36,25 +36,29 @@ void CubeRenderer::draw2D(ImDrawList* drawList, ImVec2 offset, float scale) {
     // Standard cross-shaped layout: Up above Front, Left beside Front
     // Face spacing
     float spacing = faceSize + gap;
+    offset.x -= spacing * 0.5;
+    offset.y += spacing * 0.5;
 
     // Draw in order: Up, Left, Front, Right, Down, Back
     drawFace(drawList, cube_.getUp(),
             ImVec2(offset.x, offset.y - spacing),
             stickerSize, gap);
-    drawFace(drawList, cube_.getFront(),
+
+    drawFace(drawList, cube_.getLeft(),
             ImVec2(offset.x - spacing, offset.y),
             stickerSize, gap);
-    drawFace(drawList, cube_.getLeft(),
-            ImVec2(offset.x + spacing, offset.y),
+    drawFace(drawList, cube_.getFront(),
+            ImVec2(offset.x + spacing * 0, offset.y),
             stickerSize, gap);
     drawFace(drawList, cube_.getRight(),
-            ImVec2(offset.x + spacing * 2, offset.y),
-            stickerSize, gap);
-    drawFace(drawList, cube_.getDown(),
-            ImVec2(offset.x, offset.y + spacing),
+            ImVec2(offset.x + spacing * 1, offset.y),
             stickerSize, gap);
     drawFace(drawList, cube_.getBack(),
-            ImVec2(offset.x + spacing * 3, offset.y),
+            ImVec2(offset.x + spacing * 2, offset.y),
+            stickerSize, gap);
+
+    drawFace(drawList, cube_.getDown(),
+            ImVec2(offset.x, offset.y + spacing),
             stickerSize, gap);
 }
 
