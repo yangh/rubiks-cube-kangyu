@@ -290,6 +290,9 @@ void CubeRenderer::draw3DFace(ImDrawList* drawList, const std::array<Color, 9>& 
 
             // Draw sticker
             drawList->AddQuadFilled(corners[0], corners[1], corners[2], corners[3], stickerColor);
+            // Draw black border around sticker to reduce aliasing
+            ImU32 black = IM_COL32(0, 0, 0, 255);
+            drawList->AddQuad(corners[0], corners[1], corners[2], corners[3], black, 1.5f);
         }
     }
 }
