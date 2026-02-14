@@ -36,10 +36,10 @@ std::array<Color, 9> RubiksCube::fillColor(Color color) {
 }
 
 RubiksCube::RubiksCube()
-    : front_(fillColor(Color::RED))
-    , back_(fillColor(Color::ORANGE))
-    , left_(fillColor(Color::GREEN))
-    , right_(fillColor(Color::BLUE))
+    : front_(fillColor(Color::GREEN))
+    , back_(fillColor(Color::BLUE))
+    , left_(fillColor(Color::ORANGE))
+    , right_(fillColor(Color::RED))
     , up_(fillColor(Color::WHITE))
     , down_(fillColor(Color::YELLOW))
 {
@@ -77,10 +77,10 @@ bool RubiksCube::isSolved() const {
 }
 
 void RubiksCube::reset() {
-    front_ = fillColor(Color::RED);
-    back_ = fillColor(Color::ORANGE);
-    left_ = fillColor(Color::GREEN);
-    right_ = fillColor(Color::BLUE);
+    front_ = fillColor(Color::GREEN);
+    back_ = fillColor(Color::BLUE);
+    left_ = fillColor(Color::ORANGE);
+    right_ = fillColor(Color::RED);
     up_ = fillColor(Color::WHITE);
     down_ = fillColor(Color::YELLOW);
 }

@@ -40,10 +40,10 @@ void testInitialState() {
     std::cout << "\\n=== Test 1: Initial State ===" << std::endl;
     RubiksCube cube;
     assertTest("Initial cube is solved", cube.isSolved());
-    assertTest("Front face is all red", isFaceSingleColor(cube.getFront(), Color::RED));
-    assertTest("Back face is all orange", isFaceSingleColor(cube.getBack(), Color::ORANGE));
-    assertTest("Left face is all green", isFaceSingleColor(cube.getLeft(), Color::GREEN));
-    assertTest("Right face is all blue", isFaceSingleColor(cube.getRight(), Color::BLUE));
+    assertTest("Front face is all green", isFaceSingleColor(cube.getFront(), Color::GREEN));
+    assertTest("Back face is all blue", isFaceSingleColor(cube.getBack(), Color::BLUE));
+    assertTest("Left face is all orange", isFaceSingleColor(cube.getLeft(), Color::ORANGE));
+    assertTest("Right face is all red", isFaceSingleColor(cube.getRight(), Color::RED));
     assertTest("Up face is all white", isFaceSingleColor(cube.getUp(), Color::WHITE));
     assertTest("Down face is all yellow", isFaceSingleColor(cube.getDown(), Color::YELLOW));
 }
@@ -153,7 +153,7 @@ void testReset() {
     cube.reset();
 
     assertTest("Reset cube is solved", cube.isSolved());
-    assertTest("Reset front is red", isFaceSingleColor(cube.getFront(), Color::RED));
+    assertTest("Reset front is green", isFaceSingleColor(cube.getFront(), Color::GREEN));
     assertTest("Reset up is white", isFaceSingleColor(cube.getUp(), Color::WHITE));
 }
 
