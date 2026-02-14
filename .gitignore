@@ -1,0 +1,57 @@
+# Build directories
+build/
+.zig-cache/
+
+# ImGUI settings
+imgui.ini
+
+# Claude Code metadata
+.claude/
+
+# IDE and editor files
+.vscode/
+*.swp
+*.swo
+*~
+
+# Test directory
+test/
+cube
+
+# Compiled Object files
+*.o
+*.ko
+*.obj
+*.elf
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Libraries
+*.lib
+*.a
+*.la
+*.lo
+
+# Shared objects (inc. Windows DLLs)
+*.dll
+*.so
+*.dylib
+*.exe
+*.out
+*.app
+
+# Debug files
+*.dSYM/
+*.su
+*.idb
+*.pdb
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
