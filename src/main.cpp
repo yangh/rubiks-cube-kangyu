@@ -177,12 +177,18 @@ int main() {
 
         ImGui::Separator();
 
-        // View controls
+        // 2D view controls
+        ImGui::Text("2D View Controls:");
+        ImGui::SliderFloat("2D Scale", &renderer.scale2D, 0.3f, 3.0f, "%.2f");
+
+        ImGui::Separator();
+
+        // 3D view controls
         ImGui::Text("3D View Controls:");
         ImGui::SliderFloat("Rotation X", &renderer.rotationX, -180.0f, 180.0f);
         ImGui::SliderFloat("Rotation Y", &renderer.rotationY, -180.0f, 180.0f);
         ImGui::SliderFloat("Rotation Z", &renderer.rotationZ, -180.0f, 180.0f);
-        ImGui::SliderFloat("Scale", &renderer.scale, 2.0f, 7.0f, "%.2f");
+        ImGui::SliderFloat("3D Scale", &renderer.scale, 2.0f, 7.0f, "%.2f");
 
         ImGui::Separator();
 

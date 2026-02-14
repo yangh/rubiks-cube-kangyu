@@ -20,6 +20,7 @@ void CubeRenderer::resetView() {
     rotationY = 45.0f;
     rotationZ = 0.0f;
     scale = 3.1f;
+    scale2D = 0.8f;
 }
 
 bool CubeRenderer::isSolved() const {

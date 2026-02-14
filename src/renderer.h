@@ -24,7 +24,7 @@ public:
     float rotationY = 45.0f;
     float rotationZ = 0.0f;
     float scale = 3.1f;
-    float scale2D = 1.0f;  // 2D view zoom level
+    float scale2D = 0.8f;  // 2D view zoom level
 
 private:
     RubiksCube cube_;
