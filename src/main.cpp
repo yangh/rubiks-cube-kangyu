@@ -3,6 +3,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <iostream>
+#include <cmath>
 
 #include "cube.h"
 #include "renderer.h"
@@ -128,8 +129,15 @@ int main() {
         size = ImGui::GetContentRegionAvail();
         center = ImVec2(cursor.x + size.x / 2.0f, cursor.y + size.y / 2.0f);
 
+        // Handle mouse wheel for 2D view zoom
+        if (ImGui::IsWindowHovered() && io.MouseWheel != 0.0f) {
+            renderer.scale2D += io.MouseWheel * 0.2f;
+            // Clamp scale2D between 0.3f and 3.0f
+            renderer.scale2D = fmaxf(0.3f, fminf(3.0f, renderer.scale2D));
+        }
+
         // Draw 2D unfolded cube
-        renderer.draw2D(drawList, center, 0.8f);
+        renderer.draw2D(drawList, center, renderer.scale2D);
 
         ImGui::Dummy(size);
         ImGui::End();
