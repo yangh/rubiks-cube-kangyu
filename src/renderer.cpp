@@ -290,33 +290,31 @@ void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
         // Quadratic ease-in-out: 3t^2 - 2t^3
         float easeProgress = animationProgress_ * animationProgress_ * (3.0f - 2.0f * animationProgress_);
         animAngle = 90.0f * easeProgress;
-
-        // Apply rotation transformation to the entire slice
-        // This rotates all cubes in the slice around the cube center, not individual cubes
-        glPushMatrix();
-        applyRotationTransform(animAngle, currentMove_);
     }
 
     for (int layer = 0; layer < 3; layer++) {
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 3; col++) {
+                bool cubeShouldAnimate = isAnimating_ && isCubeAnimating(cubeIndex);
+
                 float xOffset = (col - 1.0f) * (1.0f + gap);
                 float yOffset = (row - 1.0f) * (1.0f + gap);
                 float zOffset = (layer - 1.0f) * (1.0f + gap);
 
                 glPushMatrix();
+
+                // Apply rotation transformation only to cubes in the rotating slice
+                if (cubeShouldAnimate) {
+                    applyRotationTransform(animAngle, currentMove_);
+                }
+
                 glTranslatef(xOffset, yOffset, zOffset);
-                drawCube(cubeIndex, isAnimating_ && isCubeAnimating(cubeIndex));
+                drawCube(cubeIndex, cubeShouldAnimate);
                 glPopMatrix();
 
                 cubeIndex++;
             }
         }
-    }
-
-    // Restore animation rotation state
-    if (isAnimating_) {
-        glPopMatrix();
     }
 
     // Disable lighting (restore to default)
@@ -1146,69 +1144,50 @@ bool CubeRenderer::isCubeAnimating(int cubeIndex) const {
     int col = posInLayer % 3;   // 0=left, 1=middle, 2=right
 
     switch (currentMove_) {
-        // U move: Up face (row 2) + top row of side faces (row 2)
+        // U move: All cubes at row 2 (top layer)
         case Move::U:
         case Move::UP:
             return (row == 2);
 
-        // D move: Down face (row 0) + bottom row of side faces (row 0)
+        // D move: All cubes at row 0 (bottom layer)
         case Move::D:
         case Move::DP:
             return (row == 0);
 
-
-        // L move: col=0 (Left face)
+        // L move: All cubes at col 0 (left slice)
         case Move::L:
         case Move::LP:
-            return col == 0;
+            return (col == 0);
 
-        // R move: col=2 (Right face)
+        // R move: All cubes at col 2 (right slice)
         case Move::R:
         case Move::RP:
-            return col == 2;
+            return (col == 2);
 
-        // F move: layer=2 (Front face) + adjacent stickers
+        // F move: Front face (layer 2) only
         case Move::F:
         case Move::FP:
-            if (layer == 2) return true;  // Front face
-            // Top of Up face (layer=0, row=2)
-            if (layer == 0 && row == 2) return true;
-            // Right of Left face (col=0)
-            if (col == 0) return true;
-            // Left of Right face (col=2)
-            if (col == 2) return true;
-            // Top of Down face (layer=1, row=0)
-            if (layer == 1 && row == 0) return true;
-            return false;
+            return (layer == 2);
 
-        // B move: layer=0 (Back face) + adjacent stickers
+        // B move: Back face (layer 0) only
         case Move::B:
         case Move::BP:
-            if (layer == 0) return true;  // Back face
-            // Top of Up face (layer=0, row=2)
-            if (layer == 0 && row == 2) return true;
-            // Left of Left face (col=0)
-            if (col == 0) return true;
-            // Right of Right face (col=2)
-            if (col == 2) return true;
-            // Bottom of Down face (layer=1, row=0)
-            if (layer == 1 && row == 0) return true;
-            return false;
+            return (layer == 0);
 
-        // M move: middle layer (layer=1)
+        // M move: middle layer (layer 1)
         case Move::M:
         case Move::MP:
-            return layer == 1;
+            return (layer == 1);
 
-        // E move: middle row (row=1)
+        // E move: middle row (row 1)
         case Move::E:
         case Move::EP:
-            return row == 1;
+            return (row == 1);
 
-        // S move: middle column (col=1)
+        // S move: middle column (col 1)
         case Move::S:
         case Move::SP:
-            return col == 1;
+            return (col == 1);
 
         default:
             return false;
