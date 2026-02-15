@@ -762,41 +762,96 @@ int main(int argc, char* argv[]) {
                 ImGui::SameLine();
                 if (ImGui::ColorEdit3("##FrontColor", renderer.customFront.data())) {
                     renderer.useCustomColors = true;
+                    ColorConfig config;
+                    config.setFront(renderer.customFront);
+                    config.setBack(renderer.customBack);
+                    config.setLeft(renderer.customLeft);
+                    config.setRight(renderer.customRight);
+                    config.setUp(renderer.customUp);
+                    config.setDown(renderer.customDown);
+                    config.setUsingDefaults(false);
+                    saveColorConfig(config);
                 }
 
                 ImGui::Text("Back (Blue):");
                 ImGui::SameLine();
                 if (ImGui::ColorEdit3("##BackColor", renderer.customBack.data())) {
                     renderer.useCustomColors = true;
+                    ColorConfig config;
+                    config.setFront(renderer.customFront);
+                    config.setBack(renderer.customBack);
+                    config.setLeft(renderer.customLeft);
+                    config.setRight(renderer.customRight);
+                    config.setUp(renderer.customUp);
+                    config.setDown(renderer.customDown);
+                    config.setUsingDefaults(false);
+                    saveColorConfig(config);
                 }
 
                 ImGui::Text("Left (Orange):");
                 ImGui::SameLine();
                 if (ImGui::ColorEdit3("##LeftColor", renderer.customLeft.data())) {
                     renderer.useCustomColors = true;
+                    ColorConfig config;
+                    config.setFront(renderer.customFront);
+                    config.setBack(renderer.customBack);
+                    config.setLeft(renderer.customLeft);
+                    config.setRight(renderer.customRight);
+                    config.setUp(renderer.customUp);
+                    config.setDown(renderer.customDown);
+                    config.setUsingDefaults(false);
+                    saveColorConfig(config);
                 }
 
                 ImGui::Text("Right (Red):");
                 ImGui::SameLine();
                 if (ImGui::ColorEdit3("##RightColor", renderer.customRight.data())) {
                     renderer.useCustomColors = true;
+                    ColorConfig config;
+                    config.setFront(renderer.customFront);
+                    config.setBack(renderer.customBack);
+                    config.setLeft(renderer.customLeft);
+                    config.setRight(renderer.customRight);
+                    config.setUp(renderer.customUp);
+                    config.setDown(renderer.customDown);
+                    config.setUsingDefaults(false);
+                    saveColorConfig(config);
                 }
 
                 ImGui::Text("Up (White):");
                 ImGui::SameLine();
                 if (ImGui::ColorEdit3("##UpColor", renderer.customUp.data())) {
                     renderer.useCustomColors = true;
+                    ColorConfig config;
+                    config.setFront(renderer.customFront);
+                    config.setBack(renderer.customBack);
+                    config.setLeft(renderer.customLeft);
+                    config.setRight(renderer.customRight);
+                    config.setUp(renderer.customUp);
+                    config.setDown(renderer.customDown);
+                    config.setUsingDefaults(false);
+                    saveColorConfig(config);
                 }
 
                 ImGui::Text("Down (Yellow):");
                 ImGui::SameLine();
                 if (ImGui::ColorEdit3("##DownColor", renderer.customDown.data())) {
                     renderer.useCustomColors = true;
+                    ColorConfig config;
+                    config.setFront(renderer.customFront);
+                    config.setBack(renderer.customBack);
+                    config.setLeft(renderer.customLeft);
+                    config.setRight(renderer.customRight);
+                    config.setUp(renderer.customUp);
+                    config.setDown(renderer.customDown);
+                    config.setUsingDefaults(false);
+                    saveColorConfig(config);
                 }
 
                 ImGui::Spacing();
 
                 // Save and Reset buttons
+                // Note: Colors are now auto-saved when modified, but we keep this button for explicit save
                 if (ImGui::Button("Save Colors", ImVec2(120, 0))) {
                     ColorConfig config;
                     config.setFront(renderer.customFront);
@@ -817,6 +872,11 @@ int main(int argc, char* argv[]) {
                     renderer.customUp = {1.0f, 1.0f, 1.0f};    // White
                     renderer.customDown = {1.0f, 1.0f, 0.0f};  // Yellow
                     renderer.useCustomColors = false;
+                    // Remove config file to restore defaults on next startup
+                    std::string configPath = getConfigFilePath();
+                    if (!configPath.empty()) {
+                        std::remove(configPath.c_str());
+                    }
                 }
 
                 ImGui::Spacing();
@@ -843,37 +903,103 @@ int main(int argc, char* argv[]) {
 
                 // Front face color picker (Green by default)
                 ImGui::Text("Front:");
-                ImGui::ColorEdit3("##FrontColor", &renderer.customFront[0]);
+                if (ImGui::ColorEdit3("##FrontColor", &renderer.customFront[0])) {
+                    renderer.useCustomColors = true;
+                    ColorConfig config;
+                    config.setFront(renderer.customFront);
+                    config.setBack(renderer.customBack);
+                    config.setLeft(renderer.customLeft);
+                    config.setRight(renderer.customRight);
+                    config.setUp(renderer.customUp);
+                    config.setDown(renderer.customDown);
+                    config.setUsingDefaults(false);
+                    saveColorConfig(config);
+                }
 
                 ImGui::Spacing();
 
                 // Back face color picker (Blue by default)
                 ImGui::Text("Back:");
-                ImGui::ColorEdit3("##BackColor", &renderer.customBack[0]);
+                if (ImGui::ColorEdit3("##BackColor", &renderer.customBack[0])) {
+                    renderer.useCustomColors = true;
+                    ColorConfig config;
+                    config.setFront(renderer.customFront);
+                    config.setBack(renderer.customBack);
+                    config.setLeft(renderer.customLeft);
+                    config.setRight(renderer.customRight);
+                    config.setUp(renderer.customUp);
+                    config.setDown(renderer.customDown);
+                    config.setUsingDefaults(false);
+                    saveColorConfig(config);
+                }
 
                 ImGui::Spacing();
 
                 // Left face color picker (Orange by default)
                 ImGui::Text("Left:");
-                ImGui::ColorEdit3("##LeftColor", &renderer.customLeft[0]);
+                if (ImGui::ColorEdit3("##LeftColor", &renderer.customLeft[0])) {
+                    renderer.useCustomColors = true;
+                    ColorConfig config;
+                    config.setFront(renderer.customFront);
+                    config.setBack(renderer.customBack);
+                    config.setLeft(renderer.customLeft);
+                    config.setRight(renderer.customRight);
+                    config.setUp(renderer.customUp);
+                    config.setDown(renderer.customDown);
+                    config.setUsingDefaults(false);
+                    saveColorConfig(config);
+                }
 
                 ImGui::Spacing();
 
                 // Right face color picker (Red by default)
                 ImGui::Text("Right:");
-                ImGui::ColorEdit3("##RightColor", &renderer.customRight[0]);
+                if (ImGui::ColorEdit3("##RightColor", &renderer.customRight[0])) {
+                    renderer.useCustomColors = true;
+                    ColorConfig config;
+                    config.setFront(renderer.customFront);
+                    config.setBack(renderer.customBack);
+                    config.setLeft(renderer.customLeft);
+                    config.setRight(renderer.customRight);
+                    config.setUp(renderer.customUp);
+                    config.setDown(renderer.customDown);
+                    config.setUsingDefaults(false);
+                    saveColorConfig(config);
+                }
 
                 ImGui::Spacing();
 
                 // Up face color picker (White by default)
                 ImGui::Text("Up:");
-                ImGui::ColorEdit3("##UpColor", &renderer.customUp[0]);
+                if (ImGui::ColorEdit3("##UpColor", &renderer.customUp[0])) {
+                    renderer.useCustomColors = true;
+                    ColorConfig config;
+                    config.setFront(renderer.customFront);
+                    config.setBack(renderer.customBack);
+                    config.setLeft(renderer.customLeft);
+                    config.setRight(renderer.customRight);
+                    config.setUp(renderer.customUp);
+                    config.setDown(renderer.customDown);
+                    config.setUsingDefaults(false);
+                    saveColorConfig(config);
+                }
 
                 ImGui::Spacing();
 
                 // Down face color picker (Yellow by default)
                 ImGui::Text("Down:");
-                ImGui::ColorEdit3("##DownColor", &renderer.customDown[0]);
+                if (ImGui::ColorEdit3("##DownColor", &renderer.customDown[0])) {
+                    renderer.useCustomColors = true;
+                    ColorConfig config;
+                    config.setFront(renderer.customFront);
+                    config.setBack(renderer.customBack);
+                    config.setLeft(renderer.customLeft);
+                    config.setRight(renderer.customRight);
+                    config.setUp(renderer.customUp);
+                    config.setDown(renderer.customDown);
+                    config.setUsingDefaults(false);
+                    saveColorConfig(config);
+                }
 
                 ImGui::Spacing();
                 ImGui::Separator();
@@ -882,6 +1008,15 @@ int main(int argc, char* argv[]) {
                 // Apply button
                 if (ImGui::Button("Apply", ImVec2(180, 0))) {
                     renderer.useCustomColors = true;
+                    ColorConfig config;
+                    config.setFront(renderer.customFront);
+                    config.setBack(renderer.customBack);
+                    config.setLeft(renderer.customLeft);
+                    config.setRight(renderer.customRight);
+                    config.setUp(renderer.customUp);
+                    config.setDown(renderer.customDown);
+                    config.setUsingDefaults(false);
+                    saveColorConfig(config);
                 }
 
                 ImGui::SameLine();
@@ -896,6 +1031,11 @@ int main(int argc, char* argv[]) {
                     renderer.customUp = {1.0f, 1.0f, 1.0f};    // White
                     renderer.customDown = {1.0f, 1.0f, 0.0f};  // Yellow
                     renderer.useCustomColors = false;
+                    // Remove config file to restore defaults on next startup
+                    std::string configPath = getConfigFilePath();
+                    if (!configPath.empty()) {
+                        std::remove(configPath.c_str());
+                    }
                 }
 
                 ImGui::Spacing();
