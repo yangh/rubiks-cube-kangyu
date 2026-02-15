@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
     glfwWindowHint(GLFW_SAMPLES, 4);
 
     // Create window - wider to accommodate T-shaped layout
-    GLFWwindow* window = glfwCreateWindow(1400, 800, "Rubik's Cube Simulator", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(1600, 1200, "Rubik's Cube Simulator", nullptr, nullptr);
     if (!window) {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -109,7 +109,7 @@ int main(int argc, char* argv[]) {
 
     ImFont* chineseFont = nullptr;
     for (int i = 0; fontPaths[i] != nullptr; i++) {
-        chineseFont = io.Fonts->AddFontFromFileTTF(fontPaths[i], 18.0f, nullptr, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+        chineseFont = io.Fonts->AddFontFromFileTTF(fontPaths[i], 32.0f, nullptr, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
         if (chineseFont != nullptr) {
             break;
         }
@@ -137,7 +137,7 @@ int main(int argc, char* argv[]) {
     }
 
     // Window dimensions
-    int sidebarWidth = 400;
+    int sidebarWidth = 600;
 
     // Main loop
     float lastTime = glfwGetTime();
@@ -702,6 +702,34 @@ int main(int argc, char* argv[]) {
                 ImGui::EndTabItem();
             }
 
+            // View tab
+            if (ImGui::BeginTabItem("View")) {
+                ImGui::Separator();
+
+                // 2D view controls
+                ImGui::Text("2D View Controls:");
+                ImGui::SliderFloat("2D Scale", &renderer.scale2D, 0.3f, 3.0f, "%.2f");
+
+                ImGui::Spacing();
+
+                // 3D view controls
+                ImGui::Text("3D View Controls:");
+                ImGui::SliderFloat("Rotation X", &renderer.rotationX, -180.0f, 180.0f);
+                ImGui::SliderFloat("Rotation Y", &renderer.rotationY, -180.0f, 180.0f);
+                ImGui::SliderFloat("Rotation Z", &renderer.rotationZ, -180.0f, 180.0f);
+                ImGui::SliderFloat("3D Scale", &renderer.scale, 2.0f, 7.0f, "%.2f");
+
+                ImGui::Spacing();
+                ImGui::Separator();
+
+                // Status
+                const char* status = renderer.isSolved() ? "Solved" : "Unsolved";
+                ImU32 statusColor = renderer.isSolved() ? IM_COL32(0, 255, 0, 255) : IM_COL32(255, 100, 0, 255);
+                ImGui::TextColored(ImVec4(0, 1, 0, 1), "Cube status: %s", status);
+
+                ImGui::EndTabItem();
+            }
+
             ImGui::EndTabBar();
         }
 
@@ -712,28 +740,6 @@ int main(int argc, char* argv[]) {
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  U/D/L/R/F/B/M/E/S - Move (clockwise)");
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Shift+Key - Prime move (counter-clockwise)");
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Space - Reset view to default angles");
-
-        ImGui::Separator();
-
-        // 2D view controls
-        ImGui::Text("2D View Controls:");
-        ImGui::SliderFloat("2D Scale", &renderer.scale2D, 0.3f, 3.0f, "%.2f");
-
-        ImGui::Separator();
-
-        // 3D view controls
-        ImGui::Text("3D View Controls:");
-        ImGui::SliderFloat("Rotation X", &renderer.rotationX, -180.0f, 180.0f);
-        ImGui::SliderFloat("Rotation Y", &renderer.rotationY, -180.0f, 180.0f);
-        ImGui::SliderFloat("Rotation Z", &renderer.rotationZ, -180.0f, 180.0f);
-        ImGui::SliderFloat("3D Scale", &renderer.scale, 2.0f, 7.0f, "%.2f");
-
-        ImGui::Separator();
-
-        // Status
-        const char* status = renderer.isSolved() ? "Solved" : "Unsolved";
-        ImU32 statusColor = renderer.isSolved() ? IM_COL32(0, 255, 0, 255) : IM_COL32(255, 100, 0, 255);
-        ImGui::TextColored(ImVec4(0, 1, 0, 1), "Cube status: %s", status);
 
         ImGui::End();
 
