@@ -93,15 +93,15 @@ void RubiksCube::reset() {
 void RubiksCube::rotateUp(bool prime) {
     rotateFaceClockwise(up_, prime);
 
-    if (prime) {
-        // Counter-clockwise: front <- right <- back <- left <- front
+    if (!prime) {
+        // Clockwise: front <- right <- back <- left <- front
         std::array<Color, 3> temp = {front_[0], front_[1], front_[2]};
         front_[0] = right_[0]; front_[1] = right_[1]; front_[2] = right_[2];
         right_[0] = back_[0]; right_[1] = back_[1]; right_[2] = back_[2];
         back_[0] = left_[0]; back_[1] = left_[1]; back_[2] = left_[2];
         left_[0] = temp[0]; left_[1] = temp[1]; left_[2] = temp[2];
     } else {
-        // Clockwise: front <- left <- back <- right <- front
+        // Counter-clockwise: front <- left <- back <- right <- front
         std::array<Color, 3> temp = {front_[0], front_[1], front_[2]};
         front_[0] = left_[0]; front_[1] = left_[1]; front_[2] = left_[2];
         left_[0] = back_[0]; left_[1] = back_[1]; left_[2] = back_[2];
@@ -113,15 +113,15 @@ void RubiksCube::rotateUp(bool prime) {
 void RubiksCube::rotateDown(bool prime) {
     rotateFaceClockwise(down_, prime);
 
-    if (prime) {
-        // Counter-clockwise: front <- right <- back <- left <- front
+    if (!prime) {
+        // Clockwise: front <- right <- back <- left <- front
         std::array<Color, 3> temp = {front_[6], front_[7], front_[8]};
         front_[6] = right_[6]; front_[7] = right_[7]; front_[8] = right_[8];
         right_[6] = back_[6]; right_[7] = back_[7]; right_[8] = back_[8];
         back_[6] = left_[6]; back_[7] = left_[7]; back_[8] = left_[8];
         left_[6] = temp[0]; left_[7] = temp[1]; left_[8] = temp[2];
     } else {
-        // Clockwise: front <- left <- back <- right <- front
+        // Counter-clockwise: front <- left <- back <- right <- front
         std::array<Color, 3> temp = {front_[6], front_[7], front_[8]};
         front_[6] = left_[6]; front_[7] = left_[7]; front_[8] = left_[8];
         left_[6] = back_[6]; left_[7] = back_[7]; left_[8] = back_[8];

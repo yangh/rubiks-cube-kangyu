@@ -179,7 +179,7 @@ ImVec2 CubeRenderer::project(float x, float y, float z, ImVec2 center, float sca
 }
 
 void CubeRenderer::drawFace(ImDrawList* drawList, const std::array<Color, 9>& face,
-                          ImVec2 offset, float size, float gap) {
+                          ImVec2 offset, float size, float gap, bool flipVertical) {
     float totalSize = size * 3.0f + gap * 2.0f;
     float startX = offset.x - totalSize / 2.0f + size / 2.0f;
     float startY = offset.y - totalSize / 2.0f + size / 2.0f;
@@ -194,7 +194,17 @@ void CubeRenderer::drawFace(ImDrawList* drawList, const std::array<Color, 9>& fa
     // Draw 3x3 grid of stickers
     for (int row = 0; row < 3; ++row) {
         for (int col = 0; col < 3; ++col) {
-            int index = row * 3 + col;
+            // Map visual position to face index, with optional vertical flip
+            // Normal: row 0 -> indices 0,1,2 (top)
+            // Flipped: row 0 -> indices 6,7,8 (bottom)
+            int index;
+            if (flipVertical) {
+                // Flip vertically: top visually = bottom in face indices
+                index = (2 - row) * 3 + col;
+            } else {
+                index = row * 3 + col;
+            }
+
             std::array<float, 3> rgb = colorToRgb(face[index]);
             ImU32 color = IM_COL32(
                 static_cast<int>(rgb[0] * 255),
@@ -203,7 +213,7 @@ void CubeRenderer::drawFace(ImDrawList* drawList, const std::array<Color, 9>& fa
                 255
             );
             float x = startX + static_cast<float>(col) * (size + gap);
-            float y = startY - static_cast<float>(row) * (size + gap);
+            float y = startY + static_cast<float>(row) * (size + gap);
 
             // Draw sticker
             ImVec2 s1(x - size / 2.0f, y + size / 2.0f);
