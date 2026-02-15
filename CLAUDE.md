@@ -103,10 +103,10 @@ Important: Draw order matters to avoid overlap. Faces are drawn with explicit of
 - Back: (+offset * 2, 0) - right of Right
 
 ### Color Scheme
-- Front: Red
-- Back: Orange
-- Left: Green
-- Right: Blue
+- Front: Green
+- Back: Blue
+- Left: Orange
+- Right: Red
 - Up: White
 - Down: Yellow
 
@@ -125,8 +125,3 @@ Standard moves:
 - **F'**: Front face counter-clockwise
 - **B**: Back face clockwise
 - **B'**: Back face counter-clockwise
-
-## Known Issues / Limitations
-
-- 2D unfolded view only (no 3D cube visualization)
-- Rotation X/Y sliders currently unused (reserved for future 3D view)
