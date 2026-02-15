@@ -49,7 +49,7 @@ void CubeRenderer::draw2D(ImDrawList* drawList, ImVec2 offset, float scale) {
     // Face spacing
     float spacing = faceSize + gap;
     offset.x -= spacing * 0.5;
-    offset.y += spacing * 0.5;
+    //offset.y += spacing * 0.5;
 
     // Draw in order: Up, Left, Front, Right, Down, Back
     drawFace(drawList, cube_.getUp(),
