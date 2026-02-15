@@ -1174,10 +1174,10 @@ bool CubeRenderer::isCubeAnimating(int cubeIndex) const {
         case Move::BP:
             return (layer == 0);
 
-        // M move: middle layer (layer 1)
+        // M move: middle column (col 1, between L and R)
         case Move::M:
         case Move::MP:
-            return (layer == 1);
+            return (col == 1);
 
         // E move: middle row (row 1)
         case Move::E:
