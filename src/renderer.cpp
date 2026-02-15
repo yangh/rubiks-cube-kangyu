@@ -1207,10 +1207,10 @@ void CubeRenderer::applyRotationTransform(float angle, Move move) {
 
         // D moves rotate around Y axis (opposite of U)
         case Move::D:
-            glRotatef(angle, 0.0f, -1.0f, 0.0f);
+            glRotatef(angle, 0.0f, 1.0f, 0.0f);
             break;
         case Move::DP:
-            glRotatef(angle, 0.0f, 1.0f, 0.0f);
+            glRotatef(angle, 0.0f, -1.0f, 0.0f);
             break;
 
         // L moves rotate around X axis
@@ -1231,18 +1231,18 @@ void CubeRenderer::applyRotationTransform(float angle, Move move) {
 
         // F moves rotate around Z axis
         case Move::F:
-            glRotatef(angle, 0.0f, 0.0f, 1.0f);
+            glRotatef(angle, 0.0f, 0.0f, -1.0f);
             break;
         case Move::FP:
-            glRotatef(angle, 0.0f, 0.0f, -1.0f);
+            glRotatef(angle, 0.0f, 0.0f, 1.0f);
             break;
 
         // B moves rotate around Z axis (opposite of F)
         case Move::B:
-            glRotatef(angle, 0.0f, 0.0f, -1.0f);
+            glRotatef(angle, 0.0f, 0.0f, 1.0f);
             break;
         case Move::BP:
-            glRotatef(angle, 0.0f, 0.0f, 1.0f);
+            glRotatef(angle, 0.0f, 0.0f, -1.0f);
             break;
 
         // M moves rotate around X axis (same as L)
