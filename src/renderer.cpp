@@ -906,100 +906,143 @@ void CubeRenderer::drawCube(int cubeIndex) {
     glNormal3f(0.0f, 0.0f, 1.0f);
     if (layer == 2) {
         const auto& face = cube_.getFront();
-        int idx = row * 3 + (2 - col);  // Front face indices
+        // Vertex order: TL(0,0), TR(0,2), BR(2,2), BL(2,0)
+        // Row is inverted to match U/D move behavior
+        int idx = (2 - row) * 3 + col;
         auto rgb = colorToRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
+        glVertex3f(-0.5f, 0.5f, 0.5f);  // vertex 0: top-left
+        glVertex3f(0.5f, 0.5f, 0.5f);   // vertex 1: top-right
+        glVertex3f(0.5f, -0.5f, 0.5f);  // vertex 2: bottom-right
+        glVertex3f(-0.5f, -0.5f, 0.5f); // vertex 3: bottom-left
+        glEnd();
     } else {
         glColor3fv(black);
+        glVertex3f(-0.5f, 0.5f, 0.5f);
+        glVertex3f(0.5f, 0.5f, 0.5f);
+        glVertex3f(0.5f, -0.5f, 0.5f);
+        glVertex3f(-0.5f, -0.5f, 0.5f);
+        glEnd();
     }
-    glVertex3f(-0.5f, 0.5f, 0.5f);
-    glVertex3f(0.5f, 0.5f, 0.5f);
-    glVertex3f(0.5f, -0.5f, 0.5f);
-    glVertex3f(-0.5f, -0.5f, 0.5f);
-    glEnd();
 
     // Back face (z=-1) - only for layer 0
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 0.0f, -1.0f);
     if (layer == 0) {
         const auto& face = cube_.getBack();
-        int idx = row * 3 + col;
+        // Vertex order: TR(0,2), TL(0,0), BL(2,0), BR(2,2)
+        // Back face in 3D is viewed from behind, so left-right is reversed
+        // Row is inverted to match U/D move behavior
+        // Grid: 0 1 2 / 3 4 5 / 6 7 8 (from 2D view perspective)
+        // 3D view: col 0 (left visually) = grid col 2, col 2 (right visually) = grid col 0
+        int idx = (2 - row) * 3 + (2 - col);
         auto rgb = colorToRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
+        glVertex3f(0.5f, 0.5f, -0.5f);  // vertex 0: top-right
+        glVertex3f(-0.5f, 0.5f, -0.5f); // vertex 1: top-left
+        glVertex3f(-0.5f, -0.5f, -0.5f); // vertex 2: bottom-left
+        glVertex3f(0.5f, -0.5f, -0.5f);  // vertex 3: bottom-right
+        glEnd();
     } else {
         glColor3fv(black);
+        glVertex3f(0.5f, 0.5f, -0.5f);
+        glVertex3f(-0.5f, 0.5f, -0.5f);
+        glVertex3f(-0.5f, -0.5f, -0.5f);
+        glVertex3f(0.5f, -0.5f, -0.5f);
+        glEnd();
     }
-    glVertex3f(0.5f, 0.5f, -0.5f);
-    glVertex3f(-0.5f, 0.5f, -0.5f);
-    glVertex3f(-0.5f, -0.5f, -0.5f);
-    glVertex3f(0.5f, -0.5f, -0.5f);
-    glEnd();
 
     // Top face (y=+1) - only for row 2
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 1.0f, 0.0f);
     if (row == 2) {
         const auto& face = cube_.getUp();
+        // Up face grid: layer=0 is top (back), layer=2 is bottom (front)
         int idx = layer * 3 + col;
         auto rgb = colorToRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
+        glVertex3f(-0.5f, 0.5f, -0.5f); // vertex 0: top-back-left
+        glVertex3f(0.5f, 0.5f, -0.5f);  // vertex 1: top-back-right
+        glVertex3f(0.5f, 0.5f, 0.5f);   // vertex 2: top-front-right
+        glVertex3f(-0.5f, 0.5f, 0.5f);  // vertex 3: top-front-left
+        glEnd();
     } else {
         glColor3fv(black);
+        glVertex3f(-0.5f, 0.5f, -0.5f);
+        glVertex3f(0.5f, 0.5f, -0.5f);
+        glVertex3f(0.5f, 0.5f, 0.5f);
+        glVertex3f(-0.5f, 0.5f, 0.5f);
+        glEnd();
     }
-    glVertex3f(-0.5f, 0.5f, -0.5f);
-    glVertex3f(0.5f, 0.5f, -0.5f);
-    glVertex3f(0.5f, 0.5f, 0.5f);
-    glVertex3f(-0.5f, 0.5f, 0.5f);
-    glEnd();
 
     // Bottom face (y=-1) - only for row 0
     glBegin(GL_QUADS);
     glNormal3f(0.0f, -1.0f, 0.0f);
     if (row == 0) {
         const auto& face = cube_.getDown();
-        int idx = (2 - layer) * 3 + col;
+        // Down face grid: layer=2 is top (front), layer=0 is bottom (back)
+        int idx = layer * 3 + col;
         auto rgb = colorToRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
+        glVertex3f(-0.5f, -0.5f, 0.5f);  // vertex 0: bottom-front-left
+        glVertex3f(0.5f, -0.5f, 0.5f);   // vertex 1: bottom-front-right
+        glVertex3f(0.5f, -0.5f, -0.5f);  // vertex 2: bottom-back-right
+        glVertex3f(-0.5f, -0.5f, -0.5f); // vertex 3: bottom-back-left
+        glEnd();
     } else {
         glColor3fv(black);
+        glVertex3f(-0.5f, -0.5f, 0.5f);
+        glVertex3f(0.5f, -0.5f, 0.5f);
+        glVertex3f(0.5f, -0.5f, -0.5f);
+        glVertex3f(-0.5f, -0.5f, -0.5f);
+        glEnd();
     }
-    glVertex3f(-0.5f, -0.5f, 0.5f);
-    glVertex3f(0.5f, -0.5f, 0.5f);
-    glVertex3f(0.5f, -0.5f, -0.5f);
-    glVertex3f(-0.5f, -0.5f, -0.5f);
-    glEnd();
 
     // Right face (x=+1) - only for col 2
     glBegin(GL_QUADS);
     glNormal3f(1.0f, 0.0f, 0.0f);
     if (col == 2) {
         const auto& face = cube_.getRight();
+        // Right face grid: row=2 is top, layer=2 is front
+        // Layer is inverted to match F/B move behavior
         int idx = (2 - row) * 3 + (2 - layer);
         auto rgb = colorToRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
+        glVertex3f(0.5f, 0.5f, 0.5f);   // vertex 0: right-top-front
+        glVertex3f(0.5f, -0.5f, 0.5f);  // vertex 1: right-bottom-front
+        glVertex3f(0.5f, -0.5f, -0.5f); // vertex 2: right-bottom-back
+        glVertex3f(0.5f, 0.5f, -0.5f);  // vertex 3: right-top-back
+        glEnd();
     } else {
         glColor3fv(black);
+        glVertex3f(0.5f, 0.5f, 0.5f);
+        glVertex3f(0.5f, -0.5f, 0.5f);
+        glVertex3f(0.5f, -0.5f, -0.5f);
+        glVertex3f(0.5f, 0.5f, -0.5f);
+        glEnd();
     }
-    glVertex3f(0.5f, 0.5f, 0.5f);
-    glVertex3f(0.5f, 0.5f, -0.5f);
-    glVertex3f(0.5f, -0.5f, -0.5f);
-    glVertex3f(0.5f, -0.5f, 0.5f);
-    glEnd();
 
     // Left face (x=-1) - only for col 0
     glBegin(GL_QUADS);
     glNormal3f(-1.0f, 0.0f, 0.0f);
     if (col == 0) {
         const auto& face = cube_.getLeft();
+        // Left face grid: row=2 is top, layer=0 is back
+        // Layer is inverted to match F/B move behavior
         int idx = (2 - row) * 3 + (2 - layer);
         auto rgb = colorToRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
+        glVertex3f(-0.5f, 0.5f, -0.5f); // vertex 0: left-top-back
+        glVertex3f(-0.5f, -0.5f, -0.5f); // vertex 1: left-bottom-back
+        glVertex3f(-0.5f, -0.5f, 0.5f);  // vertex 2: left-bottom-front
+        glVertex3f(-0.5f, 0.5f, 0.5f);  // vertex 3: left-top-front
+        glEnd();
     } else {
         glColor3fv(black);
+        glVertex3f(-0.5f, 0.5f, -0.5f);
+        glVertex3f(-0.5f, 0.5f, 0.5f);
+        glVertex3f(-0.5f, -0.5f, 0.5f);
+        glVertex3f(-0.5f, -0.5f, -0.5f);
+        glEnd();
     }
-    glVertex3f(-0.5f, 0.5f, -0.5f);
-    glVertex3f(-0.5f, 0.5f, 0.5f);
-    glVertex3f(-0.5f, -0.5f, 0.5f);
-    glVertex3f(-0.5f, -0.5f, -0.5f);
-    glEnd();
 }
