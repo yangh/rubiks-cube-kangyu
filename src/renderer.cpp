@@ -290,6 +290,11 @@ void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
         // Quadratic ease-in-out: 3t^2 - 2t^3
         float easeProgress = animationProgress_ * animationProgress_ * (3.0f - 2.0f * animationProgress_);
         animAngle = 90.0f * easeProgress;
+
+        // Apply rotation transformation to the entire slice
+        // This rotates all cubes in the slice around the cube center, not individual cubes
+        glPushMatrix();
+        applyRotationTransform(animAngle, currentMove_);
     }
 
     for (int layer = 0; layer < 3; layer++) {
@@ -300,27 +305,18 @@ void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
                 float zOffset = (layer - 1.0f) * (1.0f + gap);
 
                 glPushMatrix();
-
-                // Apply animation rotation only to cubes that are animating
-                if (isAnimating_ && isCubeAnimating(cubeIndex)) {
-                    // First translate to cube position, then apply rotation
-                    // This ensures rotation happens around the correct location
-                    glPushMatrix();
-                    glTranslatef(xOffset, yOffset, zOffset);
-                    applyRotationTransform(animAngle, currentMove_);
-                    drawCube(cubeIndex, isAnimating_ && isCubeAnimating(cubeIndex));
-                    glPopMatrix();
-                } else {
-                    // Non-animating cubes just translate and draw
-                    glTranslatef(xOffset, yOffset, zOffset);
-                    drawCube(cubeIndex, false);
-                }
-
+                glTranslatef(xOffset, yOffset, zOffset);
+                drawCube(cubeIndex, isAnimating_ && isCubeAnimating(cubeIndex));
                 glPopMatrix();
 
                 cubeIndex++;
             }
         }
+    }
+
+    // Restore animation rotation state
+    if (isAnimating_) {
+        glPopMatrix();
     }
 
     // Disable lighting (restore to default)
