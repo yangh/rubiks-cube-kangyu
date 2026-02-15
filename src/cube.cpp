@@ -263,19 +263,19 @@ void RubiksCube::rotateBack(bool prime) {
     rotateFaceClockwise(back_, prime);
 
     if (prime) {
-        // Counter-clockwise: up <- right <- down <- left <- up
-        std::array<Color, 3> temp = {up_[0], up_[1], up_[2]};
-        up_[0] = right_[2]; up_[1] = right_[5]; up_[2] = right_[8];
-        right_[2] = down_[6]; right_[5] = down_[7]; right_[8] = down_[8];
-        down_[6] = left_[0]; down_[7] = left_[3]; down_[8] = left_[6];
-        left_[0] = temp[0]; left_[3] = temp[1]; left_[6] = temp[2];
-    } else {
         // Clockwise: up <- left <- down <- right <- up
         std::array<Color, 3> temp = {up_[0], up_[1], up_[2]};
         up_[0] = left_[0]; up_[1] = left_[3]; up_[2] = left_[6];
         left_[0] = down_[6]; left_[3] = down_[7]; left_[6] = down_[8];
         down_[6] = right_[2]; down_[7] = right_[5]; down_[8] = right_[8];
         right_[2] = temp[0]; right_[5] = temp[1]; right_[8] = temp[2];
+    } else {
+        // Counter-clockwise: up <- right <- down <- left <- up
+        std::array<Color, 3> temp = {up_[0], up_[1], up_[2]};
+        up_[0] = right_[2]; up_[1] = right_[5]; up_[2] = right_[8];
+        right_[2] = down_[6]; right_[5] = down_[7]; right_[8] = down_[8];
+        down_[6] = left_[0]; down_[7] = left_[3]; down_[8] = left_[6];
+        left_[0] = temp[0]; left_[3] = temp[1]; left_[6] = temp[2];
     }
 }
 
