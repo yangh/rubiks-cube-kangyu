@@ -108,18 +108,11 @@ void CubeRenderer::dump() const {
 bool CubeRenderer::initGL3D() {
     // Enable depth testing
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-    glEnable(GL_COLOR_MATERIAL);
 
-    // Set light position
-    float lightPos[] = {2.0f, 2.0f, 2.0f, 1.0f};
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
-
-    // Set light color
-    float lightColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, lightColor);
+    // Disable lighting to show colors directly
+    glDisable(GL_LIGHTING);
+    glDisable(GL_LIGHT0);
+    glDisable(GL_COLOR_MATERIAL);
 
     // Enable smooth shading
     glShadeModel(GL_SMOOTH);
@@ -279,10 +272,10 @@ void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
     // Scale down the cube slightly
     glScalef(0.9f, 0.9f, 0.9f);
 
-    // Enable lighting
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
-    glEnable(GL_COLOR_MATERIAL);
+    // Disable lighting - render colors directly
+    glDisable(GL_LIGHTING);
+    glDisable(GL_LIGHT0);
+    glDisable(GL_COLOR_MATERIAL);
 
     // Disable face culling to show all faces
     glDisable(GL_CULL_FACE);
