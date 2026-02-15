@@ -395,6 +395,13 @@ int main(int argc, char* argv[]) {
                 ImGui::SameLine();
                 if (ImGui::Button("S'", ImVec2(40, 0))) renderer.executeMove(Move::SP);
 
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Text("Keyboard Shortcuts:");
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  U/D/L/R/F/B/M/E/S - Move (clockwise)");
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Shift+Key - Prime move (counter-clockwise)");
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Space - Reset view to default angles");
+
                 ImGui::EndTabItem();
             }
 
@@ -694,9 +701,14 @@ int main(int argc, char* argv[]) {
 
                 ImGui::Spacing();
 
-                // Refresh button
-                if (ImGui::Button("Refresh Formulas", ImVec2(370, 0))) {
+                // Refresh and Reset buttons
+                if (ImGui::Button("Refresh Formulas", ImVec2(180, 0))) {
                     g_formulaManager.refresh();
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Reset Cube", ImVec2(180, 0))) {
+                    renderer.reset();
+                    renderer.resetView();
                 }
 
                 ImGui::EndTabItem();
@@ -732,14 +744,6 @@ int main(int argc, char* argv[]) {
 
             ImGui::EndTabBar();
         }
-
-        ImGui::Separator();
-
-        // Keyboard shortcuts help
-        ImGui::Text("Keyboard Shortcuts:");
-        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  U/D/L/R/F/B/M/E/S - Move (clockwise)");
-        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Shift+Key - Prime move (counter-clockwise)");
-        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Space - Reset view to default angles");
 
         ImGui::End();
 
