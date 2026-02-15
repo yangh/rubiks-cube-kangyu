@@ -888,57 +888,57 @@ void CubeRenderer::drawCube() {
     // Front face (z=1) - Green
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 0.0f, 1.0f);
-    glColor3f(0.0f, 0.8f, 0.0f);
+    glColor3f(0.0f, 0.0f, 0.0f);
     glVertex3f(-0.5f, 0.5f, 0.5f);
     glVertex3f(0.5f, 0.5f, 0.5f);
     glVertex3f(0.5f, -0.5f, 0.5f);
     glVertex3f(-0.5f, -0.5f, 0.5f);
     glEnd();
 
-    // Back face (z=-1) - Blue
+    // Back face (z=-1)
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 0.0f, -1.0f);
-    glColor3f(0.0f, 0.0f, 0.8f);
+    glColor3f(0.0f, 0.0f, 0.0f);
     glVertex3f(0.5f, 0.5f, -0.5f);
     glVertex3f(-0.5f, 0.5f, -0.5f);
     glVertex3f(-0.5f, -0.5f, -0.5f);
     glVertex3f(0.5f, -0.5f, -0.5f);
     glEnd();
 
-    // Top face (y=1) - White
+    // Top face (y=1)
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 1.0f, 0.0f);
-    glColor3f(1.0f, 1.0f, 1.0f);
+    glColor3f(0.0f, 0.0f, 0.0f);
     glVertex3f(-0.5f, 0.5f, -0.5f);
     glVertex3f(0.5f, 0.5f, -0.5f);
     glVertex3f(0.5f, 0.5f, 0.5f);
     glVertex3f(-0.5f, 0.5f, 0.5f);
     glEnd();
 
-    // Bottom face (y=-1) - Yellow
+    // Bottom face (y=-1)
     glBegin(GL_QUADS);
     glNormal3f(0.0f, -1.0f, 0.0f);
-    glColor3f(1.0f, 1.0f, 0.0f);
+    glColor3f(0.0f, 0.0f, 0.0f);
     glVertex3f(-0.5f, -0.5f, 0.5f);
     glVertex3f(0.5f, -0.5f, 0.5f);
     glVertex3f(0.5f, -0.5f, -0.5f);
     glVertex3f(-0.5f, -0.5f, -0.5f);
     glEnd();
 
-    // Right face (x=1) - Red
+    // Right face (x=1)
     glBegin(GL_QUADS);
     glNormal3f(1.0f, 0.0f, 0.0f);
-    glColor3f(0.8f, 0.0f, 0.0f);
+    glColor3f(0.0f, 0.0f, 0.0f);
     glVertex3f(0.5f, 0.5f, 0.5f);
     glVertex3f(0.5f, 0.5f, -0.5f);
     glVertex3f(0.5f, -0.5f, -0.5f);
     glVertex3f(0.5f, -0.5f, 0.5f);
     glEnd();
 
-    // Left face (x=-1) - Orange
+    // Left face (x=-1)
     glBegin(GL_QUADS);
     glNormal3f(-1.0f, 0.0f, 0.0f);
-    glColor3f(1.0f, 0.5f, 0.0f);
+    glColor3f(0.0f, 0.0f, 0.0f);
     glVertex3f(-0.5f, 0.5f, -0.5f);
     glVertex3f(-0.5f, 0.5f, 0.5f);
     glVertex3f(-0.5f, -0.5f, 0.5f);
