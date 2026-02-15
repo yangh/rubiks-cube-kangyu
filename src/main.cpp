@@ -4,11 +4,49 @@
 #include <imgui_impl_opengl3.h>
 #include <iostream>
 #include <cmath>
+#include <string>
+#include <getopt.h>
 
 #include "cube.h"
 #include "renderer.h"
 
-int main() {
+// Global flag to enable/disable cube dump
+bool g_enableDump = false;
+
+void showHelp(const char* programName) {
+    std::cout << "Rubik's Cube Simulator\n\n";
+    std::cout << "Usage: " << programName << " [OPTIONS]\n\n";
+    std::cout << "Options:\n";
+    std::cout << "  -d, --dump    Enable cube state dump to console\n";
+    std::cout << "  -h, --help    Show this help message\n";
+}
+
+int main(int argc, char* argv[]) {
+    // Parse command line arguments using getopt_long
+    static struct option long_options[] = {
+        {"dump", no_argument, 0, 'd'},
+        {"help", no_argument, 0, 'h'},
+        {0, 0, 0, 0}
+    };
+
+    int opt;
+    int option_index = 0;
+    while ((opt = getopt_long(argc, argv, "dh", long_options, &option_index)) != -1) {
+        switch (opt) {
+            case 'd':
+                g_enableDump = true;
+                break;
+            case 'h':
+                showHelp(argv[0]);
+                return 0;
+            default:
+                std::cerr << "Unknown option\n\n";
+                showHelp(argv[0]);
+                return 1;
+        }
+    }
+
+    // Initialize GLFW
     // Initialize GLFW
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
@@ -48,9 +86,11 @@ int main() {
     // Initialize cube renderer
     CubeRenderer renderer;
 
-    // Dump initial cube state
-    std::cout << "\n=== Initial Cube State ===" << std::endl;
-    renderer.dump();
+    // Dump initial cube state if enabled
+    if (g_enableDump) {
+        std::cout << "\n=== Initial Cube State ===" << std::endl;
+        renderer.dump();
+    }
 
     // Window dimensions
     int sidebarWidth = 400;

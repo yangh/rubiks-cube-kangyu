@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <iostream>
 
+// Global flag to enable/disable cube dump (defined in main.cpp)
+extern bool g_enableDump;
+
 CubeRenderer::CubeRenderer()
     : cube_()
 {
@@ -10,8 +13,10 @@ CubeRenderer::CubeRenderer()
 
 void CubeRenderer::executeMove(Move move) {
     cube_.executeMove(move);
-    std::cout << "\n=== After " << moveToString(move) << " ===" << std::endl;
-    cube_.dump();
+    if (g_enableDump) {
+        std::cout << "\n=== After " << moveToString(move) << " ===" << std::endl;
+        cube_.dump();
+    }
 }
 
 void CubeRenderer::reset() {
