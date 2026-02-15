@@ -539,11 +539,15 @@ int main(int argc, char* argv[]) {
 
                 // Two-column layout for file list and formula items list
                 float availableWidth = ImGui::GetContentRegionAvail().x;
+                float availableHeight = ImGui::GetContentRegionAvail().y;
                 float leftColumnWidth = availableWidth * 0.4f;  // 40% for file list
                 float rightColumnWidth = availableWidth * 0.6f; // 60% for formula items
 
+                // Reserve space for buttons at bottom (about 80px)
+                float listHeight = availableHeight - 80.0f;
+
                 // Left column: Formula file list
-                ImGui::BeginChild("FormulaFileList", ImVec2(leftColumnWidth, 150), true);
+                ImGui::BeginChild("FormulaFileList", ImVec2(leftColumnWidth, listHeight), true);
                 {
                     std::vector<std::string> fileNames = g_formulaManager.getFileNames();
 
@@ -569,7 +573,7 @@ int main(int argc, char* argv[]) {
                 ImGui::SameLine();
 
                 // Right column: Formula items in selected file
-                ImGui::BeginChild("FormulaItemList", ImVec2(rightColumnWidth, 150), true);
+                ImGui::BeginChild("FormulaItemList", ImVec2(rightColumnWidth, listHeight), true);
                 {
                     const std::vector<FormulaItem>* items = g_formulaManager.getSelectedFileItems();
 
