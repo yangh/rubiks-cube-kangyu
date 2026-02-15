@@ -302,6 +302,9 @@ int main(int argc, char* argv[]) {
                 }
                 ImGui::SameLine();
 
+                // Display last scramble sequence
+                ImGui::Text("%s", g_lastScramble.c_str());
+
                 ImGui::Separator();
 
                 // Move buttons (3 rows: 6 buttons each)
