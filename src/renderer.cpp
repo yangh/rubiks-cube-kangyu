@@ -241,6 +241,7 @@ void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
 
     // Draw 27 cubes in a 3x3x3 cube with gaps
     float gap = 0.03f;  // Gap between cubes
+    int cubeIndex = 0;
     for (int layer = 0; layer < 3; layer++) {
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 3; col++) {
@@ -250,8 +251,10 @@ void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
 
                 glPushMatrix();
                 glTranslatef(xOffset, yOffset, zOffset);
-                drawCube();
+                drawCube(cubeIndex);
                 glPopMatrix();
+
+                cubeIndex++;
             }
         }
     }
@@ -883,62 +886,117 @@ std::array<float, 3> CubeRenderer::rotateSticker(const std::array<float, 3>& pos
     }
 }
 // Helper function to draw a single cube with 6 different face colors
-void CubeRenderer::drawCube() {
-    // Draw each face with a different color
-    // Front face (z=1) - Green
+void CubeRenderer::drawCube(int cubeIndex) {
+    // Calculate position in 3x3x3 grid
+    int layer = cubeIndex / 9;   // 0=front/middle, 1=middle, 2=back
+    int posInLayer = cubeIndex % 9;
+    int row = posInLayer / 3;   // 0=bottom, 1=middle, 2=top
+    int col = posInLayer % 3;   // 0=left, 1=middle, 2=right
+
+    // Coordinate mapping:
+    // layer 0 -> z=-1 (Back), layer 2 -> z=+1 (Front)
+    // row 0 -> y=-1 (Down), row 2 -> y=+1 (Up)
+    // col 0 -> x=-1 (Left), col 2 -> x=+1 (Right)
+
+    // Draw all faces as black by default
+    float black[3] = {0.0f, 0.0f, 0.0f};
+
+    // Front face (z=+1) - only for layer 2
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 0.0f, 1.0f);
-    glColor3f(0.0f, 0.0f, 0.0f);
+    if (layer == 2) {
+        const auto& face = cube_.getFront();
+        int idx = row * 3 + (2 - col);  // Front face indices
+        auto rgb = colorToRgb(face[idx]);
+        glColor3f(rgb[0], rgb[1], rgb[2]);
+    } else {
+        glColor3fv(black);
+    }
     glVertex3f(-0.5f, 0.5f, 0.5f);
     glVertex3f(0.5f, 0.5f, 0.5f);
     glVertex3f(0.5f, -0.5f, 0.5f);
     glVertex3f(-0.5f, -0.5f, 0.5f);
     glEnd();
 
-    // Back face (z=-1)
+    // Back face (z=-1) - only for layer 0
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 0.0f, -1.0f);
-    glColor3f(0.0f, 0.0f, 0.0f);
+    if (layer == 0) {
+        const auto& face = cube_.getBack();
+        int idx = row * 3 + col;
+        auto rgb = colorToRgb(face[idx]);
+        glColor3f(rgb[0], rgb[1], rgb[2]);
+    } else {
+        glColor3fv(black);
+    }
     glVertex3f(0.5f, 0.5f, -0.5f);
     glVertex3f(-0.5f, 0.5f, -0.5f);
     glVertex3f(-0.5f, -0.5f, -0.5f);
     glVertex3f(0.5f, -0.5f, -0.5f);
     glEnd();
 
-    // Top face (y=1)
+    // Top face (y=+1) - only for row 2
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 1.0f, 0.0f);
-    glColor3f(0.0f, 0.0f, 0.0f);
+    if (row == 2) {
+        const auto& face = cube_.getUp();
+        int idx = layer * 3 + col;
+        auto rgb = colorToRgb(face[idx]);
+        glColor3f(rgb[0], rgb[1], rgb[2]);
+    } else {
+        glColor3fv(black);
+    }
     glVertex3f(-0.5f, 0.5f, -0.5f);
     glVertex3f(0.5f, 0.5f, -0.5f);
     glVertex3f(0.5f, 0.5f, 0.5f);
     glVertex3f(-0.5f, 0.5f, 0.5f);
     glEnd();
 
-    // Bottom face (y=-1)
+    // Bottom face (y=-1) - only for row 0
     glBegin(GL_QUADS);
     glNormal3f(0.0f, -1.0f, 0.0f);
-    glColor3f(0.0f, 0.0f, 0.0f);
+    if (row == 0) {
+        const auto& face = cube_.getDown();
+        int idx = (2 - layer) * 3 + col;
+        auto rgb = colorToRgb(face[idx]);
+        glColor3f(rgb[0], rgb[1], rgb[2]);
+    } else {
+        glColor3fv(black);
+    }
     glVertex3f(-0.5f, -0.5f, 0.5f);
     glVertex3f(0.5f, -0.5f, 0.5f);
     glVertex3f(0.5f, -0.5f, -0.5f);
     glVertex3f(-0.5f, -0.5f, -0.5f);
     glEnd();
 
-    // Right face (x=1)
+    // Right face (x=+1) - only for col 2
     glBegin(GL_QUADS);
     glNormal3f(1.0f, 0.0f, 0.0f);
-    glColor3f(0.0f, 0.0f, 0.0f);
+    if (col == 2) {
+        const auto& face = cube_.getRight();
+        int idx = (2 - row) * 3 + (2 - layer);
+        auto rgb = colorToRgb(face[idx]);
+        glColor3f(rgb[0], rgb[1], rgb[2]);
+    } else {
+        glColor3fv(black);
+    }
     glVertex3f(0.5f, 0.5f, 0.5f);
     glVertex3f(0.5f, 0.5f, -0.5f);
     glVertex3f(0.5f, -0.5f, -0.5f);
     glVertex3f(0.5f, -0.5f, 0.5f);
     glEnd();
 
-    // Left face (x=-1)
+    // Left face (x=-1) - only for col 0
     glBegin(GL_QUADS);
     glNormal3f(-1.0f, 0.0f, 0.0f);
-    glColor3f(0.0f, 0.0f, 0.0f);
+    if (col == 0) {
+        const auto& face = cube_.getLeft();
+        int idx = (2 - row) * 3 + (2 - layer);
+        auto rgb = colorToRgb(face[idx]);
+        glColor3f(rgb[0], rgb[1], rgb[2]);
+    } else {
+        glColor3fv(black);
+    }
     glVertex3f(-0.5f, 0.5f, -0.5f);
     glVertex3f(-0.5f, 0.5f, 0.5f);
     glVertex3f(-0.5f, -0.5f, 0.5f);

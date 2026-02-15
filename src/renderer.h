@@ -43,7 +43,7 @@ private:
     bool initGL3D();
 
     // Helper function to draw a single cube
-    void drawCube();
+    void drawCube(int cubeIndex);
 
     RubiksCube cube_;
 
