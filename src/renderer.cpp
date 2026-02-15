@@ -629,6 +629,28 @@ ImU32 CubeRenderer::getFaceColor(Color color) {
     );
 }
 
+// Get face color as RGB array for OpenGL rendering
+std::array<float, 3> CubeRenderer::getFaceColorRgb(Color color) {
+    std::array<float, 3> rgb;
+
+    // Use custom colors if enabled, otherwise use default colors
+    if (useCustomColors) {
+        switch (color) {
+            case Color::GREEN:  rgb = customFront; break;   // Front face
+            case Color::BLUE:   rgb = customBack; break;    // Back face
+            case Color::ORANGE: rgb = customLeft; break;    // Left face
+            case Color::RED:    rgb = customRight; break;   // Right face
+            case Color::WHITE:  rgb = customUp; break;      // Up face
+            case Color::YELLOW: rgb = customDown; break;    // Down face
+            default:            rgb = colorToRgb(color); break;
+        }
+    } else {
+        rgb = colorToRgb(color);
+    }
+
+    return rgb;
+}
+
 // Helper function to rotate a 3D point
 std::array<float, 3> rotatePoint(const std::array<float, 3>& pos, float ax, float ay, float az) {
     float x = pos[0], y = pos[1], z = pos[2];
@@ -996,7 +1018,7 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
         // Vertex order: TL(0,0), TR(0,2), BR(2,2), BL(2,0)
         // Row is inverted to match U/D move behavior
         int idx = (2 - row) * 3 + col;
-        auto rgb = colorToRgb(face[idx]);
+        auto rgb = getFaceColorRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
         glVertex3f(-0.5f, 0.5f, 0.5f);  // vertex 0: top-left
         glVertex3f(0.5f, 0.5f, 0.5f);   // vertex 1: top-right
@@ -1023,7 +1045,7 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
         // Grid: 0 1 2 / 3 4 5 / 6 7 8 (from 2D view perspective)
         // 3D view: col 0 (left visually) = grid col 2, col 2 (right visually) = grid col 0
         int idx = (2 - row) * 3 + (2 - col);
-        auto rgb = colorToRgb(face[idx]);
+        auto rgb = getFaceColorRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
         glVertex3f(0.5f, 0.5f, -0.5f);  // vertex 0: top-right
         glVertex3f(-0.5f, 0.5f, -0.5f); // vertex 1: top-left
@@ -1046,7 +1068,7 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
         const auto& face = cube_.getUp();
         // Up face grid: layer=0 is top (back), layer=2 is bottom (front)
         int idx = layer * 3 + col;
-        auto rgb = colorToRgb(face[idx]);
+        auto rgb = getFaceColorRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
         glVertex3f(-0.5f, 0.5f, -0.5f); // vertex 0: top-back-left
         glVertex3f(0.5f, 0.5f, -0.5f);  // vertex 1: top-back-right
@@ -1069,7 +1091,7 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
         const auto& face = cube_.getDown();
         // Down face grid: layer=2 is top (front), layer=0 is bottom (back)
         int idx = layer * 3 + col;
-        auto rgb = colorToRgb(face[idx]);
+        auto rgb = getFaceColorRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
         glVertex3f(-0.5f, -0.5f, 0.5f);  // vertex 0: bottom-front-left
         glVertex3f(0.5f, -0.5f, 0.5f);   // vertex 1: bottom-front-right
@@ -1093,7 +1115,7 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
         // Right face grid: row=2 is top, layer=2 is front
         // Layer is inverted to match F/B move behavior
         int idx = (2 - row) * 3 + (2 - layer);
-        auto rgb = colorToRgb(face[idx]);
+        auto rgb = getFaceColorRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
         glVertex3f(0.5f, 0.5f, 0.5f);   // vertex 0: right-top-front
         glVertex3f(0.5f, -0.5f, 0.5f);  // vertex 1: right-bottom-front
@@ -1117,7 +1139,7 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
         // Left face grid: row=2 is top, layer=0 is back
         // Layer is inverted to match F/B move behavior
         int idx = (2 - row) * 3 + (2 - layer);
-        auto rgb = colorToRgb(face[idx]);
+        auto rgb = getFaceColorRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
         glVertex3f(-0.5f, 0.5f, -0.5f); // vertex 0: left-top-back
         glVertex3f(-0.5f, -0.5f, -0.5f); // vertex 1: left-bottom-back

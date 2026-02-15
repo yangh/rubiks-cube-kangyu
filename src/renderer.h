@@ -99,6 +99,9 @@ private:
     // Get face color for 3D drawing
     ImU32 getFaceColor(Color color);
 
+    // Get face color as RGB array for OpenGL rendering
+    std::array<float, 3> getFaceColorRgb(Color color);
+
     // Test: draw a single simple cube
     void drawTestCube(ImDrawList* drawList, ImVec2 center, float size);
 
