@@ -109,7 +109,7 @@ int main(int argc, char* argv[]) {
 
     ImFont* chineseFont = nullptr;
     for (int i = 0; fontPaths[i] != nullptr; i++) {
-        chineseFont = io.Fonts->AddFontFromFileTTF(fontPaths[i], 16.0f, nullptr, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+        chineseFont = io.Fonts->AddFontFromFileTTF(fontPaths[i], 18.0f, nullptr, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
         if (chineseFont != nullptr) {
             break;
         }
