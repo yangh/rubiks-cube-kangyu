@@ -278,7 +278,7 @@ int main(int argc, char* argv[]) {
         if (ImGui::BeginTabBar("ControlsTabBar", ImGuiTabBarFlags_None)) {
             // Moves tab
             if (ImGui::BeginTabItem("Moves")) {
-                // Scramble button
+                // Scramble and Reset buttons
                 if (ImGui::Button("Scramble", ImVec2(120, 0))) {
                     // Disable animation for instant scramble
                     bool oldAnimation = renderer.enableAnimation;
@@ -289,21 +289,12 @@ int main(int argc, char* argv[]) {
 
                     // Restore animation setting
                     renderer.enableAnimation = oldAnimation;
-
-                    // Build scramble sequence string for display
-                    std::ostringstream ss;
-                    for (size_t i = 0; i < scrambleMoves.size(); ++i) {
-                        ss << moveToString(scrambleMoves[i]);
-                        if (i < scrambleMoves.size() - 1) {
-                            ss << " ";
-                        }
-                    }
-                    g_lastScramble = ss.str();
                 }
                 ImGui::SameLine();
-
-                // Display last scramble sequence
-                ImGui::Text("%s", g_lastScramble.c_str());
+                if (ImGui::Button("Reset Cube", ImVec2(120, 0))) {
+                    renderer.reset();
+                    renderer.resetView();
+                }
 
                 ImGui::Separator();
 
@@ -395,15 +386,22 @@ int main(int argc, char* argv[]) {
 
                 ImGui::Separator();
 
-                // Display move history in a scrollable list
+                // Display move history in a scrollable list with auto-wrapping
                 const std::vector<Move>& history = renderer.getMoveHistory();
                 if (!history.empty()) {
-                    ImGui::BeginChild("MoveHistory", ImVec2(0, 150), true,
-                                    ImGuiWindowFlags_HorizontalScrollbar);
+                    // Use a child window for scrolling without horizontal scrollbar
+                    ImGui::BeginChild("MoveHistory", ImVec2(0, 150), true);
 
-                    // Group moves in sets of 6 for better readability
+                    // Group moves in sets of 6 per line for better readability
+                    const int movesPerLine = 6;
+                    int movesOnCurrentLine = 0;
+
                     for (size_t i = 0; i < history.size(); ++i) {
-                        ImGui::SameLine(0, 2);
+                        // Start a new line every 6 moves (except for the first move)
+                        if (movesOnCurrentLine > 0 && movesOnCurrentLine % movesPerLine == 0) {
+                            ImGui::NewLine();
+                            movesOnCurrentLine = 0;
+                        }
 
                         // Color the move text
                         ImVec4 moveColor;
@@ -420,11 +418,17 @@ int main(int argc, char* argv[]) {
                             moveColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // White for slice moves
                         }
 
+                        // Display move with proper spacing
+                        if (movesOnCurrentLine > 0) {
+                            ImGui::SameLine(0, 5); // 5px spacing between moves
+                        }
+
                         ImGui::TextColored(moveColor, "%zu. %s", i + 1,
                                         moveToString(history[i]).c_str());
+                        movesOnCurrentLine++;
                     }
 
-                    // Auto-scroll to bottom
+                    // Auto-scroll to bottom when new moves are added
                     if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
                         ImGui::SetScrollHereY(1.0f);
                     }
@@ -490,14 +494,6 @@ int main(int argc, char* argv[]) {
         ImGui::SliderFloat("Rotation Y", &renderer.rotationY, -180.0f, 180.0f);
         ImGui::SliderFloat("Rotation Z", &renderer.rotationZ, -180.0f, 180.0f);
         ImGui::SliderFloat("3D Scale", &renderer.scale, 2.0f, 7.0f, "%.2f");
-
-        ImGui::Separator();
-
-        // Reset button
-        if (ImGui::Button("Reset Cube", ImVec2(120, 0))) {
-            renderer.reset();
-            renderer.resetView();
-        }
 
         ImGui::Separator();
 
