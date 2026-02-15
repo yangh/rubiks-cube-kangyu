@@ -164,6 +164,12 @@ int main(int argc, char* argv[]) {
         // Update animation
         renderer.updateAnimation(deltaTime);
 
+        // Draw light blue background for 3D view
+        ImVec2 bgMin = cursor;
+        ImVec2 bgMax = ImVec2(cursor.x + size.x, cursor.y + size.y);
+        ImU32 lightBlue = IM_COL32(217, 235, 255, 64);  // Light blue RGB (0.85, 0.92, 1.0)
+        drawList->AddRectFilled(bgMin, bgMax, lightBlue);
+
         // Draw 3D cube
         renderer.draw3D(drawList, center, renderer.scale);
 
