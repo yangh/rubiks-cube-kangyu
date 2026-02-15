@@ -28,8 +28,8 @@ void showHelp(const char* programName) {
     std::cout << "  -d, --dump    Enable cube state dump to console\n";
     std::cout << "  -h, --help    Show this help message\n\n";
     std::cout << "Keyboard Shortcuts:\n";
-    std::cout << "  U/D/L/R/F/B  - Execute corresponding face move (clockwise)\n";
-    std::cout << "  Shift+Key    - Execute prime move (counter-clockwise)\n";
+    std::cout << "  U/D/L/R/F/B/M/E/S - Execute corresponding move (clockwise)\n";
+    std::cout << "  Shift+Key           - Execute prime move (counter-clockwise)\n";
     std::cout << "  Example: 'U' = U move, 'Shift+U' = U' move\n";
 }
 
@@ -204,6 +204,27 @@ int main(int argc, char* argv[]) {
             // Check for shift modifier for prime move
             bool isPrime = io.KeyShift;
             renderer.executeMove(isPrime ? Move::BP : Move::B);
+        }
+
+        // M moves (Middle slice)
+        if (ImGui::IsKeyPressed(ImGuiKey_M)) {
+            // Check for shift modifier for prime move
+            bool isPrime = io.KeyShift;
+            renderer.executeMove(isPrime ? Move::MP : Move::M);
+        }
+
+        // E moves (Equator slice)
+        if (ImGui::IsKeyPressed(ImGuiKey_E)) {
+            // Check for shift modifier for prime move
+            bool isPrime = io.KeyShift;
+            renderer.executeMove(isPrime ? Move::EP : Move::E);
+        }
+
+        // S moves (Standing slice)
+        if (ImGui::IsKeyPressed(ImGuiKey_S)) {
+            // Check for shift modifier for prime move
+            bool isPrime = io.KeyShift;
+            renderer.executeMove(isPrime ? Move::SP : Move::S);
         }
 
         // Spacebar: reset view to default angles
@@ -688,7 +709,7 @@ int main(int argc, char* argv[]) {
 
         // Keyboard shortcuts help
         ImGui::Text("Keyboard Shortcuts:");
-        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  U/D/L/R/F/B - Move (clockwise)");
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  U/D/L/R/F/B/M/E/S - Move (clockwise)");
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Shift+Key - Prime move (counter-clockwise)");
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Space - Reset view to default angles");
 
