@@ -556,6 +556,10 @@ int main(int argc, char* argv[]) {
 
                             if (ImGui::Selectable(filename.c_str(), isSelected)) {
                                 g_formulaManager.setSelectedFile(filename);
+                                // Auto-scroll to selected file
+                                if (isSelected) {
+                                    ImGui::SetScrollHereY();
+                                }
                             }
                         }
                     }
@@ -575,6 +579,10 @@ int main(int argc, char* argv[]) {
 
                             if (ImGui::Selectable(items->at(i).name.c_str(), isSelected)) {
                                 g_formulaManager.setSelectedItem(i);
+                                // Auto-scroll to selected formula item
+                                if (isSelected) {
+                                    ImGui::SetScrollHereY();
+                                }
                             }
                         }
                     } else {
