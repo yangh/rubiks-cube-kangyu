@@ -9,6 +9,9 @@ extern bool g_enableDump;
 CubeRenderer::CubeRenderer()
     : cube_()
 {
+    if (initGL3D()) {
+        std::cout << "OpenGL 3D rendering initialized successfully" << std::endl;
+    }
 }
 
 void CubeRenderer::executeMove(Move move) {
@@ -33,8 +36,8 @@ void CubeRenderer::reset() {
 }
 
 void CubeRenderer::resetView() {
-    rotationX = -160.0f;
-    rotationY = 15.0f;
+    rotationX = 30.0f;
+    rotationY = -30.0f;
     rotationZ = 0.0f;
     scale = 3.1f;
     scale2D = 0.8f;
@@ -48,6 +51,38 @@ bool CubeRenderer::isSolved() const {
 
 void CubeRenderer::dump() const {
     cube_.dump();
+}
+
+bool CubeRenderer::initGL3D() {
+    // Enable depth testing
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_COLOR_MATERIAL);
+
+    // Set light position
+    float lightPos[] = {2.0f, 2.0f, 2.0f, 1.0f};
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPos);
+
+    // Set light color
+    float lightColor[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, lightColor);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, lightColor);
+
+    // Enable smooth shading
+    glShadeModel(GL_SMOOTH);
+
+    // Load cube model
+    cubeModel = new Model("src/models/cube.obj");
+
+    if (cubeModel && !cubeModel->meshes.empty()) {
+        std::cout << "Model loaded: " << cubeModel->meshes.size() << " mesh(es), "
+                  << cubeModel->meshes[0].vertices.size() << " vertices" << std::endl;
+    } else {
+        std::cout << "ERROR: Failed to load model" << std::endl;
+    }
+
+    return (cubeModel != nullptr);
 }
 
 void CubeRenderer::draw2D(ImDrawList* drawList, ImVec2 offset, float scale) {
@@ -86,131 +121,146 @@ void CubeRenderer::draw2D(ImDrawList* drawList, ImVec2 offset, float scale) {
 }
 
 void CubeRenderer::draw3D(ImDrawList* drawList, ImVec2 offset, float scale) {
-    float size = 40.0f * scale;
+    if (!cubeModel) {
+        // Fallback to old rendering if OpenGL 3D not initialized
+        return;
+    }
 
-    // Define vertices for each face (before rotation)
-    // Cube centered at origin, extending from -1 to +1
-    struct FaceDrawInfo {
-        int faceIndex;  // 0:Front, 1:Back, 2:Left, 3:Right, 4:Up, 5:Down
-        float centerX, centerY, centerZ;  // Face center in 3D space
-    };
+    // Get window dimensions from ImGui
+    ImGuiIO& io = ImGui::GetIO();
+    int windowWidth = io.DisplaySize.x;
+    int windowHeight = io.DisplaySize.y;
 
-    // Front face: z = +1
-    ImVec2 frontVerts[4] = {
-        ImVec2(-1, 1), ImVec2(1, 1), ImVec2(1, -1), ImVec2(-1, -1)
-    };
+    // Calculate the 3D view window position and size
+    ImVec2 windowPos = ImGui::GetWindowPos();
+    ImVec2 windowSize = ImGui::GetWindowSize();
 
-    // Back face: z = -1
-    ImVec2 backVerts[4] = {
-        ImVec2(1, 1), ImVec2(-1, 1), ImVec2(-1, -1), ImVec2(1, -1)
-    };
+    // Set viewport to match the 3D view window content area
+    glViewport(windowPos.x, windowHeight - windowPos.y - windowSize.y, windowSize.x, windowSize.y);
 
-    // Left face: x = -1
-    ImVec2 leftVerts[4] = {
-        ImVec2(-1, 1), ImVec2(-1, -1), ImVec2(1, -1), ImVec2(1, 1)
-    };
+    // Clear depth buffer for this viewport
+    glClear(GL_DEPTH_BUFFER_BIT);
 
-    // Right face: x = +1
-    ImVec2 rightVerts[4] = {
-        ImVec2(1, 1), ImVec2(1, -1), ImVec2(-1, -1), ImVec2(-1, 1)
-    };
+    // Set up projection matrix (perspective)
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    float aspect = windowSize.x / windowSize.y;
+    float fov = 45.0f;
+    float near = 0.1f;
+    float far = 100.0f;
+    float top = tanf(fov * M_PI / 360.0f) * near;
+    float bottom = -top;
+    float right = top * aspect;
+    float left = -right;
+    glFrustum(left, right, bottom, top, near, far);
 
-    // Up face: y = +1
-    ImVec2 upVerts[4] = {
-        ImVec2(-1, 1), ImVec2(-1, -1), ImVec2(1, -1), ImVec2(1, 1)
-    };
+    // Set up model-view matrix
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
 
-    // Down face: y = -1
-    ImVec2 downVerts[4] = {
-        ImVec2(-1, -1), ImVec2(-1, 1), ImVec2(1, 1), ImVec2(1, -1)
-    };
+    // Apply camera translation (move back from the cube)
+    glTranslatef(0.0f, 0.0f, -3.0f);
 
-    // Calculate rotated face centers for depth sorting
-    float angleX = rotationX * M_PI / 180.0f;
-    float angleY = rotationY * M_PI / 180.0f;
+    // Apply rotation from user controls
+    glRotatef(rotationX, 1.0f, 0.0f, 0.0f);
+    glRotatef(rotationY, 0.0f, 1.0f, 0.0f);
+    glRotatef(rotationZ, 0.0f, 0.0f, 1.0f);
 
-    // Function to rotate a 3D point
-    auto rotatePoint = [](float x, float y, float z, float ax, float ay) -> std::array<float, 3> {
-        float y1 = y * cosf(ax) - z * sinf(ax);
-        float z1 = y * sinf(ax) + z * cosf(ax);
-        float x2 = x * cosf(ay) + z1 * sinf(ay);
-        float z2 = -x * sinf(ay) + z1 * cosf(ay);
-        return {x2, y1, z2};
-    };
+    // Scale down the cube slightly
+    glScalef(0.9f, 0.9f, 0.9f);
 
-    auto getDepth = [&](float x, float y, float z) -> float {
-        auto rotated = rotatePoint(x, y, z, angleX, angleY);
-        return rotated[2];  // Depth is z after rotation
-    };
+    // Set object color (white cube)
+    glColor3f(1.0f, 1.0f, 1.0f);
 
-    // Create face draw information
-    FaceDrawInfo faces[6] = {
-        {0, 0, 0, 1},
-        {1, 0, 0, -1},
-        {2, -1, 0, 0},
-        {3, 1, 0, 0},
-        {4, 0, 1, 0},
-        {5, 0, -1, 0}
-    };
+    // Draw the cube model
+    cubeModel->Draw();
 
-    // Sort faces by depth (far to near)
-    int indices[6] = {0, 1, 2, 3, 4, 5};
-    for (int i = 0; i < 6; ++i) {
-        for (int j = i + 1; j < 6; ++j) {
-            float depthI = getDepth(faces[indices[i]].centerX, faces[indices[i]].centerY, faces[indices[i]].centerZ);
-            float depthJ = getDepth(faces[indices[j]].centerX, faces[indices[j]].centerY, faces[indices[j]].centerZ);
-            if (depthI < depthJ) {  // Smaller z = farther
-                std::swap(indices[i], indices[j]);
+    // Reset viewport to full window
+    glViewport(0, 0, windowWidth, windowHeight);
+}
+
+void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
+    if (!cubeModel) {
+        return;
+    }
+
+    // Hardcoded 3D view window position (same as in main.cpp)
+    int sidebarWidth = 400;
+    int viewX = 10;
+    int viewY = 10;
+    int viewWidth = windowWidth - sidebarWidth - 20;
+    int viewHeight = windowHeight - 20;
+
+    // Set viewport to match the 3D view window
+    glViewport(viewX, windowHeight - viewY - viewHeight, viewWidth, viewHeight);
+
+    // Clear depth buffer for this viewport only
+    glEnable(GL_SCISSOR_TEST);
+    glScissor(viewX, windowHeight - viewY - viewHeight, viewWidth, viewHeight);
+    glClear(GL_DEPTH_BUFFER_BIT);
+    glDisable(GL_SCISSOR_TEST);
+
+    // Set up projection matrix (perspective)
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    float aspect = (float)viewWidth / viewHeight;
+    float fov = 45.0f;
+    float near = 0.1f;
+    float far = 100.0f;
+    float top = tanf(fov * M_PI / 360.0f) * near;
+    float bottom = -top;
+    float right = top * aspect;
+    float left = -right;
+    glFrustum(left, right, bottom, top, near, far);
+
+    // Set up model-view matrix
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    // Apply camera translation (move back from the cube)
+    glTranslatef(0.0f, 0.0f, -3.0f);
+
+    // Apply rotation from user controls
+    glRotatef(rotationX, 1.0f, 0.0f, 0.0f);
+    glRotatef(rotationY, 0.0f, 1.0f, 0.0f);
+    glRotatef(rotationZ, 0.0f, 0.0f, 1.0f);
+
+    // Scale down the cube slightly
+    glScalef(0.9f, 0.9f, 0.9f);
+
+    // Enable lighting
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+    glEnable(GL_COLOR_MATERIAL);
+
+    // Disable face culling to show all faces
+    glDisable(GL_CULL_FACE);
+
+    // Scale down the cube
+    glScalef(0.3f, 0.3f, 0.3f);
+
+    // Draw 27 cubes in a 3x3x3 cube with gaps
+    float gap = 0.03f;  // Gap between cubes
+    for (int layer = 0; layer < 3; layer++) {
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 3; col++) {
+                float xOffset = (col - 1.0f) * (1.0f + gap);
+                float yOffset = (row - 1.0f) * (1.0f + gap);
+                float zOffset = (layer - 1.0f) * (1.0f + gap);
+
+                glPushMatrix();
+                glTranslatef(xOffset, yOffset, zOffset);
+                drawCube();
+                glPopMatrix();
             }
         }
     }
 
-    // Draw faces in sorted order (far to near)
-    for (int i = 0; i < 6; ++i) {
-        int idx = indices[i];
-        if (idx == 0) {
-            if (isAnimating_) {
-                drawAnimated3DFace(drawList, preAnimationCube_.getFront(), frontVerts, offset, size, 0);
-            } else {
-                draw3DFace(drawList, cube_.getFront(), frontVerts, offset, size);
-            }
-        }
-        else if (idx == 1) {
-            if (isAnimating_) {
-                drawAnimated3DFace(drawList, preAnimationCube_.getBack(), backVerts, offset, size, 1);
-            } else {
-                draw3DFace(drawList, cube_.getBack(), backVerts, offset, size);
-            }
-        }
-        else if (idx == 2) {
-            if (isAnimating_) {
-                drawAnimated3DFace(drawList, preAnimationCube_.getLeft(), leftVerts, offset, size, 2);
-            } else {
-                draw3DFace(drawList, cube_.getLeft(), leftVerts, offset, size);
-            }
-        }
-        else if (idx == 3) {
-            if (isAnimating_) {
-                drawAnimated3DFace(drawList, preAnimationCube_.getRight(), rightVerts, offset, size, 3);
-            } else {
-                draw3DFace(drawList, cube_.getRight(), rightVerts, offset, size);
-            }
-        }
-        else if (idx == 4) {
-            if (isAnimating_) {
-                drawAnimated3DFace(drawList, preAnimationCube_.getUp(), upVerts, offset, size, 4);
-            } else {
-                draw3DFace(drawList, cube_.getUp(), upVerts, offset, size);
-            }
-        }
-        else if (idx == 5) {
-            if (isAnimating_) {
-                drawAnimated3DFace(drawList, preAnimationCube_.getDown(), downVerts, offset, size, 5);
-            } else {
-                draw3DFace(drawList, cube_.getDown(), downVerts, offset, size);
-            }
-        }
-    }
+    // Disable lighting (restore to default)
+    glDisable(GL_LIGHTING);
+
+    // Reset viewport to full window
+    glViewport(0, 0, windowWidth, windowHeight);
 }
 
 ImVec2 CubeRenderer::project(float x, float y, float z, ImVec2 center, float scale) {
@@ -498,6 +548,123 @@ ImU32 CubeRenderer::getFaceColor(Color color) {
     );
 }
 
+// Helper function to rotate a 3D point
+std::array<float, 3> rotatePoint(const std::array<float, 3>& pos, float ax, float ay, float az) {
+    float x = pos[0], y = pos[1], z = pos[2];
+
+    // Rotate around Z axis
+    float x1 = x * cosf(az) - y * sinf(az);
+    float y1 = x * sinf(az) + y * cosf(az);
+
+    // Rotate around X axis
+    float y2 = y1 * cosf(ax) - z * sinf(ax);
+    float z1 = y1 * sinf(ax) + z * cosf(ax);
+
+    // Rotate around Y axis
+    float x2 = x1 * cosf(ay) + z1 * sinf(ay);
+    float z2 = -x * sinf(ay) + z1 * cosf(ay);
+
+    return {x2, y2, z2};
+}
+
+// Step 1: Draw a simple test cube with different colors for each face
+void CubeRenderer::drawTestCube(ImDrawList* drawList, ImVec2 center, float size) {
+    // Cube size in 3D space
+    float halfSize = 0.4f;  // Cube extends from -0.4 to +0.4
+
+    // Define all 6 faces with their 4 corners each
+    // Format: {{x1,y1,z1}, {x2,y2,z2}, {x3,y3,z3}, {x4,y4,z4}}, color
+    struct Face {
+        float vertices[4][3];
+        ImU32 color;
+    };
+
+    Face faces[6] = {
+        // +X face (right) - RED - x = +halfSize
+        {{{halfSize, halfSize, halfSize}, {halfSize, halfSize, -halfSize},
+          {halfSize, -halfSize, -halfSize}, {halfSize, -halfSize, halfSize}},
+         IM_COL32(255, 0, 0, 255)},
+
+        // -X face (left) - GREEN - x = -halfSize
+        {{{-halfSize, halfSize, -halfSize}, {-halfSize, halfSize, halfSize},
+          {-halfSize, -halfSize, halfSize}, {-halfSize, -halfSize, -halfSize}},
+         IM_COL32(0, 255, 0, 255)},
+
+        // +Y face (top) - BLUE - y = +halfSize
+        {{{-halfSize, halfSize, halfSize}, {halfSize, halfSize, halfSize},
+          {halfSize, halfSize, -halfSize}, {-halfSize, halfSize, -halfSize}},
+         IM_COL32(0, 100, 255, 255)},
+
+        // -Y face (bottom) - YELLOW - y = -halfSize
+        {{{-halfSize, -halfSize, -halfSize}, {halfSize, -halfSize, -halfSize},
+          {halfSize, -halfSize, halfSize}, {-halfSize, -halfSize, halfSize}},
+         IM_COL32(255, 255, 0, 255)},
+
+        // +Z face (front) - MAGENTA - z = +halfSize
+        {{{-halfSize, halfSize, halfSize}, {-halfSize, -halfSize, halfSize},
+          {halfSize, -halfSize, halfSize}, {halfSize, halfSize, halfSize}},
+         IM_COL32(255, 0, 255, 255)},
+
+        // -Z face (back) - CYAN - z = -halfSize
+        {{{halfSize, halfSize, -halfSize}, {halfSize, -halfSize, -halfSize},
+          {-halfSize, -halfSize, -halfSize}, {-halfSize, halfSize, -halfSize}},
+         IM_COL32(0, 255, 255, 255)}
+    };
+
+    // Calculate rotation angles for depth sorting
+    float angleX = rotationX * M_PI / 180.0f;
+    float angleY = rotationY * M_PI / 180.0f;
+
+    // Helper to rotate a point
+    auto rotatePoint = [](float x, float y, float z, float ax, float ay) -> std::array<float, 3> {
+        float y1 = y * cosf(ax) - z * sinf(ax);
+        float z1 = y * sinf(ax) + z * cosf(ax);
+        float x2 = x * cosf(ay) + z1 * sinf(ay);
+        float z2 = -x * sinf(ay) + z1 * cosf(ay);
+        return {x2, y1, z2};
+    };
+
+    // Helper to get depth of a face center
+    auto getFaceDepth = [&](const Face& face) -> float {
+        float cx = 0, cy = 0, cz = 0;
+        for (int v = 0; v < 4; ++v) {
+            cx += face.vertices[v][0];
+            cy += face.vertices[v][1];
+            cz += face.vertices[v][2];
+        }
+        auto rotated = rotatePoint(cx/4, cy/4, cz/4, angleX, angleY);
+        return rotated[2];  // Depth is z after rotation
+    };
+
+    // Sort faces by depth (far to near)
+    int indices[6] = {0, 1, 2, 3, 4, 5};
+    for (int i = 0; i < 6; ++i) {
+        for (int j = i + 1; j < 6; ++j) {
+            float depthI = getFaceDepth(faces[indices[i]]);
+            float depthJ = getFaceDepth(faces[indices[j]]);
+            if (depthI < depthJ) {  // Smaller z = farther
+                std::swap(indices[i], indices[j]);
+            }
+        }
+    }
+
+    // Draw faces in sorted order
+    for (int i = 0; i < 6; ++i) {
+        int idx = indices[i];
+        const Face& face = faces[idx];
+
+        // Project all 4 vertices
+        ImVec2 projected[4];
+        for (int v = 0; v < 4; ++v) {
+            projected[v] = project(face.vertices[v][0], face.vertices[v][1],
+                                   face.vertices[v][2], center, size);
+        }
+
+        // Draw the face
+        drawList->AddQuadFilled(projected[0], projected[1], projected[2], projected[3], face.color);
+    }
+}
+
 // Animation implementation
 void CubeRenderer::updateAnimation(float deltaTime) {
     if (!isAnimating_) return;
@@ -714,4 +881,67 @@ std::array<float, 3> CubeRenderer::rotateSticker(const std::array<float, 3>& pos
         default:
             return pos;
     }
+}
+// Helper function to draw a single cube with 6 different face colors
+void CubeRenderer::drawCube() {
+    // Draw each face with a different color
+    // Front face (z=1) - Green
+    glBegin(GL_QUADS);
+    glNormal3f(0.0f, 0.0f, 1.0f);
+    glColor3f(0.0f, 0.8f, 0.0f);
+    glVertex3f(-0.5f, 0.5f, 0.5f);
+    glVertex3f(0.5f, 0.5f, 0.5f);
+    glVertex3f(0.5f, -0.5f, 0.5f);
+    glVertex3f(-0.5f, -0.5f, 0.5f);
+    glEnd();
+
+    // Back face (z=-1) - Blue
+    glBegin(GL_QUADS);
+    glNormal3f(0.0f, 0.0f, -1.0f);
+    glColor3f(0.0f, 0.0f, 0.8f);
+    glVertex3f(0.5f, 0.5f, -0.5f);
+    glVertex3f(-0.5f, 0.5f, -0.5f);
+    glVertex3f(-0.5f, -0.5f, -0.5f);
+    glVertex3f(0.5f, -0.5f, -0.5f);
+    glEnd();
+
+    // Top face (y=1) - White
+    glBegin(GL_QUADS);
+    glNormal3f(0.0f, 1.0f, 0.0f);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glVertex3f(-0.5f, 0.5f, -0.5f);
+    glVertex3f(0.5f, 0.5f, -0.5f);
+    glVertex3f(0.5f, 0.5f, 0.5f);
+    glVertex3f(-0.5f, 0.5f, 0.5f);
+    glEnd();
+
+    // Bottom face (y=-1) - Yellow
+    glBegin(GL_QUADS);
+    glNormal3f(0.0f, -1.0f, 0.0f);
+    glColor3f(1.0f, 1.0f, 0.0f);
+    glVertex3f(-0.5f, -0.5f, 0.5f);
+    glVertex3f(0.5f, -0.5f, 0.5f);
+    glVertex3f(0.5f, -0.5f, -0.5f);
+    glVertex3f(-0.5f, -0.5f, -0.5f);
+    glEnd();
+
+    // Right face (x=1) - Red
+    glBegin(GL_QUADS);
+    glNormal3f(1.0f, 0.0f, 0.0f);
+    glColor3f(0.8f, 0.0f, 0.0f);
+    glVertex3f(0.5f, 0.5f, 0.5f);
+    glVertex3f(0.5f, 0.5f, -0.5f);
+    glVertex3f(0.5f, -0.5f, -0.5f);
+    glVertex3f(0.5f, -0.5f, 0.5f);
+    glEnd();
+
+    // Left face (x=-1) - Orange
+    glBegin(GL_QUADS);
+    glNormal3f(-1.0f, 0.0f, 0.0f);
+    glColor3f(1.0f, 0.5f, 0.0f);
+    glVertex3f(-0.5f, 0.5f, -0.5f);
+    glVertex3f(-0.5f, 0.5f, 0.5f);
+    glVertex3f(-0.5f, -0.5f, 0.5f);
+    glVertex3f(-0.5f, -0.5f, -0.5f);
+    glEnd();
 }

@@ -53,10 +53,13 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    // Configure GLFW
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+    // Configure GLFW (OpenGL 2.1 compatible for simpler rendering)
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
+
+    // Enable multisampling for anti-aliasing (4 samples)
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
     // Create window - wider to accommodate T-shaped layout
     GLFWwindow* window = glfwCreateWindow(1400, 800, "Rubik's Cube Simulator", nullptr, nullptr);
@@ -321,12 +324,19 @@ int main(int argc, char* argv[]) {
         // Rendering
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
+
+        // Clear the screen
         glViewport(0, 0, display_w, display_h);
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // Render ImGui first (2D interface)
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+        // Render 3D cube on top (in the 3D view window area)
+        // Find the 3D view window and render there
+        renderer.render3DOverlay(display_w, display_h);
 
         glfwSwapBuffers(window);
     }

@@ -4,6 +4,7 @@
 #include "cube.h"
 #include <imgui.h>
 #include <queue>
+#include "model.h"
 
 class CubeRenderer {
 public:
@@ -13,8 +14,11 @@ public:
     // Render 2D unfolded cube net view
     void draw2D(ImDrawList* drawList, ImVec2 offset, float scale);
 
-    // Render 3D isometric view
+    // Render 3D isometric view (called during ImGui window building)
     void draw3D(ImDrawList* drawList, ImVec2 offset, float scale);
+
+    // Render 3D overlay (called after ImGui rendering)
+    void render3DOverlay(int windowWidth, int windowHeight);
 
     void executeMove(Move move);
     void updateAnimation(float deltaTime);
@@ -25,8 +29,8 @@ public:
     bool isSolved() const;
     void dump() const;  // Dump cube state to console
 
-    float rotationX = -160.0f;
-    float rotationY = 15.0f;
+    float rotationX = 30.0f;
+    float rotationY = -30.0f;
     float rotationZ = 0.0f;
     float scale = 3.1f;
     float scale2D = 0.8f;  // 2D view zoom level
@@ -34,6 +38,13 @@ public:
     bool enableAnimation = true;  // Enable/disable animation
 
 private:
+    // OpenGL 3D rendering
+    Model* cubeModel;
+    bool initGL3D();
+
+    // Helper function to draw a single cube
+    void drawCube();
+
     RubiksCube cube_;
 
     // Animation state
@@ -62,6 +73,12 @@ private:
 
     // Get face color for 3D drawing
     ImU32 getFaceColor(Color color);
+
+    // Test: draw a single simple cube
+    void drawTestCube(ImDrawList* drawList, ImVec2 center, float size);
+
+    // Step 2: draw a cube with one colored face
+    void drawTestCubeWithColor(ImDrawList* drawList, ImVec2 center, float size, ImU32 faceColor);
 
     // Animation helpers
     void startNextAnimation();

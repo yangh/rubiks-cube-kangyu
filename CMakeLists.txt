@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Find required packages
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
+find_package(glm REQUIRED)
 
 # Add ImGUI subdirectory
 add_subdirectory(third_party)
@@ -16,6 +17,8 @@ add_executable(rubiks-cube
     src/main.cpp
     src/cube.cpp
     src/renderer.cpp
+    src/shader.cpp
+    src/model.cpp
 )
 
 # Link libraries for main executable
@@ -24,6 +27,7 @@ target_link_libraries(rubiks-cube
     OpenGL::GL
     glfw
     imgui::imgui
+    glm::glm
 )
 
 # Include directories
@@ -51,12 +55,3 @@ target_include_directories(test_cube
 
 # Add test
 add_test(NAME cube_logic COMMAND test_cube)
-
-# Include directories
-target_include_directories(rubiks-cube
-    PRIVATE
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
-)
-
-# Add ImGLAD loader from ImGUI (the OpenGL loader included in ImGUI backends)
-target_link_libraries(rubiks-cube PRIVATE ${CMAKE_DL_LIBS})
