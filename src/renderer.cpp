@@ -283,6 +283,15 @@ void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
     // Draw 27 cubes in a 3x3x3 cube with gaps
     float gap = 0.03f;  // Gap between cubes
     int cubeIndex = 0;
+
+    // Calculate animation angle for rotating cubes
+    float animAngle = 0.0f;
+    if (isAnimating_) {
+        // Quadratic ease-in-out: 3t^2 - 2t^3
+        float easeProgress = animationProgress_ * animationProgress_ * (3.0f - 2.0f * animationProgress_);
+        animAngle = 90.0f * easeProgress;
+    }
+
     for (int layer = 0; layer < 3; layer++) {
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 3; col++) {
@@ -291,8 +300,14 @@ void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
                 float zOffset = (layer - 1.0f) * (1.0f + gap);
 
                 glPushMatrix();
+
+                // Apply animation rotation if this cube is in the rotating slice
+                if (isAnimating_ && isCubeAnimating(cubeIndex)) {
+                    applyRotationTransform(animAngle, currentMove_);
+                }
+
                 glTranslatef(xOffset, yOffset, zOffset);
-                drawCube(cubeIndex);
+                drawCube(cubeIndex, isAnimating_ && isCubeAnimating(cubeIndex));
                 glPopMatrix();
 
                 cubeIndex++;
@@ -933,7 +948,10 @@ std::array<float, 3> CubeRenderer::rotateSticker(const std::array<float, 3>& pos
     }
 }
 // Helper function to draw a single cube with 6 different face colors
-void CubeRenderer::drawCube(int cubeIndex) {
+void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
+    // Select which cube state to use
+    const RubiksCube& cube = usePreAnimationState ? preAnimationCube_ : cube_;
+
     // Calculate position in 3x3x3 grid
     int layer = cubeIndex / 9;   // 0=front/middle, 1=middle, 2=back
     int posInLayer = cubeIndex % 9;
@@ -952,7 +970,7 @@ void CubeRenderer::drawCube(int cubeIndex) {
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 0.0f, 1.0f);
     if (layer == 2) {
-        const auto& face = cube_.getFront();
+        const auto& face = cube.getFront();
         // Vertex order: TL(0,0), TR(0,2), BR(2,2), BL(2,0)
         // Row is inverted to match U/D move behavior
         int idx = (2 - row) * 3 + col;
@@ -1109,5 +1127,164 @@ void CubeRenderer::lerpRotation(float& current, float target, float deltaTime) {
     // Snap to target if very close
     if (fabsf(diff) < 0.1f) {
         current = target;
+    }
+}
+
+// Check if a small cube is in the rotating slice for current move
+bool CubeRenderer::isCubeAnimating(int cubeIndex) const {
+    if (!isAnimating_) return false;
+
+    // Calculate position in 3x3x3 grid
+    int layer = cubeIndex / 9;   // 0=front, 1=middle, 2=back
+    int posInLayer = cubeIndex % 9;
+    int row = posInLayer / 3;   // 0=bottom, 1=middle, 2=top
+    int col = posInLayer % 3;   // 0=left, 1=middle, 2=right
+
+    switch (currentMove_) {
+        // U move: layer=0 (Up face) + row=2 (top row of side faces)
+        case Move::U:
+        case Move::UP:
+            return layer == 0 || row == 2;
+
+        // D move: layer=1 (Down face) + row=0 (bottom row of side faces)
+        case Move::D:
+        case Move::DP:
+            return layer == 1 || row == 0;
+
+        // L move: col=0 (Left face)
+        case Move::L:
+        case Move::LP:
+            return col == 0;
+
+        // R move: col=2 (Right face)
+        case Move::R:
+        case Move::RP:
+            return col == 2;
+
+        // F move: layer=2 (Front face) + adjacent stickers
+        case Move::F:
+        case Move::FP:
+            if (layer == 2) return true;  // Front face
+            // Top of Up face (layer=0, row=2)
+            if (layer == 0 && row == 2) return true;
+            // Right of Left face (col=0)
+            if (col == 0) return true;
+            // Left of Right face (col=2)
+            if (col == 2) return true;
+            // Top of Down face (layer=1, row=0)
+            if (layer == 1 && row == 0) return true;
+            return false;
+
+        // B move: layer=0 (Back face) + adjacent stickers
+        case Move::B:
+        case Move::BP:
+            if (layer == 0) return true;  // Back face
+            // Top of Up face (layer=0, row=2)
+            if (layer == 0 && row == 2) return true;
+            // Left of Left face (col=0)
+            if (col == 0) return true;
+            // Right of Right face (col=2)
+            if (col == 2) return true;
+            // Bottom of Down face (layer=1, row=0)
+            if (layer == 1 && row == 0) return true;
+            return false;
+
+        // M move: middle layer (layer=1)
+        case Move::M:
+        case Move::MP:
+            return layer == 1;
+
+        // E move: middle row (row=1)
+        case Move::E:
+        case Move::EP:
+            return row == 1;
+
+        // S move: middle column (col=1)
+        case Move::S:
+        case Move::SP:
+            return col == 1;
+
+        default:
+            return false;
+    }
+}
+
+// Apply rotation transformation to the current cube based on move type
+void CubeRenderer::applyRotationTransform(float angle, Move move) {
+    switch (move) {
+        // U moves rotate around Y axis
+        case Move::U:
+            glRotatef(angle, 0.0f, 1.0f, 0.0f);
+            break;
+        case Move::UP:
+            glRotatef(angle, 0.0f, -1.0f, 0.0f);
+            break;
+
+        // D moves rotate around Y axis (opposite of U)
+        case Move::D:
+            glRotatef(angle, 0.0f, -1.0f, 0.0f);
+            break;
+        case Move::DP:
+            glRotatef(angle, 0.0f, 1.0f, 0.0f);
+            break;
+
+        // L moves rotate around X axis
+        case Move::L:
+            glRotatef(angle, 1.0f, 0.0f, 0.0f);
+            break;
+        case Move::LP:
+            glRotatef(angle, -1.0f, 0.0f, 0.0f);
+            break;
+
+        // R moves rotate around X axis (opposite of L)
+        case Move::R:
+            glRotatef(angle, -1.0f, 0.0f, 0.0f);
+            break;
+        case Move::RP:
+            glRotatef(angle, 1.0f, 0.0f, 0.0f);
+            break;
+
+        // F moves rotate around Z axis
+        case Move::F:
+            glRotatef(angle, 0.0f, 0.0f, 1.0f);
+            break;
+        case Move::FP:
+            glRotatef(angle, 0.0f, 0.0f, -1.0f);
+            break;
+
+        // B moves rotate around Z axis (opposite of F)
+        case Move::B:
+            glRotatef(angle, 0.0f, 0.0f, -1.0f);
+            break;
+        case Move::BP:
+            glRotatef(angle, 0.0f, 0.0f, 1.0f);
+            break;
+
+        // M moves rotate around X axis (same as L)
+        case Move::M:
+            glRotatef(angle, 1.0f, 0.0f, 0.0f);
+            break;
+        case Move::MP:
+            glRotatef(angle, -1.0f, 0.0f, 0.0f);
+            break;
+
+        // E moves rotate around Y axis (same as D)
+        case Move::E:
+            glRotatef(angle, 0.0f, -1.0f, 0.0f);
+            break;
+        case Move::EP:
+            glRotatef(angle, 0.0f, 1.0f, 0.0f);
+            break;
+
+        // S moves rotate around Z axis (same as F)
+        case Move::S:
+            glRotatef(angle, 0.0f, 0.0f, 1.0f);
+            break;
+        case Move::SP:
+            glRotatef(angle, 0.0f, 0.0f, -1.0f);
+            break;
+
+        default:
+            break;
     }
 }

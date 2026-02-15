@@ -55,7 +55,7 @@ private:
     bool initGL3D();
 
     // Helper function to draw a single cube
-    void drawCube(int cubeIndex);
+    void drawCube(int cubeIndex, bool usePreAnimationState = false);
 
     RubiksCube cube_;
 
@@ -99,6 +99,10 @@ private:
 
     // View rotation animation helper - smooth interpolation considering 360 degree wraparound
     void lerpRotation(float& current, float target, float deltaTime);
+
+    // 3D cube rotation animation helpers
+    bool isCubeAnimating(int cubeIndex) const;  // Check if a small cube is in the rotating slice
+    void applyRotationTransform(float angle, Move move);  // Apply rotation transformation to current cube
 };
 
 #endif // RENDERER_H
