@@ -77,6 +77,9 @@ void CubeRenderer::resetView() {
     rotationX = 30.0f;
     rotationY = -30.0f;
     rotationZ = 0.0f;
+    targetRotationX = 30.0f;
+    targetRotationY = -30.0f;
+    targetRotationZ = 0.0f;
     scale = 3.1f;
     scale2D = 0.8f;
     animationSpeed = 1.0f;
@@ -708,23 +711,29 @@ void CubeRenderer::drawTestCube(ImDrawList* drawList, ImVec2 center, float size)
 
 // Animation implementation
 void CubeRenderer::updateAnimation(float deltaTime) {
-    if (!isAnimating_) return;
+    // Handle move animation (face rotation)
+    if (isAnimating_) {
+        const float ANIMATION_DURATION = 0.2f / animationSpeed;  // 200ms divided by speed
+        animationProgress_ += deltaTime / ANIMATION_DURATION;
 
-    const float ANIMATION_DURATION = 0.2f / animationSpeed;  // 200ms divided by speed
-    animationProgress_ += deltaTime / ANIMATION_DURATION;
+        if (animationProgress_ >= 1.0f) {
+            animationProgress_ = 1.0f;
+            cube_.executeMove(currentMove_);  // Apply actual move
+            isAnimating_ = false;
 
-    if (animationProgress_ >= 1.0f) {
-        animationProgress_ = 1.0f;
-        cube_.executeMove(currentMove_);  // Apply actual move
-        isAnimating_ = false;
+            if (g_enableDump) {
+                std::cout << "\n=== Completed " << moveToString(currentMove_) << " ===" << std::endl;
+                cube_.dump();
+            }
 
-        if (g_enableDump) {
-            std::cout << "\n=== Completed " << moveToString(currentMove_) << " ===" << std::endl;
-            cube_.dump();
+            startNextAnimation();  // Start next queued move
         }
-
-        startNextAnimation();  // Start next queued move
     }
+
+    // Handle view rotation smoothing (always active)
+    lerpRotation(rotationX, targetRotationX, deltaTime);
+    lerpRotation(rotationY, targetRotationY, deltaTime);
+    lerpRotation(rotationZ, targetRotationZ, deltaTime);
 }
 
 void CubeRenderer::startNextAnimation() {
@@ -1082,5 +1091,23 @@ void CubeRenderer::drawCube(int cubeIndex) {
         glVertex3f(-0.5f, -0.5f, 0.5f);
         glVertex3f(-0.5f, -0.5f, -0.5f);
         glEnd();
+    }
+}
+
+// Smooth interpolation for view rotation considering 360 degree wraparound
+void CubeRenderer::lerpRotation(float& current, float target, float deltaTime) {
+    float diff = target - current;
+
+    // Handle angle wraparound (e.g., going from 350° to 10° should be +20°, not -340°)
+    while (diff > 180.0f) diff -= 360.0f;
+    while (diff < -180.0f) diff += 360.0f;
+
+    // Linear interpolation with speed factor
+    float speed = viewRotationSpeed * deltaTime;
+    current += diff * speed;
+
+    // Snap to target if very close
+    if (fabsf(diff) < 0.1f) {
+        current = target;
     }
 }

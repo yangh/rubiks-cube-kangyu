@@ -38,6 +38,12 @@ public:
     float rotationX = 30.0f;
     float rotationY = -30.0f;
     float rotationZ = 0.0f;
+
+    // Target rotation angles for smooth view rotation animation
+    float targetRotationX = 30.0f;
+    float targetRotationY = -30.0f;
+    float targetRotationZ = 0.0f;
+    float viewRotationSpeed = 8.0f;  // Speed factor for view rotation interpolation
     float scale = 3.1f;
     float scale2D = 0.8f;  // 2D view zoom level
     float animationSpeed = 1.0f;  // Animation speed multiplier (1.0 = normal)
@@ -90,6 +96,9 @@ private:
     void startNextAnimation();
     bool isStickerAnimating(Move move, int faceIndex, int stickerIndex) const;
     std::array<float, 3> rotateSticker(const std::array<float, 3>& pos, Move move, float angle) const;
+
+    // View rotation animation helper - smooth interpolation considering 360 degree wraparound
+    void lerpRotation(float& current, float target, float deltaTime);
 };
 
 #endif // RENDERER_H
