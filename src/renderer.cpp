@@ -933,11 +933,11 @@ std::array<float, 3> CubeRenderer::rotateSticker(const std::array<float, 3>& pos
         case Move::MP:
             return {x, y * cosA + z * sinA, -y * sinA + z * cosA};
 
-        // E moves rotate around Y axis (same as D)
+        // E moves rotate around Y axis (same as U, looking down)
         case Move::E:
-            return {x * cosA + z * sinA, y, -x * sinA + z * cosA};
-        case Move::EP:
             return {x * cosA - z * sinA, y, x * sinA + z * cosA};
+        case Move::EP:
+            return {x * cosA + z * sinA, y, -x * sinA + z * cosA};
 
         // S moves rotate around Z axis (same as F)
         case Move::S:
