@@ -1135,21 +1135,33 @@ bool CubeRenderer::isCubeAnimating(int cubeIndex) const {
     if (!isAnimating_) return false;
 
     // Calculate position in 3x3x3 grid
-    int layer = cubeIndex / 9;   // 0=front, 1=middle, 2=back
+    // Note: In 3D model: layer 0=Back, 1=Middle, 2=Front
+    int layer = cubeIndex / 9;
     int posInLayer = cubeIndex % 9;
     int row = posInLayer / 3;   // 0=bottom, 1=middle, 2=top
     int col = posInLayer % 3;   // 0=left, 1=middle, 2=right
 
+    // Map 3D layer to face index
+    // layer 0 (Back) -> face 1
+    // layer 1 (Middle) -> no face (internal)
+    // layer 2 (Front) -> face 0
+    int backLayer = 0;  // layer 0 in 3D is Back face
+    int frontLayer = 2;  // layer 2 in 3D is Front face
+    int upFace = 4;       // row 2 in 2D is Up face
+    int downFace = 5;     // row 0 in 2D is Down face
+    int leftFace = 2;     // col 0 is Left face
+    int rightFace = 3;    // col 2 is Right face
+
     switch (currentMove_) {
-        // U move: layer=0 (Up face) + row=2 (top row of side faces)
+        // U move: Up face (layer 0 in 3D = Back) + top row of side faces
         case Move::U:
         case Move::UP:
-            return layer == 0 || row == 2;
+            return (layer == backLayer) || row == 2;
 
-        // D move: layer=1 (Down face) + row=0 (bottom row of side faces)
+        // D move: Down face (row 0 in 2D) + bottom row of side faces
         case Move::D:
         case Move::DP:
-            return layer == 1 || row == 0;
+            return (row == 0 && layer != backLayer) || (row == 0 && layer != frontLayer);
 
         // L move: col=0 (Left face)
         case Move::L:
