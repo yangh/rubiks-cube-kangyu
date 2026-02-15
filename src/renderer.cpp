@@ -249,12 +249,12 @@ void CubeRenderer::draw3DFace(ImDrawList* drawList, const std::array<Color, 9>& 
         float x = 0, y = 0, z = 0;
 
         // Map face vertices to 3D positions
-        if (face == cube_.getFront()) { z = 1; x = faceVerts[i].x; y = faceVerts[i].y; }
-        else if (face == cube_.getBack()) { z = -1; x = faceVerts[i].x; y = faceVerts[i].y; }
-        else if (face == cube_.getLeft()) { x = -1; y = faceVerts[i].x; z = faceVerts[i].y; }
-        else if (face == cube_.getRight()) { x = 1; y = faceVerts[i].x; z = faceVerts[i].y; }
-        else if (face == cube_.getUp()) { y = 1; x = faceVerts[i].x; z = faceVerts[i].y; }
-        else if (face == cube_.getDown()) { y = -1; x = faceVerts[i].x; z = faceVerts[i].y; }
+        if (face == cube_.getFront()) { z = 1.0f; x = faceVerts[i].x; y = faceVerts[i].y; }
+        else if (face == cube_.getBack()) { z = -1.0f; x = faceVerts[i].x; y = faceVerts[i].y; }
+        else if (face == cube_.getLeft()) { x = -1.0f; y = faceVerts[i].x; z = faceVerts[i].y; }
+        else if (face == cube_.getRight()) { x = 1.0f; y = faceVerts[i].x; z = faceVerts[i].y; }
+        else if (face == cube_.getUp()) { y = 1.0f; x = faceVerts[i].x; z = faceVerts[i].y; }
+        else if (face == cube_.getDown()) { y = -1.0f; x = faceVerts[i].x; z = faceVerts[i].y; }
 
         projected[i] = project(x * 1.1f, y * 1.1f, z * 1.1f, center, size);
     }
@@ -275,39 +275,67 @@ void CubeRenderer::draw3DFace(ImDrawList* drawList, const std::array<Color, 9>& 
             ImU32 stickerColor = getFaceColor(face[index]);
 
             // Calculate sticker center position in 3D space
+            // u = x offset (left to right), v = y offset (top to bottom) in face-local space
             float x = 0, y = 0, z = 0;
 
-            if (face == cube_.getFront()) { z = 1; x = u; y = -v; }
-            else if (face == cube_.getBack()) { z = -1; x = -u; y = -v; }
-            else if (face == cube_.getLeft()) { x = -1; y = u; z = -v; }
-            else if (face == cube_.getRight()) { x = 1; y = -u; z = -v; }
-            else if (face == cube_.getUp()) { y = 1; x = u; z = -v; }
-            else if (face == cube_.getDown()) { y = -1; x = u; z = v; }
+            if (face == cube_.getFront()) {
+                // Front face (z=+1): col -> x, row -> -y
+                x = u; y = -v; z = 1.0f;
+            } else if (face == cube_.getBack()) {
+                // Back face (z=-1): col -> -x, row -> -y (mirrored when viewing from front)
+                x = -u; y = -v; z = -1.0f;
+            } else if (face == cube_.getLeft()) {
+                // Left face (x=-1): col -> z, row -> -y
+                // col 0 (left in 2D) should be at negative z (back), col 2 at positive z (front)
+                x = -1.0f; y = -v; z = u;
+            } else if (face == cube_.getRight()) {
+                // Right face (x=+1): col -> -z, row -> -y
+                // col 0 (left in 2D) should be at positive z (front), col 2 at negative z (back)
+                x = 1.0f; y = -v; z = -u;
+            } else if (face == cube_.getUp()) {
+                // Up face (y=+1): col -> x, row -> z
+                // row 0 (top in 2D) should be at positive z (back), row 2 at negative z (front)
+                x = u; y = 1.0f; z = v;
+            } else if (face == cube_.getDown()) {
+                // Down face (y=-1): col -> x, row -> -z
+                // row 0 (top in 2D) should be at negative z (front), row 2 at positive z (back)
+                x = u; y = -1.0f; z = -v;
+            }
 
             // Calculate sticker corners relative to sticker center
             float stickerSize = 0.6f;
             float halfSize = stickerSize / 2.0f;
 
-            // Sticker corners in face-local coordinates (x, y offset from center)
+            // Sticker corners in face-local coordinates (dx, dy offset from center)
+            // dx = horizontal offset (left/right), dy = vertical offset (up/down)
             float cornersLocal[4][2] = {
-                {-halfSize, halfSize},  // top-left
-                {halfSize, halfSize},   // top-right
-                {halfSize, -halfSize},  // bottom-right
-                {-halfSize, -halfSize}  // bottom-left
+                {-halfSize, halfSize},  // top-left: dx negative, dy positive
+                {halfSize, halfSize},   // top-right: dx positive, dy positive
+                {halfSize, -halfSize},  // bottom-right: dx positive, dy negative
+                {-halfSize, -halfSize}  // bottom-left: dx negative, dy negative
             };
 
             // Project all 4 corners to screen space
             ImVec2 corners[4];
             for (int c = 0; c < 4; ++c) {
+                float dx = cornersLocal[c][0];  // horizontal offset
+                float dy = cornersLocal[c][1];  // vertical offset
                 float cx = 0, cy = 0, cz = 0;
 
-                // Map local coordinates to 3D space based on face orientation
-                if (face == cube_.getFront()) { cz = 1; cx = x + cornersLocal[c][0]; cy = y + cornersLocal[c][1]; }
-                else if (face == cube_.getBack()) { cz = -1; cx = x - cornersLocal[c][0]; cy = y + cornersLocal[c][1]; }
-                else if (face == cube_.getLeft()) { cx = -1; cy = y + cornersLocal[c][0]; cz = z + cornersLocal[c][1]; }
-                else if (face == cube_.getRight()) { cx = 1; cy = y - cornersLocal[c][0]; cz = z + cornersLocal[c][1]; }
-                else if (face == cube_.getUp()) { cy = 1; cx = x + cornersLocal[c][0]; cz = z + cornersLocal[c][1]; }
-                else if (face == cube_.getDown()) { cy = -1; cx = x + cornersLocal[c][0]; cz = z - cornersLocal[c][1]; }
+                // Map local offsets to 3D space based on face orientation
+                if (face == cube_.getFront()) {
+                    cx = x + dx; cy = y + dy; cz = 1.0f;
+                } else if (face == cube_.getBack()) {
+                    cx = x - dx; cy = y + dy; cz = -1.0f;
+                } else if (face == cube_.getLeft()) {
+                    cx = -1.0f; cy = y + dy; cz = z + dx;
+                } else if (face == cube_.getRight()) {
+                    cx = 1.0f; cy = y + dy; cz = z - dx;
+                } else if (face == cube_.getUp()) {
+                    cx = x + dx; cy = 1.0f; cz = z + dy;
+                } else if (face == cube_.getDown()) {
+                    cx = x + dx; cy = -1.0f; cz = z - dy;
+                }
 
                 corners[c] = project(cx * 1.1f, cy * 1.1f, cz * 1.1f, center, size);
             }
