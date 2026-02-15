@@ -301,13 +301,21 @@ void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
 
                 glPushMatrix();
 
-                // Apply animation rotation if this cube is in the rotating slice
+                // Apply animation rotation only to cubes that are animating
                 if (isAnimating_ && isCubeAnimating(cubeIndex)) {
+                    // First translate to cube position, then apply rotation
+                    // This ensures rotation happens around the correct location
+                    glPushMatrix();
+                    glTranslatef(xOffset, yOffset, zOffset);
                     applyRotationTransform(animAngle, currentMove_);
+                    drawCube(cubeIndex, isAnimating_ && isCubeAnimating(cubeIndex));
+                    glPopMatrix();
+                } else {
+                    // Non-animating cubes just translate and draw
+                    glTranslatef(xOffset, yOffset, zOffset);
+                    drawCube(cubeIndex, false);
                 }
 
-                glTranslatef(xOffset, yOffset, zOffset);
-                drawCube(cubeIndex, isAnimating_ && isCubeAnimating(cubeIndex));
                 glPopMatrix();
 
                 cubeIndex++;
@@ -1141,27 +1149,17 @@ bool CubeRenderer::isCubeAnimating(int cubeIndex) const {
     int row = posInLayer / 3;   // 0=bottom, 1=middle, 2=top
     int col = posInLayer % 3;   // 0=left, 1=middle, 2=right
 
-    // Map 3D layer to face index
-    // layer 0 (Back) -> face 1
-    // layer 1 (Middle) -> no face (internal)
-    // layer 2 (Front) -> face 0
-    int backLayer = 0;  // layer 0 in 3D is Back face
-    int frontLayer = 2;  // layer 2 in 3D is Front face
-    int upFace = 4;       // row 2 in 2D is Up face
-    int downFace = 5;     // row 0 in 2D is Down face
-    int leftFace = 2;     // col 0 is Left face
-    int rightFace = 3;    // col 2 is Right face
-
     switch (currentMove_) {
-        // U move: Up face (layer 0 in 3D = Back) + top row of side faces
+        // U move: Up face (row 2) + top row of side faces (row 2)
         case Move::U:
         case Move::UP:
-            return (layer == backLayer) || row == 2;
+            return (row == 2);
 
-        // D move: Down face (row 0 in 2D) + bottom row of side faces
+        // D move: Down face (row 0) + bottom row of side faces (row 0)
         case Move::D:
         case Move::DP:
-            return (row == 0 && layer != backLayer) || (row == 0 && layer != frontLayer);
+            return (row == 0);
+
 
         // L move: col=0 (Left face)
         case Move::L:
