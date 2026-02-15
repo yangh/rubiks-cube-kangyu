@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <iostream>
 #include <random>
+#include <sstream>
 #include <vector>
 
 std::array<float, 3> colorToRgb(Color color) {
@@ -50,6 +51,64 @@ std::string colorToString(Color color) {
         case Color::BLUE:   return "B";
         default:            return "?";
     }
+}
+
+bool parseMoveString(const std::string& moveStr, Move& outMove) {
+    // Trim whitespace
+    std::string trimmed = moveStr;
+    trimmed.erase(0, trimmed.find_first_not_of(" \t\n\r"));
+    trimmed.erase(trimmed.find_last_not_of(" \t\n\r") + 1);
+    if (trimmed.empty()) return false;
+
+    // Convert to uppercase
+    std::string upper = trimmed;
+    for (char& c : upper) c = toupper(c);
+
+    // Handle move with prime notation (R', U', etc.)
+    if (upper.length() == 2 && upper[1] == '\'') {
+        switch (upper[0]) {
+            case 'U': outMove = Move::UP; return true;
+            case 'D': outMove = Move::DP; return true;
+            case 'L': outMove = Move::LP; return true;
+            case 'R': outMove = Move::RP; return true;
+            case 'F': outMove = Move::FP; return true;
+            case 'B': outMove = Move::BP; return true;
+            case 'M': outMove = Move::MP; return true;
+            case 'E': outMove = Move::EP; return true;
+            case 'S': outMove = Move::SP; return true;
+        }
+    }
+    // Handle single letter moves
+    else if (upper.length() == 1) {
+        switch (upper[0]) {
+            case 'U': outMove = Move::U; return true;
+            case 'D': outMove = Move::D; return true;
+            case 'L': outMove = Move::L; return true;
+            case 'R': outMove = Move::R; return true;
+            case 'F': outMove = Move::F; return true;
+            case 'B': outMove = Move::B; return true;
+            case 'M': outMove = Move::M; return true;
+            case 'E': outMove = Move::E; return true;
+            case 'S': outMove = Move::S; return true;
+        }
+    }
+
+    return false;
+}
+
+std::vector<Move> parseMoveSequence(const std::string& sequence) {
+    std::vector<Move> moves;
+    std::istringstream iss(sequence);
+    std::string token;
+
+    while (iss >> token) {
+        Move move;
+        if (parseMoveString(token, move)) {
+            moves.push_back(move);
+        }
+    }
+
+    return moves;
 }
 
 std::array<Color, 9> RubiksCube::fillColor(Color color) {

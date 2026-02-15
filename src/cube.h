@@ -43,6 +43,14 @@ std::array<float, 3> colorToRgb(Color color);
 // Convert move to string
 std::string moveToString(Move move);
 
+// Parse a move string (e.g., "U", "R'", "F2") to Move enum
+// Returns true if parsing succeeded
+bool parseMoveString(const std::string& moveStr, Move& outMove);
+
+// Parse a sequence of move strings to a vector of moves
+// Moves can be separated by spaces, commas, or newlines
+std::vector<Move> parseMoveSequence(const std::string& sequence);
+
 // Convert color to string abbreviation
 std::string colorToString(Color color);
 

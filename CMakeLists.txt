@@ -19,6 +19,7 @@ add_executable(rubiks-cube
     src/renderer.cpp
     src/shader.cpp
     src/model.cpp
+    src/formula.cpp
 )
 
 # Link libraries for main executable

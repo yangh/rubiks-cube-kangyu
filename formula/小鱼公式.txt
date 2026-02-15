@@ -1,0 +1,10 @@
+# 常用公式
+
+小鱼公式: R U R' U R U U R'
+小鱼公式逆向: R U U R' U' R U' R'
+
+Sune公式: R U R' U R U U R'
+反Sune公式: R' U' R U' R' U U R'
+
+六步法: R U' L' U R' U' L
+棱块翻转: M U M' U M U2 M'

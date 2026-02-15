@@ -10,12 +10,16 @@
 
 #include "cube.h"
 #include "renderer.h"
+#include "formula.h"
 
 // Global flag to enable/disable cube dump
 bool g_enableDump = false;
 
 // Global variable to store the last scramble sequence
 std::string g_lastScramble = "No scramble generated";
+
+// Global formula manager
+FormulaManager g_formulaManager;
 
 void showHelp(const char* programName) {
     std::cout << "Rubik's Cube Simulator\n\n";
@@ -94,11 +98,37 @@ int main(int argc, char* argv[]) {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
-    // Scale up default system font
-    io.FontGlobalScale = 1.3f;
+    // Load Chinese font (Noto Sans CJK)
+    // Try multiple font paths in case one is not available
+    const char* fontPaths[] = {
+        "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
+        "/usr/share/fonts/truetype/arphic/uming.ttc",
+        "/usr/share/fonts/truetype/arphic/ukai.ttc",
+        nullptr
+    };
+
+    ImFont* chineseFont = nullptr;
+    for (int i = 0; fontPaths[i] != nullptr; i++) {
+        chineseFont = io.Fonts->AddFontFromFileTTF(fontPaths[i], 16.0f, nullptr, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+        if (chineseFont != nullptr) {
+            break;
+        }
+    }
+
+    // Fallback to default font if Chinese font loading fails
+    if (chineseFont == nullptr) {
+        std::cerr << "Warning: Failed to load Chinese font, falling back to default font." << std::endl;
+        io.FontGlobalScale = 1.3f;
+    } else {
+        // Set Chinese font as default
+        io.FontDefault = chineseFont;
+    }
 
     // Initialize cube renderer
     CubeRenderer renderer;
+
+    // Load formulas from directory
+    g_formulaManager.loadFormulas();
 
     // Dump initial cube state if enabled
     if (g_enableDump) {
@@ -470,6 +500,182 @@ int main(int argc, char* argv[]) {
                                       renderer.animationProgress() * 100.0f);
                 } else {
                     ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "  Idle");
+                }
+
+                ImGui::EndTabItem();
+            }
+
+            // Formula tab
+            if (ImGui::BeginTabItem("Formulas")) {
+                ImGui::Separator();
+
+                // Two-column layout for file list and formula items list
+                float availableWidth = ImGui::GetContentRegionAvail().x;
+                float leftColumnWidth = availableWidth * 0.4f;  // 40% for file list
+                float rightColumnWidth = availableWidth * 0.6f; // 60% for formula items
+
+                // Left column: Formula file list
+                ImGui::BeginChild("FormulaFileList", ImVec2(leftColumnWidth, 150), true);
+                {
+                    std::vector<std::string> fileNames = g_formulaManager.getFileNames();
+
+                    if (fileNames.empty()) {
+                        ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
+                            "No formulas found in 'formula' directory");
+                    } else {
+                        for (const auto& filename : fileNames) {
+                            const bool isSelected = (g_formulaManager.getSelectedFileName() == filename);
+
+                            if (ImGui::Selectable(filename.c_str(), isSelected)) {
+                                g_formulaManager.setSelectedFile(filename);
+                            }
+                        }
+                    }
+                }
+                ImGui::EndChild();
+
+                ImGui::SameLine();
+
+                // Right column: Formula items in selected file
+                ImGui::BeginChild("FormulaItemList", ImVec2(rightColumnWidth, 150), true);
+                {
+                    const std::vector<FormulaItem>* items = g_formulaManager.getSelectedFileItems();
+
+                    if (items != nullptr && !items->empty()) {
+                        for (size_t i = 0; i < items->size(); ++i) {
+                            const bool isSelected = (g_formulaManager.getSelectedItemIndex() == static_cast<int>(i));
+
+                            if (ImGui::Selectable(items->at(i).name.c_str(), isSelected)) {
+                                g_formulaManager.setSelectedItem(i);
+                            }
+                        }
+                    } else {
+                        ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
+                            "No formula items");
+                    }
+                }
+                ImGui::EndChild();
+
+                // Display selected formula's moves
+                const FormulaItem* selectedItem = g_formulaManager.getSelectedItem();
+                if (selectedItem != nullptr && !selectedItem->moves.empty()) {
+                    ImGui::Spacing();
+                    ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "Selected: %s",
+                        selectedItem->name.c_str());
+                    ImGui::Separator();
+
+                    // Display moves with formatting
+                    const int movesPerLine = 6;
+                    int movesOnCurrentLine = 0;
+
+                    for (size_t i = 0; i < selectedItem->moves.size(); ++i) {
+                        if (movesOnCurrentLine > 0 && movesOnCurrentLine % movesPerLine == 0) {
+                            ImGui::NewLine();
+                            movesOnCurrentLine = 0;
+                        }
+
+                        // Color code moves by type
+                        ImVec4 moveColor;
+                        const Move move = selectedItem->moves[i];
+                        if (move == Move::U || move == Move::UP ||
+                            move == Move::D || move == Move::DP) {
+                            moveColor = ImVec4(1.0f, 0.8f, 0.0f, 1.0f); // Orange
+                        } else if (move == Move::L || move == Move::LP ||
+                                   move == Move::R || move == Move::RP) {
+                            moveColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // Green
+                        } else if (move == Move::F || move == Move::FP ||
+                                   move == Move::B || move == Move::BP) {
+                            moveColor = ImVec4(0.0f, 0.8f, 1.0f, 1.0f); // Cyan
+                        } else {
+                            moveColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // White
+                        }
+
+                        if (movesOnCurrentLine > 0) {
+                            ImGui::SameLine(0, 5);
+                        }
+
+                        ImGui::TextColored(moveColor, "%s", moveToString(move).c_str());
+                        movesOnCurrentLine++;
+                    }
+
+                    ImGui::Separator();
+
+                    // Display move count
+                    ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
+                        "Total moves: %zu", selectedItem->moves.size());
+                }
+
+                ImGui::Spacing();
+
+                // Execute buttons
+                bool hasFormula = (selectedItem != nullptr && !selectedItem->moves.empty());
+
+                if (hasFormula) {
+                    // Execute button
+                    if (ImGui::Button("Execute", ImVec2(180, 0))) {
+                        // Execute all moves in formula with animation
+                        for (const Move& move : selectedItem->moves) {
+                            renderer.executeMove(move);
+                        }
+                    }
+
+                    ImGui::SameLine();
+
+                    // Execute Reverse button
+                    if (ImGui::Button("Execute Reverse", ImVec2(180, 0))) {
+                        // Execute moves in reverse order with inverse moves
+                        for (auto it = selectedItem->moves.rbegin(); it != selectedItem->moves.rend(); ++it) {
+                            Move move = *it;
+                            Move inverseMove;
+
+                            // Get inverse move
+                            switch (move) {
+                                case Move::U:  inverseMove = Move::UP; break;
+                                case Move::UP: inverseMove = Move::U; break;
+                                case Move::D:  inverseMove = Move::DP; break;
+                                case Move::DP: inverseMove = Move::D; break;
+                                case Move::L:  inverseMove = Move::LP; break;
+                                case Move::LP: inverseMove = Move::L; break;
+                                case Move::R:  inverseMove = Move::RP; break;
+                                case Move::RP: inverseMove = Move::R; break;
+                                case Move::F:  inverseMove = Move::FP; break;
+                                case Move::FP: inverseMove = Move::F; break;
+                                case Move::B:  inverseMove = Move::BP; break;
+                                case Move::BP: inverseMove = Move::B; break;
+                                case Move::M:  inverseMove = Move::MP; break;
+                                case Move::MP: inverseMove = Move::M; break;
+                                case Move::E:  inverseMove = Move::EP; break;
+                                case Move::EP: inverseMove = Move::E; break;
+                                case Move::S:  inverseMove = Move::SP; break;
+                                case Move::SP: inverseMove = Move::S; break;
+                                default: continue;
+                            }
+
+                            renderer.executeMove(inverseMove);
+                        }
+                    }
+                } else {
+                    // Disabled buttons when no formula selected
+                    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+                    ImGui::Button("Execute", ImVec2(180, 0));
+                    ImGui::PopStyleVar();
+                    ImGui::PopItemFlag();
+
+                    ImGui::SameLine();
+
+                    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+                    ImGui::Button("Execute Reverse", ImVec2(180, 0));
+                    ImGui::PopStyleVar();
+                    ImGui::PopItemFlag();
+                }
+
+                ImGui::Spacing();
+
+                // Refresh button
+                if (ImGui::Button("Refresh Formulas", ImVec2(370, 0))) {
+                    g_formulaManager.refresh();
                 }
 
                 ImGui::EndTabItem();
