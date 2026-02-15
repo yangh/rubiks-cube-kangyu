@@ -279,7 +279,6 @@ int main(int argc, char* argv[]) {
             // Moves tab
             if (ImGui::BeginTabItem("Moves")) {
                 // Scramble button
-                ImGui::Separator();
                 if (ImGui::Button("Scramble", ImVec2(120, 0))) {
                     // Disable animation for instant scramble
                     bool oldAnimation = renderer.enableAnimation;
@@ -371,9 +370,28 @@ int main(int argc, char* argv[]) {
                     ImGui::PopItemFlag();
                 }
 
+                ImGui::SameLine();
+
+                // Redo button
+                bool canRedo = renderer.canRedo();
+                if (canRedo) {
+                    if (ImGui::Button("Redo Next Move", ImVec2(150, 0))) {
+                        renderer.redo();
+                    }
+                } else {
+                    // Disabled button when no redo history
+                    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+                    ImGui::Button("Redo Next Move", ImVec2(150, 0));
+                    ImGui::PopStyleVar();
+                    ImGui::PopItemFlag();
+                }
+
                 ImGui::Spacing();
                 ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
                     "Total moves: %zu", renderer.getMoveHistory().size());
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+                    "Redo available: %zu", renderer.getRedoHistory().size());
 
                 ImGui::Separator();
 
@@ -402,7 +420,7 @@ int main(int argc, char* argv[]) {
                             moveColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // White for slice moves
                         }
 
-                        ImGui::TextColored(moveColor, "%zu.%s", i + 1,
+                        ImGui::TextColored(moveColor, "%zu. %s", i + 1,
                                         moveToString(history[i]).c_str());
                     }
 

@@ -82,6 +82,15 @@ public:
     // Undo the last move
     void undo();
 
+    // Redo the last undone move
+    void redo();
+
+    // Get redo history
+    const std::vector<Move>& getRedoHistory() const { return redoHistory_; }
+
+    // Check if redo is available
+    bool canRedo() const { return !redoHistory_.empty(); }
+
 private:
     std::array<Color, 9> front_;
     std::array<Color, 9> back_;
@@ -92,6 +101,9 @@ private:
 
     // Move history
     std::vector<Move> moveHistory_;
+
+    // Redo history (moves that were undone)
+    std::vector<Move> redoHistory_;
 
     // Face rotation functions
     void rotateUp(bool prime);

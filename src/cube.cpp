@@ -67,6 +67,9 @@ RubiksCube::RubiksCube()
 }
 
 void RubiksCube::executeMove(Move move) {
+    // Clear redo history when a new move is executed
+    redoHistory_.clear();
+
     // Add move to history
     moveHistory_.push_back(move);
 
@@ -114,6 +117,7 @@ void RubiksCube::reset() {
     up_ = fillColor(Color::WHITE);
     down_ = fillColor(Color::YELLOW);
     moveHistory_.clear();
+    redoHistory_.clear();
 }
 
 std::vector<Move> RubiksCube::scramble(int numMoves) {
@@ -156,6 +160,9 @@ void RubiksCube::undo() {
     Move lastMove = moveHistory_.back();
     moveHistory_.pop_back();
 
+    // Add to redo history
+    redoHistory_.push_back(lastMove);
+
     // Execute the inverse move
     Move inverseMove;
     switch (lastMove) {
@@ -182,6 +189,41 @@ void RubiksCube::undo() {
 
     // Execute inverse move without adding to history
     switch (inverseMove) {
+        case Move::U:  rotateUp(false); break;
+        case Move::UP: rotateUp(true); break;
+        case Move::D:  rotateDown(false); break;
+        case Move::DP: rotateDown(true); break;
+        case Move::L: rotateLeft(false); break;
+        case Move::LP: rotateLeft(true); break;
+        case Move::R: rotateRight(false); break;
+        case Move::RP: rotateRight(true); break;
+        case Move::F: rotateFront(false); break;
+        case Move::FP: rotateFront(true); break;
+        case Move::B: rotateBack(false); break;
+        case Move::BP: rotateBack(true); break;
+        case Move::M:  rotateMiddle(false); break;
+        case Move::MP: rotateMiddle(true); break;
+        case Move::E:  rotateEquator(false); break;
+        case Move::EP: rotateEquator(true); break;
+        case Move::S:  rotateStanding(false); break;
+        case Move::SP: rotateStanding(true); break;
+        default: break;
+    }
+}
+
+void RubiksCube::redo() {
+    if (redoHistory_.empty()) {
+        return; // No moves to redo
+    }
+
+    Move moveToRedo = redoHistory_.back();
+    redoHistory_.pop_back();
+
+    // Add back to move history
+    moveHistory_.push_back(moveToRedo);
+
+    // Execute the move
+    switch (moveToRedo) {
         case Move::U:  rotateUp(false); break;
         case Move::UP: rotateUp(true); break;
         case Move::D:  rotateDown(false); break;

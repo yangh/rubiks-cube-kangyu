@@ -47,6 +47,18 @@ void CubeRenderer::undo() {
     }
 }
 
+void CubeRenderer::redo() {
+    // Redo the move on the cube
+    cube_.redo();
+
+    // Clear animation state
+    isAnimating_ = false;
+    animationProgress_ = 0.0f;
+    while (!moveQueue_.empty()) {
+        moveQueue_.pop();
+    }
+}
+
 std::vector<Move> CubeRenderer::scramble(int numMoves) {
     // Generate scramble moves from the cube
     std::vector<Move> scrambleMoves = cube_.scramble(numMoves);
