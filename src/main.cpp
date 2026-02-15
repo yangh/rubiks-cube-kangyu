@@ -412,7 +412,7 @@ int main(int argc, char* argv[]) {
                 // Undo button
                 bool canUndo = !renderer.getMoveHistory().empty();
                 if (canUndo) {
-                    if (ImGui::Button("Undo Last Move", ImVec2(160, 0))) {
+                    if (ImGui::Button("Undo Last Move", ImVec2(200, 0))) {
                         renderer.undo();
                     }
                 } else {
@@ -429,7 +429,7 @@ int main(int argc, char* argv[]) {
                 // Redo button
                 bool canRedo = renderer.canRedo();
                 if (canRedo) {
-                    if (ImGui::Button("Redo Next Move", ImVec2(160, 0))) {
+                    if (ImGui::Button("Redo Next Move", ImVec2(200, 0))) {
                         renderer.redo();
                     }
                 } else {
@@ -686,7 +686,7 @@ int main(int argc, char* argv[]) {
                     // Disabled buttons when no formula selected
                     ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
                     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-                    ImGui::Button("Execute", ImVec2(180, 0));
+                    ImGui::Button("Execute", ImVec2(200, 0));
                     ImGui::PopStyleVar();
                     ImGui::PopItemFlag();
 
