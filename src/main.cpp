@@ -221,6 +221,24 @@ int main(int argc, char* argv[]) {
 
         ImGui::Separator();
 
+        // Slice moves
+        ImGui::Text("Slice Moves:");
+        ImGui::Separator();
+
+        if (ImGui::Button("M", ImVec2(40, 0))) renderer.executeMove(Move::M);
+        ImGui::SameLine();
+        if (ImGui::Button("M'", ImVec2(40, 0))) renderer.executeMove(Move::MP);
+        ImGui::SameLine(0, 20);
+        if (ImGui::Button("E", ImVec2(40, 0))) renderer.executeMove(Move::E);
+        ImGui::SameLine();
+        if (ImGui::Button("E'", ImVec2(40, 0))) renderer.executeMove(Move::EP);
+
+        if (ImGui::Button("S", ImVec2(40, 0))) renderer.executeMove(Move::S);
+        ImGui::SameLine();
+        if (ImGui::Button("S'", ImVec2(40, 0))) renderer.executeMove(Move::SP);
+
+        ImGui::Separator();
+
         // 2D view controls
         ImGui::Text("2D View Controls:");
         ImGui::SliderFloat("2D Scale", &renderer.scale2D, 0.3f, 3.0f, "%.2f");

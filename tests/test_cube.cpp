@@ -245,7 +245,7 @@ void testAdjacentFaces() {
 
         cube.executeMove(Move::R);
 
-        // R move should affect right of up, right of front, right of down, left of back
+        // R move should affect right of up (2,5,8), right of front (2,5,8), right of down (2,5,8), left of back (6,3,0)
         bool upChanged = (cube.getUp()[2] != upBefore[2]) ||
                          (cube.getUp()[5] != upBefore[5]) ||
                          (cube.getUp()[8] != upBefore[8]);
@@ -255,9 +255,9 @@ void testAdjacentFaces() {
         bool downChanged = (cube.getDown()[2] != downBefore[2]) ||
                            (cube.getDown()[5] != downBefore[5]) ||
                            (cube.getDown()[8] != downBefore[8]);
-        bool backChanged = (cube.getBack()[0] != backBefore[0]) ||
+        bool backChanged = (cube.getBack()[6] != backBefore[6]) ||
                            (cube.getBack()[3] != backBefore[3]) ||
-                           (cube.getBack()[6] != backBefore[6]);
+                           (cube.getBack()[0] != backBefore[0]);
 
         assertTest("R move affected adjacent faces", upChanged && frontChanged && downChanged && backChanged);
     }

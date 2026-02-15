@@ -27,7 +27,13 @@ enum class Move {
     F,  // Front
     FP, // Front prime
     B,  // Back
-    BP  // Back prime
+    BP,  // Back prime
+    M,  // Middle slice (between L and R)
+    MP, // Middle slice prime
+    E,  // Equator slice (between U and D)
+    EP, // Equator slice prime
+    S,  // Standing slice (between F and B)
+    SP  // Standing slice prime
 };
 
 // Convert color to RGB
@@ -81,6 +87,11 @@ private:
     void rotateRight(bool prime);
     void rotateFront(bool prime);
     void rotateBack(bool prime);
+
+    // Slice rotation functions
+    void rotateMiddle(bool prime);   // M: between L and R
+    void rotateEquator(bool prime); // E: between U and D
+    void rotateStanding(bool prime); // S: between F and B
 
     // Rotate a face 90 degrees clockwise (or counter-clockwise if prime)
     void rotateFaceClockwise(std::array<Color, 9>& face, bool prime);
