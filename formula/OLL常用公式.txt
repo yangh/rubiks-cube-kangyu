@@ -1,0 +1,29 @@
+# OLL 常用公式
+# Orientation of Last Layer - 定向顶层
+
+# ===== Sune 及其变体 =====
+Sune: R U R' U R U U R'
+Anti-Sune: R U2 R' U' R U2 R'
+Sune Left: L' U' L U L U L
+Sune Right: R' U' R U R U R
+
+# ===== T-Perm (双边 Sune) =====
+T-Perm: R U R' U R' U' R' U' R'
+
+# ===== U-Perm (车灯) =====
+U-Perm: R U R' U' R' U' R' U' R'
+U-Perm Headlights: R U2 R' U' R' U R' U R'
+
+# ===== L-Perm (Sune + U-Perm) =====
+L-Perm: R U R' U' R U2 R'
+
+# ===== H-Perm =====
+H-Perm: R U R' U' R' U' R' U' R'
+
+# ===== Pi-Perm =====
+Pi-Perm: R U R' U R' U R' U' R'
+
+# ===== 其他常用公式 =====
+Double Sune: R U2 R' U' R U2 R'
+Sexy Move: R U R' U'
+Chameleon: R U R' U' R U' R'
