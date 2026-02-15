@@ -150,24 +150,22 @@ void CubeRenderer::draw2D(ImDrawList* drawList, ImVec2 offset, float scale) {
     //offset.y += spacing * 0.5;
 
     // Draw in order: Up, Left, Front, Right, Down, Back
-    drawFace(drawList, cube_.getUp(),
+    drawFace(drawList, cube_.getUp(), Color::WHITE,
             ImVec2(offset.x, offset.y - spacing),
             stickerSize, gap);
 
-    drawFace(drawList, cube_.getLeft(),
+    drawFace(drawList, cube_.getLeft(), Color::ORANGE,
             ImVec2(offset.x - spacing, offset.y),
             stickerSize, gap);
-    drawFace(drawList, cube_.getFront(),
+    drawFace(drawList, cube_.getFront(), Color::GREEN,
             ImVec2(offset.x + spacing * 0, offset.y),
             stickerSize, gap);
-    drawFace(drawList, cube_.getRight(),
+    drawFace(drawList, cube_.getRight(), Color::RED,
             ImVec2(offset.x + spacing * 1, offset.y),
             stickerSize, gap);
-    drawFace(drawList, cube_.getBack(),
+    drawFace(drawList, cube_.getBack(), Color::BLUE,
             ImVec2(offset.x + spacing * 2, offset.y),
-            stickerSize, gap);
-
-    drawFace(drawList, cube_.getDown(),
+    drawFace(drawList, cube_.getDown(), Color::YELLOW,
             ImVec2(offset.x, offset.y + spacing),
             stickerSize, gap);
 }
@@ -360,7 +358,7 @@ ImVec2 CubeRenderer::project(float x, float y, float z, ImVec2 center, float sca
 }
 
 void CubeRenderer::drawFace(ImDrawList* drawList, const std::array<Color, 9>& face,
-                          ImVec2 offset, float size, float gap, bool flipVertical) {
+                          ImVec2 offset, float size, float gap, bool flipVertical, Color faceType) {
     float totalSize = size * 3.0f + gap * 2.0f;
     float startX = offset.x - totalSize / 2.0f + size / 2.0f;
     float startY = offset.y - totalSize / 2.0f + size / 2.0f;
@@ -386,7 +384,7 @@ void CubeRenderer::drawFace(ImDrawList* drawList, const std::array<Color, 9>& fa
                 index = row * 3 + col;
             }
 
-            std::array<float, 3> rgb = colorToRgb(face[index]);
+            std::array<float, 3> rgb = getFaceColor(faceType);
             ImU32 color = IM_COL32(
                 static_cast<int>(rgb[0] * 255),
                 static_cast<int>(rgb[1] * 255),

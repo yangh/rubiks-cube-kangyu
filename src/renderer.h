@@ -85,7 +85,7 @@ private:
     // Draw a 2D face (unfolded cube net view)
     // flipVertical: flip the face vertically (for Back face in unfolded view)
     void drawFace(ImDrawList* drawList, const std::array<Color, 9>& face,
-                 ImVec2 offset, float size, float gap, bool flipVertical = false);
+                 ImVec2 offset, float size, float gap, bool flipVertical = false, Color faceType = Color::WHITE);
 
     // Draw a 3D face
     void draw3DFace(ImDrawList* drawList, const std::array<Color, 9>& face,
