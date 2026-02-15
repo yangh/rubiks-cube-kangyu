@@ -412,14 +412,14 @@ int main(int argc, char* argv[]) {
                 // Undo button
                 bool canUndo = !renderer.getMoveHistory().empty();
                 if (canUndo) {
-                    if (ImGui::Button("Undo Last Move", ImVec2(150, 0))) {
+                    if (ImGui::Button("Undo Last Move", ImVec2(160, 0))) {
                         renderer.undo();
                     }
                 } else {
                     // Disabled button when no history
                     ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
                     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-                    ImGui::Button("Undo Last Move", ImVec2(150, 0));
+                    ImGui::Button("Undo Last Move", ImVec2(160, 0));
                     ImGui::PopStyleVar();
                     ImGui::PopItemFlag();
                 }
@@ -429,14 +429,14 @@ int main(int argc, char* argv[]) {
                 // Redo button
                 bool canRedo = renderer.canRedo();
                 if (canRedo) {
-                    if (ImGui::Button("Redo Next Move", ImVec2(150, 0))) {
+                    if (ImGui::Button("Redo Next Move", ImVec2(160, 0))) {
                         renderer.redo();
                     }
                 } else {
                     // Disabled button when no redo history
                     ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
                     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-                    ImGui::Button("Redo Next Move", ImVec2(150, 0));
+                    ImGui::Button("Redo Next Move", ImVec2(160, 0));
                     ImGui::PopStyleVar();
                     ImGui::PopItemFlag();
                 }
@@ -592,8 +592,8 @@ int main(int argc, char* argv[]) {
                         selectedItem->name.c_str());
                     ImGui::Separator();
 
-                    // Display moves with formatting
-                    const int movesPerLine = 6;
+                    // Display moves with formatting (no line wrapping)
+                    const int movesPerLine = 100;  // Large number to prevent wrapping
                     int movesOnCurrentLine = 0;
 
                     for (size_t i = 0; i < selectedItem->moves.size(); ++i) {
