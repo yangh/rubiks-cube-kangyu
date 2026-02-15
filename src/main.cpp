@@ -176,6 +176,11 @@ int main(int argc, char* argv[]) {
             renderer.executeMove(isPrime ? Move::BP : Move::B);
         }
 
+        // Spacebar: reset view to default angles
+        if (ImGui::IsKeyPressed(ImGuiKey_Space)) {
+            renderer.resetView();
+        }
+
         // ===== Window 1: 3D View (Left side) =====
         ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(windowWidth - sidebarWidth - 20, windowHeight - 20), ImGuiCond_Always);
@@ -479,6 +484,7 @@ int main(int argc, char* argv[]) {
         ImGui::Text("Keyboard Shortcuts:");
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  U/D/L/R/F/B - Move (clockwise)");
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Shift+Key - Prime move (counter-clockwise)");
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Space - Reset view to default angles");
 
         ImGui::Separator();
 
