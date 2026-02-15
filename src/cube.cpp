@@ -170,15 +170,15 @@ void RubiksCube::rotateUp(bool prime) {
 void RubiksCube::rotateDown(bool prime) {
     rotateFaceClockwise(down_, prime);
 
-    if (!prime) {
-        // Clockwise: front <- right <- back <- left <- front
+    if (prime) {
+        // Counter-clockwise: front <- right <- back <- left <- front
         std::array<Color, 3> temp = {front_[6], front_[7], front_[8]};
         front_[6] = right_[6]; front_[7] = right_[7]; front_[8] = right_[8];
         right_[6] = back_[6]; right_[7] = back_[7]; right_[8] = back_[8];
         back_[6] = left_[6]; back_[7] = left_[7]; back_[8] = left_[8];
         left_[6] = temp[0]; left_[7] = temp[1]; left_[8] = temp[2];
     } else {
-        // Counter-clockwise: front <- left <- back <- right <- front
+        // Clockwise: front <- left <- back <- right <- front
         std::array<Color, 3> temp = {front_[6], front_[7], front_[8]};
         front_[6] = left_[6]; front_[7] = left_[7]; front_[8] = left_[8];
         left_[6] = back_[6]; left_[7] = back_[7]; left_[8] = back_[8];
@@ -255,14 +255,14 @@ void RubiksCube::rotateBack(bool prime) {
         std::array<Color, 3> temp = {up_[0], up_[1], up_[2]};
         up_[0] = right_[2]; up_[1] = right_[5]; up_[2] = right_[8];
         right_[2] = down_[6]; right_[5] = down_[7]; right_[8] = down_[8];
-        down_[6] = left_[2]; down_[7] = left_[5]; down_[8] = left_[8];
-        left_[2] = temp[0]; left_[5] = temp[1]; left_[8] = temp[2];
+        down_[6] = left_[0]; down_[7] = left_[3]; down_[8] = left_[6];
+        left_[0] = temp[0]; left_[3] = temp[1]; left_[6] = temp[2];
     } else {
         // Clockwise: up <- left <- down <- right <- up
         std::array<Color, 3> temp = {up_[0], up_[1], up_[2]};
-        up_[0] = left_[2]; up_[1] = left_[5]; up_[2] = left_[8];
-        left_[2] = down_[8]; left_[5] = down_[7]; left_[8] = down_[6];
-        down_[6] = right_[8]; down_[7] = right_[5]; down_[8] = right_[2];
+        up_[0] = left_[0]; up_[1] = left_[3]; up_[2] = left_[6];
+        left_[0] = down_[6]; left_[3] = down_[7]; left_[6] = down_[8];
+        down_[6] = right_[2]; down_[7] = right_[5]; down_[8] = right_[8];
         right_[2] = temp[0]; right_[5] = temp[1]; right_[8] = temp[2];
     }
 }
