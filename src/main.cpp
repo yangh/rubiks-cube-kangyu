@@ -96,7 +96,13 @@ int main(int argc, char* argv[]) {
     int sidebarWidth = 400;
 
     // Main loop
+    float lastTime = glfwGetTime();
+
     while (!glfwWindowShouldClose(window)) {
+        float currentTime = glfwGetTime();
+        float deltaTime = currentTime - lastTime;
+        lastTime = currentTime;
+
         glfwPollEvents();
 
         // Get current window size
@@ -154,6 +160,9 @@ int main(int argc, char* argv[]) {
                 renderer.rotationZ += io.MouseWheel * 15.0f;
             }
         }
+
+        // Update animation
+        renderer.updateAnimation(deltaTime);
 
         // Draw 3D cube
         renderer.draw3D(drawList, center, renderer.scale);
