@@ -200,48 +200,85 @@ int main(int argc, char* argv[]) {
         ImGui::SetNextWindowSize(ImVec2(sidebarWidth - 20, (windowHeight - 20) / 2.0f - 10), ImGuiCond_Always);
         ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
-        // Move buttons (3 rows: 6 buttons each)
-        ImGui::Text("Move Controls:");
-        ImGui::Separator();
+        // Tab bar for Moves and Animation controls
+        if (ImGui::BeginTabBar("ControlsTabBar", ImGuiTabBarFlags_None)) {
+            // Moves tab
+            if (ImGui::BeginTabItem("Moves")) {
+                // Move buttons (3 rows: 6 buttons each)
+                ImGui::Separator();
 
-        // Row 1: R, L, M
-        if (ImGui::Button("R", ImVec2(40, 0))) renderer.executeMove(Move::R);
-        ImGui::SameLine();
-        if (ImGui::Button("R'", ImVec2(40, 0))) renderer.executeMove(Move::RP);
-        ImGui::SameLine(0, 20);
-        if (ImGui::Button("L", ImVec2(40, 0))) renderer.executeMove(Move::L);
-        ImGui::SameLine();
-        if (ImGui::Button("L'", ImVec2(40, 0))) renderer.executeMove(Move::LP);
-        ImGui::SameLine(0, 20);
-        if (ImGui::Button("M", ImVec2(40, 0))) renderer.executeMove(Move::M);
-        ImGui::SameLine();
-        if (ImGui::Button("M'", ImVec2(40, 0))) renderer.executeMove(Move::MP);
+                // Row 1: R, L, M
+                if (ImGui::Button("R", ImVec2(40, 0))) renderer.executeMove(Move::R);
+                ImGui::SameLine();
+                if (ImGui::Button("R'", ImVec2(40, 0))) renderer.executeMove(Move::RP);
+                ImGui::SameLine(0, 20);
+                if (ImGui::Button("L", ImVec2(40, 0))) renderer.executeMove(Move::L);
+                ImGui::SameLine();
+                if (ImGui::Button("L'", ImVec2(40, 0))) renderer.executeMove(Move::LP);
+                ImGui::SameLine(0, 20);
+                if (ImGui::Button("M", ImVec2(40, 0))) renderer.executeMove(Move::M);
+                ImGui::SameLine();
+                if (ImGui::Button("M'", ImVec2(40, 0))) renderer.executeMove(Move::MP);
 
-        // Row 2: U, D, E
-        if (ImGui::Button("U", ImVec2(40, 0))) renderer.executeMove(Move::U);
-        ImGui::SameLine();
-        if (ImGui::Button("U'", ImVec2(40, 0))) renderer.executeMove(Move::UP);
-        ImGui::SameLine(0, 20);
-        if (ImGui::Button("D", ImVec2(40, 0))) renderer.executeMove(Move::D);
-        ImGui::SameLine();
-        if (ImGui::Button("D'", ImVec2(40, 0))) renderer.executeMove(Move::DP);
-        ImGui::SameLine(0, 20);
-        if (ImGui::Button("E", ImVec2(40, 0))) renderer.executeMove(Move::E);
-        ImGui::SameLine();
-        if (ImGui::Button("E'", ImVec2(40, 0))) renderer.executeMove(Move::EP);
+                // Row 2: U, D, E
+                if (ImGui::Button("U", ImVec2(40, 0))) renderer.executeMove(Move::U);
+                ImGui::SameLine();
+                if (ImGui::Button("U'", ImVec2(40, 0))) renderer.executeMove(Move::UP);
+                ImGui::SameLine(0, 20);
+                if (ImGui::Button("D", ImVec2(40, 0))) renderer.executeMove(Move::D);
+                ImGui::SameLine();
+                if (ImGui::Button("D'", ImVec2(40, 0))) renderer.executeMove(Move::DP);
+                ImGui::SameLine(0, 20);
+                if (ImGui::Button("E", ImVec2(40, 0))) renderer.executeMove(Move::E);
+                ImGui::SameLine();
+                if (ImGui::Button("E'", ImVec2(40, 0))) renderer.executeMove(Move::EP);
 
-        // Row 3: F, B, S
-        if (ImGui::Button("F", ImVec2(40, 0))) renderer.executeMove(Move::F);
-        ImGui::SameLine();
-        if (ImGui::Button("F'", ImVec2(40, 0))) renderer.executeMove(Move::FP);
-        ImGui::SameLine(0, 20);
-        if (ImGui::Button("B", ImVec2(40, 0))) renderer.executeMove(Move::B);
-        ImGui::SameLine();
-        if (ImGui::Button("B'", ImVec2(40, 0))) renderer.executeMove(Move::BP);
-        ImGui::SameLine(0, 20);
-        if (ImGui::Button("S", ImVec2(40, 0))) renderer.executeMove(Move::S);
-        ImGui::SameLine();
-        if (ImGui::Button("S'", ImVec2(40, 0))) renderer.executeMove(Move::SP);
+                // Row 3: F, B, S
+                if (ImGui::Button("F", ImVec2(40, 0))) renderer.executeMove(Move::F);
+                ImGui::SameLine();
+                if (ImGui::Button("F'", ImVec2(40, 0))) renderer.executeMove(Move::FP);
+                ImGui::SameLine(0, 20);
+                if (ImGui::Button("B", ImVec2(40, 0))) renderer.executeMove(Move::B);
+                ImGui::SameLine();
+                if (ImGui::Button("B'", ImVec2(40, 0))) renderer.executeMove(Move::BP);
+                ImGui::SameLine(0, 20);
+                if (ImGui::Button("S", ImVec2(40, 0))) renderer.executeMove(Move::S);
+                ImGui::SameLine();
+                if (ImGui::Button("S'", ImVec2(40, 0))) renderer.executeMove(Move::SP);
+
+                ImGui::EndTabItem();
+            }
+
+            // Animation tab
+            if (ImGui::BeginTabItem("Animation")) {
+                ImGui::Separator();
+
+                // Enable/Disable animation checkbox
+                ImGui::Checkbox("Enable Animation", &renderer.enableAnimation);
+
+                ImGui::Spacing();
+
+                // Animation speed slider
+                ImGui::Text("Animation Speed:");
+                ImGui::SliderFloat("Speed", &renderer.animationSpeed, 0.1f, 3.0f, "%.1fx", ImGuiSliderFlags_Logarithmic);
+                if (ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("1.0x = 200ms per move");
+                }
+
+                ImGui::Spacing();
+                ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Animation queue status:");
+                if (renderer.isAnimating()) {
+                    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "  Playing... (%.0f%%)",
+                                      renderer.animationProgress() * 100.0f);
+                } else {
+                    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "  Idle");
+                }
+
+                ImGui::EndTabItem();
+            }
+
+            ImGui::EndTabBar();
+        }
 
         ImGui::Separator();
 

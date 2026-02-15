@@ -19,6 +19,8 @@ public:
     void executeMove(Move move);
     void updateAnimation(float deltaTime);
     void reset();
+    bool isAnimating() const { return isAnimating_; }
+    float animationProgress() const { return animationProgress_; }
     void resetView();  // Reset 3D view parameters to defaults
     bool isSolved() const;
     void dump() const;  // Dump cube state to console
@@ -28,6 +30,8 @@ public:
     float rotationZ = 0.0f;
     float scale = 3.1f;
     float scale2D = 0.8f;  // 2D view zoom level
+    float animationSpeed = 1.0f;  // Animation speed multiplier (1.0 = normal)
+    bool enableAnimation = true;  // Enable/disable animation
 
 private:
     RubiksCube cube_;

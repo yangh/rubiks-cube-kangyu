@@ -38,6 +38,8 @@ void CubeRenderer::resetView() {
     rotationZ = 0.0f;
     scale = 3.1f;
     scale2D = 0.8f;
+    animationSpeed = 1.0f;
+    enableAnimation = true;
 }
 
 bool CubeRenderer::isSolved() const {
@@ -500,7 +502,7 @@ ImU32 CubeRenderer::getFaceColor(Color color) {
 void CubeRenderer::updateAnimation(float deltaTime) {
     if (!isAnimating_) return;
 
-    const float ANIMATION_DURATION = 0.2f;  // 200ms
+    const float ANIMATION_DURATION = 0.2f / animationSpeed;  // 200ms divided by speed
     animationProgress_ += deltaTime / ANIMATION_DURATION;
 
     if (animationProgress_ >= 1.0f) {
@@ -519,6 +521,21 @@ void CubeRenderer::updateAnimation(float deltaTime) {
 
 void CubeRenderer::startNextAnimation() {
     if (moveQueue_.empty()) {
+        isAnimating_ = false;
+        return;
+    }
+
+    // If animation is disabled, execute moves immediately
+    if (!enableAnimation) {
+        while (!moveQueue_.empty()) {
+            Move move = moveQueue_.front();
+            moveQueue_.pop();
+            cube_.executeMove(move);
+            if (g_enableDump) {
+                std::cout << "\n=== Completed " << moveToString(move) << " ===" << std::endl;
+                cube_.dump();
+            }
+        }
         isAnimating_ = false;
         return;
     }
