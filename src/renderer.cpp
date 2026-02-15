@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include "config.h"
 #include <cmath>
 #include <algorithm>
 #include <iostream>
@@ -12,6 +13,16 @@ CubeRenderer::CubeRenderer()
     if (initGL3D()) {
         std::cout << "OpenGL 3D rendering initialized successfully" << std::endl;
     }
+}
+
+void CubeRenderer::setCustomColors(const ColorConfig& config) {
+    customFront = config.getFrontColor();
+    customBack = config.getBackColor();
+    customLeft = config.getLeftColor();
+    customRight = config.getRightColor();
+    customUp = config.getUpColor();
+    customDown = config.getDownColor();
+    useCustomColors = !config.isUsingDefaults();
 }
 
 void CubeRenderer::executeMove(Move move) {
@@ -600,7 +611,23 @@ void CubeRenderer::drawAnimated3DFace(ImDrawList* drawList, const std::array<Col
 }
 
 ImU32 CubeRenderer::getFaceColor(Color color) {
-    std::array<float, 3> rgb = colorToRgb(color);
+    std::array<float, 3> rgb;
+
+    // Use custom colors if enabled, otherwise use default colors
+    if (useCustomColors) {
+        switch (color) {
+            case Color::GREEN:  rgb = customFront; break;   // Front face
+            case Color::BLUE:   rgb = customBack; break;    // Back face
+            case Color::ORANGE: rgb = customLeft; break;    // Left face
+            case Color::RED:    rgb = customRight; break;   // Right face
+            case Color::WHITE:  rgb = customUp; break;      // Up face
+            case Color::YELLOW: rgb = customDown; break;    // Down face
+            default:            rgb = colorToRgb(color); break;
+        }
+    } else {
+        rgb = colorToRgb(color);
+    }
+
     return IM_COL32(
         static_cast<int>(rgb[0] * 255),
         static_cast<int>(rgb[1] * 255),

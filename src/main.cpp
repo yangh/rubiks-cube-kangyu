@@ -11,6 +11,7 @@
 #include "cube.h"
 #include "renderer.h"
 #include "formula.h"
+#include "config.h"
 
 // Global flag to enable/disable cube dump
 bool g_enableDump = false;
@@ -126,6 +127,13 @@ int main(int argc, char* argv[]) {
 
     // Initialize cube renderer
     CubeRenderer renderer;
+
+    // Load color configuration from file
+    ColorConfig config = loadColorConfig();
+    renderer.setCustomColors(config);
+    if (!config.isUsingDefaults()) {
+        std::cout << "Loaded custom color configuration from: " << getConfigFilePath() << std::endl;
+    }
 
     // Load formulas from directory
     g_formulaManager.loadFormulas();
@@ -746,10 +754,158 @@ int main(int argc, char* argv[]) {
                 ImGui::Spacing();
                 ImGui::Separator();
 
+                // Custom colors section
+                ImGui::Text("Custom Colors:");
+
+                // Color pickers for each face
+                ImGui::Text("Front (Green):");
+                ImGui::SameLine();
+                if (ImGui::ColorEdit3("##FrontColor", renderer.customFront.data())) {
+                    renderer.useCustomColors = true;
+                }
+
+                ImGui::Text("Back (Blue):");
+                ImGui::SameLine();
+                if (ImGui::ColorEdit3("##BackColor", renderer.customBack.data())) {
+                    renderer.useCustomColors = true;
+                }
+
+                ImGui::Text("Left (Orange):");
+                ImGui::SameLine();
+                if (ImGui::ColorEdit3("##LeftColor", renderer.customLeft.data())) {
+                    renderer.useCustomColors = true;
+                }
+
+                ImGui::Text("Right (Red):");
+                ImGui::SameLine();
+                if (ImGui::ColorEdit3("##RightColor", renderer.customRight.data())) {
+                    renderer.useCustomColors = true;
+                }
+
+                ImGui::Text("Up (White):");
+                ImGui::SameLine();
+                if (ImGui::ColorEdit3("##UpColor", renderer.customUp.data())) {
+                    renderer.useCustomColors = true;
+                }
+
+                ImGui::Text("Down (Yellow):");
+                ImGui::SameLine();
+                if (ImGui::ColorEdit3("##DownColor", renderer.customDown.data())) {
+                    renderer.useCustomColors = true;
+                }
+
+                ImGui::Spacing();
+
+                // Save and Reset buttons
+                if (ImGui::Button("Save Colors", ImVec2(120, 0))) {
+                    ColorConfig config;
+                    config.setFront(renderer.customFront);
+                    config.setBack(renderer.customBack);
+                    config.setLeft(renderer.customLeft);
+                    config.setRight(renderer.customRight);
+                    config.setUp(renderer.customUp);
+                    config.setDown(renderer.customDown);
+                    config.setUsingDefaults(false);
+                    saveColorConfig(config);
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Reset to Defaults", ImVec2(140, 0))) {
+                    renderer.customFront = {0.0f, 1.0f, 0.0f};  // Green
+                    renderer.customBack = {0.0f, 0.0f, 1.0f};   // Blue
+                    renderer.customLeft = {1.0f, 0.5f, 0.0f};  // Orange
+                    renderer.customRight = {1.0f, 0.0f, 0.0f}; // Red
+                    renderer.customUp = {1.0f, 1.0f, 1.0f};    // White
+                    renderer.customDown = {1.0f, 1.0f, 0.0f};  // Yellow
+                    renderer.useCustomColors = false;
+                }
+
+                ImGui::Spacing();
+                ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Config file: %s",
+                                  getConfigFilePath().c_str());
+
+                ImGui::Spacing();
+                ImGui::Separator();
+
                 // Status
                 const char* status = renderer.isSolved() ? "Solved" : "Unsolved";
                 ImU32 statusColor = renderer.isSolved() ? IM_COL32(0, 255, 0, 255) : IM_COL32(255, 100, 0, 255);
                 ImGui::TextColored(ImVec4(0, 1, 0, 1), "Cube status: %s", status);
+
+                ImGui::EndTabItem();
+            }
+
+            // Colors tab
+            if (ImGui::BeginTabItem("Colors")) {
+                ImGui::Separator();
+
+                ImGui::Text("Select custom colors for each face:");
+                ImGui::Spacing();
+
+                // Front face color picker (Green by default)
+                ImGui::Text("Front:");
+                ImGui::ColorEdit3("##FrontColor", &renderer.customFront[0]);
+
+                ImGui::Spacing();
+
+                // Back face color picker (Blue by default)
+                ImGui::Text("Back:");
+                ImGui::ColorEdit3("##BackColor", &renderer.customBack[0]);
+
+                ImGui::Spacing();
+
+                // Left face color picker (Orange by default)
+                ImGui::Text("Left:");
+                ImGui::ColorEdit3("##LeftColor", &renderer.customLeft[0]);
+
+                ImGui::Spacing();
+
+                // Right face color picker (Red by default)
+                ImGui::Text("Right:");
+                ImGui::ColorEdit3("##RightColor", &renderer.customRight[0]);
+
+                ImGui::Spacing();
+
+                // Up face color picker (White by default)
+                ImGui::Text("Up:");
+                ImGui::ColorEdit3("##UpColor", &renderer.customUp[0]);
+
+                ImGui::Spacing();
+
+                // Down face color picker (Yellow by default)
+                ImGui::Text("Down:");
+                ImGui::ColorEdit3("##DownColor", &renderer.customDown[0]);
+
+                ImGui::Spacing();
+                ImGui::Separator();
+                ImGui::Spacing();
+
+                // Apply button
+                if (ImGui::Button("Apply", ImVec2(180, 0))) {
+                    renderer.useCustomColors = true;
+                }
+
+                ImGui::SameLine();
+
+                // Reset to Default button
+                if (ImGui::Button("Reset to Default", ImVec2(180, 0))) {
+                    // Reset colors to standard Rubik's cube colors
+                    renderer.customFront = {0.0f, 1.0f, 0.0f};  // Green
+                    renderer.customBack = {0.0f, 0.0f, 1.0f};   // Blue
+                    renderer.customLeft = {1.0f, 0.5f, 0.0f};  // Orange
+                    renderer.customRight = {1.0f, 0.0f, 0.0f}; // Red
+                    renderer.customUp = {1.0f, 1.0f, 1.0f};    // White
+                    renderer.customDown = {1.0f, 1.0f, 0.0f};  // Yellow
+                    renderer.useCustomColors = false;
+                }
+
+                ImGui::Spacing();
+
+                // Display current mode
+                if (renderer.useCustomColors) {
+                    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Mode: Using custom colors");
+                } else {
+                    ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Mode: Using default colors");
+                }
 
                 ImGui::EndTabItem();
             }

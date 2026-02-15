@@ -2,6 +2,7 @@
 #define RENDERER_H
 
 #include "cube.h"
+#include "config.h"
 #include <imgui.h>
 #include <queue>
 #include "model.h"
@@ -23,6 +24,9 @@ public:
     void executeMove(Move move);
     void updateAnimation(float deltaTime);
     void reset();
+
+    // Apply color configuration to the renderer
+    void setCustomColors(const ColorConfig& config);
     void undo();  // Undo the last move
     void redo();  // Redo the last undone move
     std::vector<Move> scramble(int numMoves = 20);  // Scramble the cube
@@ -48,6 +52,15 @@ public:
     float scale2D = 0.8f;  // 2D view zoom level
     float animationSpeed = 1.0f;  // Animation speed multiplier (1.0 = normal)
     bool enableAnimation = true;  // Enable/disable animation
+
+    // Custom color overrides for each face (public for UI access)
+    std::array<float, 3> customFront = {0.0f, 1.0f, 0.0f};
+    std::array<float, 3> customBack = {0.0f, 0.0f, 1.0f};
+    std::array<float, 3> customLeft = {1.0f, 0.5f, 0.0f};
+    std::array<float, 3> customRight = {1.0f, 0.0f, 0.0f};
+    std::array<float, 3> customUp = {1.0f, 1.0f, 1.0f};
+    std::array<float, 3> customDown = {1.0f, 1.0f, 0.0f};
+    bool useCustomColors = false;
 
 private:
     // OpenGL 3D rendering

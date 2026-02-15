@@ -1,0 +1,94 @@
+#ifndef CONFIG_H
+#define CONFIG_H
+
+#include <array>
+#include <string>
+
+// RGB color structure
+struct RgbColor {
+    float r;
+    float g;
+    float b;
+
+    RgbColor() : r(0.0f), g(0.0f), b(0.0f) {}
+    RgbColor(float red, float green, float blue) : r(red), g(green), b(blue) {}
+
+    // Convert to std::array<float, 3> for compatibility with renderer
+    std::array<float, 3> toArray() const {
+        return {r, g, b};
+    }
+};
+
+// Color configuration for all cube faces
+class ColorConfig {
+private:
+    RgbColor front_;
+    RgbColor back_;
+    RgbColor left_;
+    RgbColor right_;
+    RgbColor up_;
+    RgbColor down_;
+    bool usingDefaults_;
+
+public:
+    ColorConfig() : usingDefaults_(true) {
+        front_ = RgbColor(0.0f, 1.0f, 0.0f);    // Green
+        back_ = RgbColor(0.0f, 0.0f, 1.0f);     // Blue
+        left_ = RgbColor(1.0f, 0.5f, 0.0f);     // Orange
+        right_ = RgbColor(1.0f, 0.0f, 0.0f);    // Red
+        up_ = RgbColor(1.0f, 1.0f, 1.0f);       // White
+        down_ = RgbColor(1.0f, 1.0f, 0.0f);     // Yellow
+    }
+
+    // Getters for renderer compatibility
+    std::array<float, 3> getFrontColor() const { return front_.toArray(); }
+    std::array<float, 3> getBackColor() const { return back_.toArray(); }
+    std::array<float, 3> getLeftColor() const { return left_.toArray(); }
+    std::array<float, 3> getRightColor() const { return right_.toArray(); }
+    std::array<float, 3> getUpColor() const { return up_.toArray(); }
+    std::array<float, 3> getDownColor() const { return down_.toArray(); }
+
+    // Getters for individual colors
+    const RgbColor& front() const { return front_; }
+    const RgbColor& back() const { return back_; }
+    const RgbColor& left() const { return left_; }
+    const RgbColor& right() const { return right_; }
+    const RgbColor& up() const { return up_; }
+    const RgbColor& down() const { return down_; }
+
+    // Setters for individual colors
+    void setFront(const RgbColor& color) { front_ = color; }
+    void setBack(const RgbColor& color) { back_ = color; }
+    void setLeft(const RgbColor& color) { left_ = color; }
+    void setRight(const RgbColor& color) { right_ = color; }
+    void setUp(const RgbColor& color) { up_ = color; }
+    void setDown(const RgbColor& color) { down_ = color; }
+
+    // Check if using default colors
+    bool isUsingDefaults() const { return usingDefaults_; }
+    void setUsingDefaults(bool value) { usingDefaults_ = value; }
+
+    // Set from array (for UI convenience)
+    void setFront(const std::array<float, 3>& color) { front_ = RgbColor(color[0], color[1], color[2]); }
+    void setBack(const std::array<float, 3>& color) { back_ = RgbColor(color[0], color[1], color[2]); }
+    void setLeft(const std::array<float, 3>& color) { left_ = RgbColor(color[0], color[1], color[2]); }
+    void setRight(const std::array<float, 3>& color) { right_ = RgbColor(color[0], color[1], color[2]); }
+    void setUp(const std::array<float, 3>& color) { up_ = RgbColor(color[0], color[1], color[2]); }
+    void setDown(const std::array<float, 3>& color) { down_ = RgbColor(color[0], color[1], color[2]); }
+};
+
+// Get default color configuration
+ColorConfig getDefaultColorConfig();
+
+// Load color configuration from ~/.rubiks-cube/config.json
+// Returns default configuration if file doesn't exist or is invalid
+ColorConfig loadColorConfig();
+
+// Save color configuration to ~/.rubiks-cube/config.json
+// Returns true on success, false on failure
+bool saveColorConfig(const ColorConfig& config);
+
+// Get config file path (for informational purposes)
+std::string getConfigFilePath();
+
+#endif // CONFIG_H
