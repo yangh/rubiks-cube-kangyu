@@ -1,6 +1,8 @@
 #include "cube.h"
 #include <algorithm>
 #include <iostream>
+#include <random>
+#include <vector>
 
 std::array<float, 3> colorToRgb(Color color) {
     switch (color) {
@@ -65,6 +67,9 @@ RubiksCube::RubiksCube()
 }
 
 void RubiksCube::executeMove(Move move) {
+    // Add move to history
+    moveHistory_.push_back(move);
+
     switch (move) {
         case Move::U:  rotateUp(false); break;
         case Move::UP: rotateUp(true); break;
@@ -108,6 +113,95 @@ void RubiksCube::reset() {
     right_ = fillColor(Color::RED);
     up_ = fillColor(Color::WHITE);
     down_ = fillColor(Color::YELLOW);
+    moveHistory_.clear();
+}
+
+std::vector<Move> RubiksCube::scramble(int numMoves) {
+    // Array of all 12 basic moves (U, U', D, D', L, L', R, R', F, F', B, B')
+    static const Move basicMoves[] = {
+        Move::U, Move::UP,
+        Move::D, Move::DP,
+        Move::L, Move::LP,
+        Move::R, Move::RP,
+        Move::F, Move::FP,
+        Move::B, Move::BP
+    };
+    static const int numBasicMoves = 12;
+
+    std::vector<Move> scrambleMoves;
+    scrambleMoves.reserve(numMoves);
+
+    // Random number generator
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(0, numBasicMoves - 1);
+
+    // Generate random sequence of moves
+    for (int i = 0; i < numMoves; ++i) {
+        Move randomMove = basicMoves[dis(gen)];
+        scrambleMoves.push_back(randomMove);
+
+        // Execute the move immediately (no animation for scramble)
+        executeMove(randomMove);
+    }
+
+    return scrambleMoves;
+}
+
+void RubiksCube::undo() {
+    if (moveHistory_.empty()) {
+        return; // No moves to undo
+    }
+
+    Move lastMove = moveHistory_.back();
+    moveHistory_.pop_back();
+
+    // Execute the inverse move
+    Move inverseMove;
+    switch (lastMove) {
+        case Move::U:  inverseMove = Move::UP; break;
+        case Move::UP: inverseMove = Move::U; break;
+        case Move::D:  inverseMove = Move::DP; break;
+        case Move::DP: inverseMove = Move::D; break;
+        case Move::L:  inverseMove = Move::LP; break;
+        case Move::LP: inverseMove = Move::L; break;
+        case Move::R:  inverseMove = Move::RP; break;
+        case Move::RP: inverseMove = Move::R; break;
+        case Move::F:  inverseMove = Move::FP; break;
+        case Move::FP: inverseMove = Move::F; break;
+        case Move::B:  inverseMove = Move::BP; break;
+        case Move::BP: inverseMove = Move::B; break;
+        case Move::M:  inverseMove = Move::MP; break;
+        case Move::MP: inverseMove = Move::M; break;
+        case Move::E:  inverseMove = Move::EP; break;
+        case Move::EP: inverseMove = Move::E; break;
+        case Move::S:  inverseMove = Move::SP; break;
+        case Move::SP: inverseMove = Move::S; break;
+        default: return;
+    }
+
+    // Execute inverse move without adding to history
+    switch (inverseMove) {
+        case Move::U:  rotateUp(false); break;
+        case Move::UP: rotateUp(true); break;
+        case Move::D:  rotateDown(false); break;
+        case Move::DP: rotateDown(true); break;
+        case Move::L: rotateLeft(false); break;
+        case Move::LP: rotateLeft(true); break;
+        case Move::R: rotateRight(false); break;
+        case Move::RP: rotateRight(true); break;
+        case Move::F: rotateFront(false); break;
+        case Move::FP: rotateFront(true); break;
+        case Move::B: rotateBack(false); break;
+        case Move::BP: rotateBack(true); break;
+        case Move::M:  rotateMiddle(false); break;
+        case Move::MP: rotateMiddle(true); break;
+        case Move::E:  rotateEquator(false); break;
+        case Move::EP: rotateEquator(true); break;
+        case Move::S:  rotateStanding(false); break;
+        case Move::SP: rotateStanding(true); break;
+        default: break;
+    }
 }
 
 void RubiksCube::dump() const {

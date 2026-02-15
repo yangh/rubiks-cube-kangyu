@@ -3,6 +3,7 @@
 
 #include <array>
 #include <string>
+#include <vector>
 
 // Color representation for cube faces
 enum class Color {
@@ -61,6 +62,9 @@ public:
     // Reset the cube to solved state
     void reset();
 
+    // Scramble the cube with random moves
+    std::vector<Move> scramble(int numMoves = 20);
+
     // Dump cube state to console in 2D view format
     void dump() const;
 
@@ -72,6 +76,12 @@ public:
     std::array<Color, 9> getUp() const { return up_; }
     std::array<Color, 9> getDown() const { return down_; }
 
+    // Get move history
+    const std::vector<Move>& getMoveHistory() const { return moveHistory_; }
+
+    // Undo the last move
+    void undo();
+
 private:
     std::array<Color, 9> front_;
     std::array<Color, 9> back_;
@@ -79,6 +89,9 @@ private:
     std::array<Color, 9> right_;
     std::array<Color, 9> up_;
     std::array<Color, 9> down_;
+
+    // Move history
+    std::vector<Move> moveHistory_;
 
     // Face rotation functions
     void rotateUp(bool prime);

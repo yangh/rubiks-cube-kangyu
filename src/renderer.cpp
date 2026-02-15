@@ -35,6 +35,32 @@ void CubeRenderer::reset() {
     }
 }
 
+void CubeRenderer::undo() {
+    // Undo the move on the cube
+    cube_.undo();
+
+    // Clear animation state
+    isAnimating_ = false;
+    animationProgress_ = 0.0f;
+    while (!moveQueue_.empty()) {
+        moveQueue_.pop();
+    }
+}
+
+std::vector<Move> CubeRenderer::scramble(int numMoves) {
+    // Generate scramble moves from the cube
+    std::vector<Move> scrambleMoves = cube_.scramble(numMoves);
+
+    // Clear the move queue and animation state
+    isAnimating_ = false;
+    animationProgress_ = 0.0f;
+    while (!moveQueue_.empty()) {
+        moveQueue_.pop();
+    }
+
+    return scrambleMoves;
+}
+
 void CubeRenderer::resetView() {
     rotationX = 30.0f;
     rotationY = -30.0f;

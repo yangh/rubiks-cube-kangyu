@@ -23,11 +23,14 @@ public:
     void executeMove(Move move);
     void updateAnimation(float deltaTime);
     void reset();
+    void undo();  // Undo the last move
+    std::vector<Move> scramble(int numMoves = 20);  // Scramble the cube
     bool isAnimating() const { return isAnimating_; }
     float animationProgress() const { return animationProgress_; }
     void resetView();  // Reset 3D view parameters to defaults
     bool isSolved() const;
     void dump() const;  // Dump cube state to console
+    const std::vector<Move>& getMoveHistory() const { return cube_.getMoveHistory(); }
 
     float rotationX = 30.0f;
     float rotationY = -30.0f;

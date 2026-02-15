@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cmath>
 #include <string>
+#include <sstream>
 #include <getopt.h>
 
 #include "cube.h"
@@ -13,12 +14,19 @@
 // Global flag to enable/disable cube dump
 bool g_enableDump = false;
 
+// Global variable to store the last scramble sequence
+std::string g_lastScramble = "No scramble generated";
+
 void showHelp(const char* programName) {
     std::cout << "Rubik's Cube Simulator\n\n";
     std::cout << "Usage: " << programName << " [OPTIONS]\n\n";
     std::cout << "Options:\n";
     std::cout << "  -d, --dump    Enable cube state dump to console\n";
-    std::cout << "  -h, --help    Show this help message\n";
+    std::cout << "  -h, --help    Show this help message\n\n";
+    std::cout << "Keyboard Shortcuts:\n";
+    std::cout << "  U/D/L/R/F/B  - Execute corresponding face move (clockwise)\n";
+    std::cout << "  Shift+Key    - Execute prime move (counter-clockwise)\n";
+    std::cout << "  Example: 'U' = U move, 'Shift+U' = U' move\n";
 }
 
 int main(int argc, char* argv[]) {
@@ -86,6 +94,9 @@ int main(int argc, char* argv[]) {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
+    // Scale up default system font
+    io.FontGlobalScale = 1.3f;
+
     // Initialize cube renderer
     CubeRenderer renderer;
 
@@ -117,6 +128,54 @@ int main(int argc, char* argv[]) {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        // Get ImGuiIO for keyboard shortcuts (works globally, even when mouse is over UI)
+        ImGuiIO& io = ImGui::GetIO();
+
+        // Handle keyboard shortcuts for cube moves
+        // These work globally, even when mouse is over UI
+
+        // U moves (Up face)
+        if (ImGui::IsKeyPressed(ImGuiKey_U)) {
+            // Check for shift modifier for prime move
+            bool isPrime = io.KeyShift;
+            renderer.executeMove(isPrime ? Move::UP : Move::U);
+        }
+
+        // D moves (Down face)
+        if (ImGui::IsKeyPressed(ImGuiKey_D)) {
+            // Check for shift modifier for prime move
+            bool isPrime = io.KeyShift;
+            renderer.executeMove(isPrime ? Move::DP : Move::D);
+        }
+
+        // L moves (Left face)
+        if (ImGui::IsKeyPressed(ImGuiKey_L)) {
+            // Check for shift modifier for prime move
+            bool isPrime = io.KeyShift;
+            renderer.executeMove(isPrime ? Move::LP : Move::L);
+        }
+
+        // R moves (Right face)
+        if (ImGui::IsKeyPressed(ImGuiKey_R)) {
+            // Check for shift modifier for prime move
+            bool isPrime = io.KeyShift;
+            renderer.executeMove(isPrime ? Move::RP : Move::R);
+        }
+
+        // F moves (Front face)
+        if (ImGui::IsKeyPressed(ImGuiKey_F)) {
+            // Check for shift modifier for prime move
+            bool isPrime = io.KeyShift;
+            renderer.executeMove(isPrime ? Move::FP : Move::F);
+        }
+
+        // B moves (Back face)
+        if (ImGui::IsKeyPressed(ImGuiKey_B)) {
+            // Check for shift modifier for prime move
+            bool isPrime = io.KeyShift;
+            renderer.executeMove(isPrime ? Move::BP : Move::B);
+        }
+
         // ===== Window 1: 3D View (Left side) =====
         ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(windowWidth - sidebarWidth - 20, windowHeight - 20), ImGuiCond_Always);
@@ -147,7 +206,6 @@ int main(int argc, char* argv[]) {
 
         // Handle mouse drag for rotation
         // Use MouseDelta instead of GetMouseDragDelta to get per-frame delta, not accumulated
-        ImGuiIO& io = ImGui::GetIO();
         if (ImGui::IsWindowHovered()) {
             // Left mouse button: rotate around X and Y axes
             if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
@@ -182,8 +240,12 @@ int main(int argc, char* argv[]) {
         ImGui::End();
 
         // ===== Window 2: 2D Unfolded View (Top Right) =====
+        // Fixed height based on 2D cube net content (3 face rows + 2 gaps + padding)
+        // With scale2D = 0.8: faceSize = 96, gap = 2.4, content = 3*96 + 2*2.4 = 292.8
+        // Add 40px for padding (20 top + 20 bottom) and window title bar
+        float netViewHeight = 314.0f;  // Content height + padding + title bar (one grid lower)
         ImGui::SetNextWindowPos(ImVec2(windowWidth - sidebarWidth + 10, 10), ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(sidebarWidth - 20, (windowHeight - 20) / 2.0f), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(sidebarWidth - 20, netViewHeight), ImGuiCond_Always);
         ImGui::Begin("2D Net View", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
         drawList = ImGui::GetWindowDrawList();
@@ -205,16 +267,48 @@ int main(int argc, char* argv[]) {
         ImGui::End();
 
         // ===== Window 3: Controls (Bottom Right) =====
-        ImGui::SetNextWindowPos(ImVec2(windowWidth - sidebarWidth + 10, (windowHeight - 20) / 2.0f + 20), ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(sidebarWidth - 20, (windowHeight - 20) / 2.0f - 10), ImGuiCond_Always);
+        // Start after 2D Net View window (fixed height + 10px gap)
+        float controlsY = 10.0f + netViewHeight + 10.0f;
+        float controlsHeight = windowHeight - controlsY - 10.0f;
+        ImGui::SetNextWindowPos(ImVec2(windowWidth - sidebarWidth + 10, controlsY), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(sidebarWidth - 20, controlsHeight), ImGuiCond_Always);
         ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
-        // Tab bar for Moves and Animation controls
+        // Tab bar for Moves, History, and Animation controls
         if (ImGui::BeginTabBar("ControlsTabBar", ImGuiTabBarFlags_None)) {
             // Moves tab
             if (ImGui::BeginTabItem("Moves")) {
-                // Move buttons (3 rows: 6 buttons each)
+                // Scramble button
                 ImGui::Separator();
+                if (ImGui::Button("Scramble", ImVec2(120, 0))) {
+                    // Disable animation for instant scramble
+                    bool oldAnimation = renderer.enableAnimation;
+                    renderer.enableAnimation = false;
+
+                    // Generate and execute scramble
+                    std::vector<Move> scrambleMoves = renderer.scramble(20);
+
+                    // Restore animation setting
+                    renderer.enableAnimation = oldAnimation;
+
+                    // Build scramble sequence string for display
+                    std::ostringstream ss;
+                    for (size_t i = 0; i < scrambleMoves.size(); ++i) {
+                        ss << moveToString(scrambleMoves[i]);
+                        if (i < scrambleMoves.size() - 1) {
+                            ss << " ";
+                        }
+                    }
+                    g_lastScramble = ss.str();
+                }
+                ImGui::SameLine();
+
+                // Display last scramble sequence
+                ImGui::Text("Scramble: %s", g_lastScramble.c_str());
+
+                ImGui::Separator();
+
+                // Move buttons (3 rows: 6 buttons each)
 
                 // Row 1: R, L, M
                 if (ImGui::Button("R", ImVec2(40, 0))) renderer.executeMove(Move::R);
@@ -258,6 +352,74 @@ int main(int argc, char* argv[]) {
                 ImGui::EndTabItem();
             }
 
+            // History tab
+            if (ImGui::BeginTabItem("History")) {
+                ImGui::Separator();
+
+                // Undo button
+                bool canUndo = !renderer.getMoveHistory().empty();
+                if (canUndo) {
+                    if (ImGui::Button("Undo Last Move", ImVec2(150, 0))) {
+                        renderer.undo();
+                    }
+                } else {
+                    // Disabled button when no history
+                    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+                    ImGui::Button("Undo Last Move", ImVec2(150, 0));
+                    ImGui::PopStyleVar();
+                    ImGui::PopItemFlag();
+                }
+
+                ImGui::Spacing();
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
+                    "Total moves: %zu", renderer.getMoveHistory().size());
+
+                ImGui::Separator();
+
+                // Display move history in a scrollable list
+                const std::vector<Move>& history = renderer.getMoveHistory();
+                if (!history.empty()) {
+                    ImGui::BeginChild("MoveHistory", ImVec2(0, 150), true,
+                                    ImGuiWindowFlags_HorizontalScrollbar);
+
+                    // Group moves in sets of 6 for better readability
+                    for (size_t i = 0; i < history.size(); ++i) {
+                        ImGui::SameLine(0, 2);
+
+                        // Color the move text
+                        ImVec4 moveColor;
+                        if (history[i] == Move::U || history[i] == Move::D ||
+                            history[i] == Move::UP || history[i] == Move::DP) {
+                            moveColor = ImVec4(1.0f, 0.8f, 0.0f, 1.0f); // Orange for U/D
+                        } else if (history[i] == Move::L || history[i] == Move::R ||
+                                   history[i] == Move::LP || history[i] == Move::RP) {
+                            moveColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // Green for L/R
+                        } else if (history[i] == Move::F || history[i] == Move::B ||
+                                   history[i] == Move::FP || history[i] == Move::BP) {
+                            moveColor = ImVec4(0.0f, 0.8f, 1.0f, 1.0f); // Cyan for F/B
+                        } else {
+                            moveColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // White for slice moves
+                        }
+
+                        ImGui::TextColored(moveColor, "%zu.%s", i + 1,
+                                        moveToString(history[i]).c_str());
+                    }
+
+                    // Auto-scroll to bottom
+                    if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
+                        ImGui::SetScrollHereY(1.0f);
+                    }
+
+                    ImGui::EndChild();
+                } else {
+                    ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
+                        "No moves in history");
+                }
+
+                ImGui::EndTabItem();
+            }
+
             // Animation tab
             if (ImGui::BeginTabItem("Animation")) {
                 ImGui::Separator();
@@ -288,6 +450,13 @@ int main(int argc, char* argv[]) {
 
             ImGui::EndTabBar();
         }
+
+        ImGui::Separator();
+
+        // Keyboard shortcuts help
+        ImGui::Text("Keyboard Shortcuts:");
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  U/D/L/R/F/B - Move (clockwise)");
+        ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Shift+Key - Prime move (counter-clockwise)");
 
         ImGui::Separator();
 
