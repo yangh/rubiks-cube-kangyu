@@ -19,6 +19,7 @@ public:
     void reset();
     void resetView();  // Reset 3D view parameters to defaults
     bool isSolved() const;
+    void dump() const;  // Dump cube state to console
 
     float rotationX = -160.0f;
     float rotationY = 15.0f;

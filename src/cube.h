@@ -36,6 +36,9 @@ std::array<float, 3> colorToRgb(Color color);
 // Convert move to string
 std::string moveToString(Move move);
 
+// Convert color to string abbreviation
+std::string colorToString(Color color);
+
 // Represents the 3x3x3 Rubik's cube state
 class RubiksCube {
 public:
@@ -51,6 +54,9 @@ public:
 
     // Reset the cube to solved state
     void reset();
+
+    // Dump cube state to console in 2D view format
+    void dump() const;
 
     // Get face colors (for rendering)
     std::array<Color, 9> getFront() const { return front_; }

@@ -48,6 +48,10 @@ int main() {
     // Initialize cube renderer
     CubeRenderer renderer;
 
+    // Dump initial cube state
+    std::cout << "\n=== Initial Cube State ===" << std::endl;
+    renderer.dump();
+
     // Window dimensions
     int sidebarWidth = 400;
 

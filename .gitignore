@@ -4,6 +4,7 @@ build/
 
 # ImGUI settings
 imgui.ini
+third_party/imgui/
 
 # Claude Code metadata
 .claude/

@@ -1,5 +1,6 @@
 #include "cube.h"
 #include <algorithm>
+#include <iostream>
 
 std::array<float, 3> colorToRgb(Color color) {
     switch (color) {
@@ -28,6 +29,18 @@ std::string moveToString(Move move) {
         case Move::B:  return "B";
         case Move::BP: return "B'";
         default:       return "?";
+    }
+}
+
+std::string colorToString(Color color) {
+    switch (color) {
+        case Color::WHITE:  return "W";
+        case Color::YELLOW: return "Y";
+        case Color::RED:    return "R";
+        case Color::ORANGE: return "O";
+        case Color::GREEN:  return "G";
+        case Color::BLUE:   return "B";
+        default:            return "?";
     }
 }
 
@@ -83,6 +96,50 @@ void RubiksCube::reset() {
     right_ = fillColor(Color::RED);
     up_ = fillColor(Color::WHITE);
     down_ = fillColor(Color::YELLOW);
+}
+
+void RubiksCube::dump() const {
+    // Print in 2D net layout:
+    //      Up
+    // Left Front Right Back
+    //      Down
+
+    // Helper to print a face row
+    auto printRow = [](const std::array<Color, 9>& face, int row) {
+        for (int col = 0; col < 3; ++col) {
+            std::cout << colorToString(face[row * 3 + col]) << " ";
+        }
+    };
+
+    // Print Up face (aligned with Front face)
+    // Front starts after Left face: "O O O   " = 8 characters
+    for (int row = 0; row < 3; ++row) {
+        std::cout << "        ";
+        printRow(up_, row);
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+
+    // Print Left, Front, Right, Back side by side
+    for (int row = 0; row < 3; ++row) {
+        printRow(left_, row);
+        std::cout << "  ";
+        printRow(front_, row);
+        std::cout << "  ";
+        printRow(right_, row);
+        std::cout << "  ";
+        printRow(back_, row);
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+
+    // Print Down face (aligned with Front face)
+    for (int row = 0; row < 3; ++row) {
+        std::cout << "        ";
+        printRow(down_, row);
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
 }
 
 // Face index layout:

@@ -1,6 +1,7 @@
 #include "renderer.h"
 #include <cmath>
 #include <algorithm>
+#include <iostream>
 
 CubeRenderer::CubeRenderer()
     : cube_()
@@ -9,6 +10,8 @@ CubeRenderer::CubeRenderer()
 
 void CubeRenderer::executeMove(Move move) {
     cube_.executeMove(move);
+    std::cout << "\n=== After " << moveToString(move) << " ===" << std::endl;
+    cube_.dump();
 }
 
 void CubeRenderer::reset() {
@@ -25,6 +28,10 @@ void CubeRenderer::resetView() {
 
 bool CubeRenderer::isSolved() const {
     return cube_.isSolved();
+}
+
+void CubeRenderer::dump() const {
+    cube_.dump();
 }
 
 void CubeRenderer::draw2D(ImDrawList* drawList, ImVec2 offset, float scale) {
