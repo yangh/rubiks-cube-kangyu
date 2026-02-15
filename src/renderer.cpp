@@ -150,24 +150,25 @@ void CubeRenderer::draw2D(ImDrawList* drawList, ImVec2 offset, float scale) {
     //offset.y += spacing * 0.5;
 
     // Draw in order: Up, Left, Front, Right, Down, Back
-    drawFace(drawList, cube_.getUp(), Color::WHITE,
+    drawFace(drawList, cube_.getUp(),
             ImVec2(offset.x, offset.y - spacing),
-            stickerSize, gap);
+            stickerSize, gap, false, Color::WHITE);
 
-    drawFace(drawList, cube_.getLeft(), Color::ORANGE,
+    drawFace(drawList, cube_.getLeft(),
             ImVec2(offset.x - spacing, offset.y),
-            stickerSize, gap);
-    drawFace(drawList, cube_.getFront(), Color::GREEN,
+            stickerSize, gap, false, Color::ORANGE);
+    drawFace(drawList, cube_.getFront(),
             ImVec2(offset.x + spacing * 0, offset.y),
-            stickerSize, gap);
-    drawFace(drawList, cube_.getRight(), Color::RED,
+            stickerSize, gap, false, Color::GREEN);
+    drawFace(drawList, cube_.getRight(),
             ImVec2(offset.x + spacing * 1, offset.y),
-            stickerSize, gap);
-    drawFace(drawList, cube_.getBack(), Color::BLUE,
+            stickerSize, gap, false, Color::RED);
+    drawFace(drawList, cube_.getBack(),
             ImVec2(offset.x + spacing * 2, offset.y),
-    drawFace(drawList, cube_.getDown(), Color::YELLOW,
+            stickerSize, gap, true, Color::BLUE);
+    drawFace(drawList, cube_.getDown(),
             ImVec2(offset.x, offset.y + spacing),
-            stickerSize, gap);
+            stickerSize, gap, false, Color::YELLOW);
 }
 
 void CubeRenderer::draw3D(ImDrawList* drawList, ImVec2 offset, float scale) {
@@ -384,13 +385,7 @@ void CubeRenderer::drawFace(ImDrawList* drawList, const std::array<Color, 9>& fa
                 index = row * 3 + col;
             }
 
-            std::array<float, 3> rgb = getFaceColor(faceType);
-            ImU32 color = IM_COL32(
-                static_cast<int>(rgb[0] * 255),
-                static_cast<int>(rgb[1] * 255),
-                static_cast<int>(rgb[2] * 255),
-                255
-            );
+            ImU32 color = getFaceColor(face[index]);
             float x = startX + static_cast<float>(col) * (size + gap);
             float y = startY + static_cast<float>(row) * (size + gap);
 
