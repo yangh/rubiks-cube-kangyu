@@ -158,7 +158,7 @@ void CubeRenderer::draw2D(ImDrawList* drawList, ImVec2 offset, float scale) {
             stickerSize, gap, false, Color::RED);
     drawFace(drawList, cube_.getBack(),
             ImVec2(offset.x + spacing * 2, offset.y),
-            stickerSize, gap, true, Color::BLUE);
+            stickerSize, gap, false, Color::BLUE);
     drawFace(drawList, cube_.getDown(),
             ImVec2(offset.x, offset.y + spacing),
             stickerSize, gap, false, Color::YELLOW);
@@ -370,9 +370,14 @@ void CubeRenderer::drawFace(ImDrawList* drawList, const std::array<Color, 9>& fa
             // Map visual position to face index, with optional vertical flip
             // Normal: row 0 -> indices 0,1,2 (top)
             // Flipped: row 0 -> indices 6,7,8 (bottom)
+            // For Back face (viewed from behind), use correct mapping without flip
             int index;
-            if (flipVertical) {
-                // Flip vertically: top visually = bottom in face indices
+            if (faceType == Color::BLUE) {
+                // Back face: use standard mapping (no flip needed)
+                // Back face is already in the correct orientation in cube data
+                index = row * 3 + col;
+            } else if (flipVertical) {
+                // Other faces with flipVertical: only flip vertically
                 index = (2 - row) * 3 + col;
             } else {
                 index = row * 3 + col;
