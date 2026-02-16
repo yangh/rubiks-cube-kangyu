@@ -1135,21 +1135,21 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
     if (col == 0) {
         const auto& face = cube_.getLeft();
         // Left face grid: row=2 is top, layer=0 is back
-        // Layer is inverted to match F/B move behavior
-        int idx = (2 - row) * 3 + (2 - layer);
+        // idx = (2 - row) * 3 + layer maps layer 0->0, 1->1, 2->2 to fix left-right mirroring
+        int idx = (2 - row) * 3 + layer;
         auto rgb = getFaceColorRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
-        glVertex3f(-0.5f, 0.5f, -0.5f); // vertex 0: left-top-back
-        glVertex3f(-0.5f, -0.5f, -0.5f); // vertex 1: left-bottom-back
-        glVertex3f(-0.5f, -0.5f, 0.5f);  // vertex 2: left-bottom-front
-        glVertex3f(-0.5f, 0.5f, 0.5f);  // vertex 3: left-top-front
+        glVertex3f(-0.5f, 0.5f, 0.5f);  // vertex 0: left-top-front
+        glVertex3f(-0.5f, 0.5f, -0.5f); // vertex 1: left-top-back
+        glVertex3f(-0.5f, -0.5f, -0.5f); // vertex 2: left-bottom-back
+        glVertex3f(-0.5f, -0.5f, 0.5f);  // vertex 3: left-bottom-front
         glEnd();
     } else {
         glColor3fv(black);
-        glVertex3f(-0.5f, 0.5f, -0.5f);
         glVertex3f(-0.5f, 0.5f, 0.5f);
-        glVertex3f(-0.5f, -0.5f, 0.5f);
+        glVertex3f(-0.5f, 0.5f, -0.5f);
         glVertex3f(-0.5f, -0.5f, -0.5f);
+        glVertex3f(-0.5f, -0.5f, 0.5f);
         glEnd();
     }
 }
