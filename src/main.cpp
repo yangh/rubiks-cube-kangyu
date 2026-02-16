@@ -31,6 +31,8 @@ void showHelp(const char* programName) {
     std::cout << "Keyboard Shortcuts:\n";
     std::cout << "  U/D/L/R/F/B/M/E/S - Execute corresponding move (clockwise)\n";
     std::cout << "  Shift+Key           - Execute prime move (counter-clockwise)\n";
+    std::cout << "  ESC                 - Reset cube to solved state\n";
+    std::cout << "  Ctrl+Q              - Quit application\n";
     std::cout << "  Example: 'U' = U move, 'Shift+U' = U' move\n";
 }
 
@@ -240,6 +242,17 @@ int main(int argc, char* argv[]) {
             renderer.resetView();
         }
 
+        // ESC: reset cube to solved state
+        if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+            renderer.reset();
+            renderer.resetView();
+        }
+
+        // Ctrl+Q: quit application
+        if (ImGui::IsKeyPressed(ImGuiKey_Q) && io.KeyCtrl) {
+            glfwSetWindowShouldClose(window, 1);
+        }
+
         // ===== Window 1: 3D View (Left side) =====
         ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(windowWidth - sidebarWidth - 20, windowHeight - 20), ImGuiCond_Always);
@@ -409,6 +422,8 @@ int main(int argc, char* argv[]) {
                 ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  U/D/L/R/F/B/M/E/S - Move (clockwise)");
                 ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Shift+Key - Prime move (counter-clockwise)");
                 ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Space - Reset view to default angles");
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  ESC - Reset cube to solved state");
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Ctrl+Q - Quit application");
 
                 ImGui::EndTabItem();
             }
