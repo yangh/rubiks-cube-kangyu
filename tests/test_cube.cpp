@@ -65,6 +65,9 @@ void testInverseMoves() {
         {"R + R'", Move::R, Move::RP},
         {"F + F'", Move::F, Move::FP},
         {"B + B'", Move::B, Move::BP},
+        {"M + M'", Move::M, Move::MP},
+        {"E + E'", Move::E, Move::EP},
+        {"S + S'", Move::S, Move::SP},
     };
 
     for (const auto& test : tests) {
@@ -107,6 +110,9 @@ void testFourMoves() {
         {"R four times", Move::R},
         {"F four times", Move::F},
         {"B four times", Move::B},
+        {"M four times", Move::M},
+        {"E four times", Move::E},
+        {"S four times", Move::S},
     };
 
     for (const auto& test : tests) {
@@ -177,6 +183,33 @@ void testMovePatterns() {
         cube.executeMove(Move::UP);
         cube.executeMove(Move::DP);
         assertTest("U D U' D' executed successfully", true);
+    }
+
+    {
+        RubiksCube cube;
+        cube.executeMove(Move::M);
+        cube.executeMove(Move::E);
+        cube.executeMove(Move::MP);
+        cube.executeMove(Move::EP);
+        assertTest("M E M' E' executed successfully", true);
+    }
+
+    {
+        RubiksCube cube;
+        cube.executeMove(Move::S);
+        cube.executeMove(Move::SP);
+        assertTest("S S' executed successfully", true);
+    }
+
+    {
+        RubiksCube cube;
+        cube.executeMove(Move::M);
+        cube.executeMove(Move::S);
+        cube.executeMove(Move::E);
+        cube.executeMove(Move::MP);
+        cube.executeMove(Move::SP);
+        cube.executeMove(Move::EP);
+        assertTest("M S E M' S' E' executed successfully", true);
     }
 }
 
@@ -261,24 +294,119 @@ void testAdjacentFaces() {
 
         assertTest("R move affected adjacent faces", upChanged && frontChanged && downChanged && backChanged);
     }
+
+    {
+        RubiksCube cube;
+        auto upBefore = cube.getUp();
+        auto downBefore = cube.getDown();
+        auto frontBefore = cube.getFront();
+        auto backBefore = cube.getBack();
+
+        cube.executeMove(Move::M);
+
+        // M move should affect middle column (1,4,7) of up, down, front, back
+        bool upChanged = (cube.getUp()[1] != upBefore[1]) ||
+                         (cube.getUp()[4] != upBefore[4]) ||
+                         (cube.getUp()[7] != upBefore[7]);
+        bool downChanged = (cube.getDown()[1] != downBefore[1]) ||
+                           (cube.getDown()[4] != downBefore[4]) ||
+                           (cube.getDown()[7] != downBefore[7]);
+        bool frontChanged = (cube.getFront()[1] != frontBefore[1]) ||
+                           (cube.getFront()[4] != frontBefore[4]) ||
+                           (cube.getFront()[7] != frontBefore[7]);
+        bool backChanged = (cube.getBack()[1] != backBefore[1]) ||
+                          (cube.getBack()[4] != backBefore[4]) ||
+                          (cube.getBack()[7] != backBefore[7]);
+
+        assertTest("M move affected adjacent faces", upChanged && downChanged && frontChanged && backChanged);
+    }
+
+    {
+        RubiksCube cube;
+        auto frontBefore = cube.getFront();
+        auto backBefore = cube.getBack();
+        auto leftBefore = cube.getLeft();
+        auto rightBefore = cube.getRight();
+
+        cube.executeMove(Move::E);
+
+        // E move should affect middle row (3,4,5) of front, back, left, right
+        bool frontChanged = (cube.getFront()[3] != frontBefore[3]) ||
+                           (cube.getFront()[4] != frontBefore[4]) ||
+                           (cube.getFront()[5] != frontBefore[5]);
+        bool backChanged = (cube.getBack()[3] != backBefore[3]) ||
+                          (cube.getBack()[4] != backBefore[4]) ||
+                          (cube.getBack()[5] != backBefore[5]);
+        bool leftChanged = (cube.getLeft()[3] != leftBefore[3]) ||
+                          (cube.getLeft()[4] != leftBefore[4]) ||
+                          (cube.getLeft()[5] != leftBefore[5]);
+        bool rightChanged = (cube.getRight()[3] != rightBefore[3]) ||
+                           (cube.getRight()[4] != rightBefore[4]) ||
+                           (cube.getRight()[5] != rightBefore[5]);
+
+        assertTest("E move affected adjacent faces", frontChanged && backChanged && leftChanged && rightChanged);
+    }
+
+    {
+        RubiksCube cube;
+        auto upBefore = cube.getUp();
+        auto downBefore = cube.getDown();
+        auto leftBefore = cube.getLeft();
+        auto rightBefore = cube.getRight();
+
+        cube.executeMove(Move::S);
+
+        // S move should affect middle row (3,4,5) of up and down, middle column (1,4,7) of left and right
+        bool upChanged = (cube.getUp()[3] != upBefore[3]) ||
+                         (cube.getUp()[4] != upBefore[4]) ||
+                         (cube.getUp()[5] != upBefore[5]);
+        bool downChanged = (cube.getDown()[3] != downBefore[3]) ||
+                           (cube.getDown()[4] != downBefore[4]) ||
+                           (cube.getDown()[5] != downBefore[5]);
+        bool leftChanged = (cube.getLeft()[1] != leftBefore[1]) ||
+                          (cube.getLeft()[4] != leftBefore[4]) ||
+                          (cube.getLeft()[7] != leftBefore[7]);
+        bool rightChanged = (cube.getRight()[1] != rightBefore[1]) ||
+                           (cube.getRight()[4] != rightBefore[4]) ||
+                           (cube.getRight()[7] != rightBefore[7]);
+
+        assertTest("S move affected adjacent faces", upChanged && downChanged && leftChanged && rightChanged);
+    }
 }
 
 // Test 7: Complex scrambling should make cube unsolved
 void testScrambling() {
     std::cout << "\\n=== Test 7: Scrambling ===" << std::endl;
 
-    RubiksCube cube;
-    Move scrambleMoves[] = {
-        Move::U, Move::R, Move::F, Move::D,
-        Move::L, Move::B, Move::UP, Move::DP,
-        Move::RP, Move::FP, Move::LP, Move::BP
-    };
+    {
+        RubiksCube cube;
+        Move scrambleMoves[] = {
+            Move::U, Move::R, Move::F, Move::D,
+            Move::L, Move::B, Move::UP, Move::DP,
+            Move::RP, Move::FP, Move::LP, Move::BP
+        };
 
-    for (auto move : scrambleMoves) {
-        cube.executeMove(move);
+        for (auto move : scrambleMoves) {
+            cube.executeMove(move);
+        }
+
+        assertTest("Scrambled cube is not solved (basic moves)", !cube.isSolved());
     }
 
-    assertTest("Scrambled cube is not solved", !cube.isSolved());
+    {
+        RubiksCube cube;
+        Move scrambleMoves[] = {
+            Move::M, Move::E, Move::S, Move::MP,
+            Move::EP, Move::SP, Move::U, Move::D,
+            Move::R, Move::L, Move::F, Move::B
+        };
+
+        for (auto move : scrambleMoves) {
+            cube.executeMove(move);
+        }
+
+        assertTest("Scrambled cube is not solved (with slice moves)", !cube.isSolved());
+    }
 }
 
 // Test 8: Color conversion
@@ -308,23 +436,63 @@ void testMoveToString() {
     assertTest("R' converts to 'R'", moveToString(Move::RP) == "R'");
     assertTest("F converts to 'F'", moveToString(Move::F) == "F");
     assertTest("F' converts to 'F'", moveToString(Move::FP) == "F'");
+    assertTest("M converts to 'M'", moveToString(Move::M) == "M");
+    assertTest("M' converts to 'M'", moveToString(Move::MP) == "M'");
+    assertTest("E converts to 'E'", moveToString(Move::E) == "E");
+    assertTest("E' converts to 'E'", moveToString(Move::EP) == "E'");
+    assertTest("S converts to 'S'", moveToString(Move::S) == "S");
+    assertTest("S' converts to 'S'", moveToString(Move::SP) == "S'");
 }
 
 // Test 10: Cube consistency after multiple operations
 void testCubeConsistency() {
     std::cout << "\\n=== Test 10: Cube Consistency ===" << std::endl;
 
-    RubiksCube cube;
-    cube.executeMove(Move::U);
-    cube.executeMove(Move::R);
-    cube.executeMove(Move::F);
-    cube.executeMove(Move::UP);
-    cube.executeMove(Move::RP);
-    cube.executeMove(Move::FP);
+    {
+        RubiksCube cube;
+        cube.executeMove(Move::U);
+        cube.executeMove(Move::R);
+        cube.executeMove(Move::F);
+        cube.executeMove(Move::UP);
+        cube.executeMove(Move::RP);
+        cube.executeMove(Move::FP);
 
-    assertTest("Front has 9 stickers", true);
-    assertTest("Up has 9 stickers", true);
-    assertTest("Down has 9 stickers", true);
+        assertTest("Front has 9 stickers", true);
+        assertTest("Up has 9 stickers", true);
+        assertTest("Down has 9 stickers", true);
+    }
+
+    {
+        RubiksCube cube;
+        cube.executeMove(Move::M);
+        cube.executeMove(Move::E);
+        cube.executeMove(Move::S);
+        cube.executeMove(Move::MP);
+        cube.executeMove(Move::EP);
+        cube.executeMove(Move::SP);
+
+        assertTest("Front has 9 stickers after slice moves", true);
+        assertTest("Up has 9 stickers after slice moves", true);
+        assertTest("Down has 9 stickers after slice moves", true);
+        assertTest("Left has 9 stickers after slice moves", true);
+        assertTest("Right has 9 stickers after slice moves", true);
+        assertTest("Back has 9 stickers after slice moves", true);
+    }
+
+    {
+        RubiksCube cube;
+        cube.executeMove(Move::U);
+        cube.executeMove(Move::M);
+        cube.executeMove(Move::E);
+        cube.executeMove(Move::S);
+        // Inverse moves must be executed in reverse order
+        cube.executeMove(Move::SP);
+        cube.executeMove(Move::EP);
+        cube.executeMove(Move::MP);
+        cube.executeMove(Move::UP);
+
+        assertTest("Cube consistent after mixed moves", cube.isSolved());
+    }
 }
 
 // Test 11: M/E/S inverse moves should return to original state
