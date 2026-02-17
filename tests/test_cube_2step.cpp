@@ -64,8 +64,7 @@ int main() {
 
     std::cout << "\nTesting all 2-step move combinations..." << std::endl;
     std::cout << "Total moves: " << allMoves.size() << std::endl;
-    std::cout << "Expected combinations (excluding inverses): "
-              << (allMoves.size() * allMoves.size()) << std::endl;
+    std::cout << "Total possible combinations: " << (allMoves.size() * allMoves.size()) << std::endl;
     std::cout << "==========================================" << std::endl;
 
     int totalTests = 0;
@@ -79,8 +78,8 @@ int main() {
             std::string move2Str = moveToString(move2);
             std::string testName = move1Str + " " + move2Str;
 
-            // Skip inverse pairs
-            if (areInverses(move1, move2)) {
+            // Skip inverse pairs and duplicate moves (e.g., U U, U' U')
+            if (areInverses(move1, move2) || move1 == move2) {
                 skippedTests++;
                 continue;
             }
@@ -112,7 +111,7 @@ int main() {
     std::cout << "\n==========================================" << std::endl;
     std::cout << YELLOW << "Test Results:" << RESET << std::endl;
     std::cout << "Total combinations tested: " << totalTests << std::endl;
-    std::cout << "Skipped (inverse pairs): " << skippedTests << std::endl;
+    std::cout << "Skipped (duplicate moves and inverse pairs): " << skippedTests << std::endl;
     std::cout << "Executed: " << (totalTests - skippedTests) << std::endl;
     std::cout << GREEN << "Passed: " << testsPassed << RESET << std::endl;
     std::cout << RED << "Failed: " << testsFailed << RESET << std::endl;
