@@ -102,3 +102,20 @@ target_include_directories(test_formula
 
 # Add formula verification test
 add_test(NAME formula_verify COMMAND test_formula)
+
+# Create formula vs reference test executable
+add_executable(test_formula_ref
+    tests/test_formula_ref.cpp
+    src/cube.cpp
+    src/formula.cpp
+    tests/ref/ref_cube.cpp
+)
+
+target_include_directories(test_formula_ref
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/ref
+)
+
+# Add formula vs reference test
+add_test(NAME formula_ref_verify COMMAND test_formula_ref)

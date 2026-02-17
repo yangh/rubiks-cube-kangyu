@@ -23,6 +23,9 @@ class FormulaManager {
 public:
     FormulaManager();
 
+    // Set the formula directory path
+    void setFormulaDir(const std::string& path) { formulaDir_ = path; }
+
     // Load all formula files from the formula directory
     void loadFormulas();
 
