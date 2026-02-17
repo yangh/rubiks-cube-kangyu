@@ -57,3 +57,17 @@ target_include_directories(test_cube
 
 # Add test
 add_test(NAME cube_logic COMMAND test_cube)
+
+# Create 2-step move combination test executable
+add_executable(test_cube_2step
+    tests/test_cube_2step.cpp
+    src/cube.cpp
+)
+
+target_include_directories(test_cube_2step
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+# Add 2-step test
+add_test(NAME cube_2step_combos COMMAND test_cube_2step)
