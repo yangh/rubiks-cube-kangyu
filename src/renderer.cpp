@@ -142,7 +142,7 @@ void CubeRenderer::draw2D(ImDrawList* drawList, ImVec2 offset, float scale) {
     offset.x -= spacing * 0.5;
     //offset.y += spacing * 0.5;
 
-    // Draw in order: Up, Left, Front, Right, Down, Back
+    // Draw in order: Up, Left, Front, Right, Back, Down
     drawFace(drawList, cube_.getUp(),
             ImVec2(offset.x, offset.y - spacing),
             stickerSize, gap, false, Color::WHITE);
@@ -151,16 +151,16 @@ void CubeRenderer::draw2D(ImDrawList* drawList, ImVec2 offset, float scale) {
             ImVec2(offset.x - spacing, offset.y),
             stickerSize, gap, false, Color::ORANGE);
     drawFace(drawList, cube_.getFront(),
-            ImVec2(offset.x + spacing * 0, offset.y),
+            ImVec2(offset.x, offset.y),
             stickerSize, gap, false, Color::GREEN);
     drawFace(drawList, cube_.getRight(),
-            ImVec2(offset.x + spacing * 1, offset.y),
+            ImVec2(offset.x + spacing, offset.y),
             stickerSize, gap, false, Color::RED);
     drawFace(drawList, cube_.getBack(),
-            ImVec2(offset.x + spacing * 2, offset.y),
+            ImVec2(offset.x, offset.y + spacing),
             stickerSize, gap, false, Color::BLUE);
     drawFace(drawList, cube_.getDown(),
-            ImVec2(offset.x, offset.y + spacing),
+            ImVec2(offset.x, offset.y + spacing * 2),
             stickerSize, gap, false, Color::YELLOW);
 }
 
