@@ -421,6 +421,8 @@ void RubiksCube::rotateRight(bool prime) {
         // Counter-clockwise: up <- back <- down <- front <- up
         std::array<Color, 3> temp = {up_[2], up_[5], up_[8]};
         up_[2] = back_[6]; up_[5] = back_[3]; up_[8] = back_[0];
+        // Back face's left column (0,3,6) maps to Down's right column (8,5,2) mirrored
+        // When viewed from right side, Back's left (0) maps to Down's bottom-right (8)
         back_[6] = down_[8]; back_[3] = down_[5]; back_[0] = down_[2];
         down_[2] = front_[2]; down_[5] = front_[5]; down_[8] = front_[8];
         front_[2] = temp[0]; front_[5] = temp[1]; front_[8] = temp[2];
