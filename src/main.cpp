@@ -666,6 +666,13 @@ int main(int argc, char* argv[]) {
                     // Display move count
                     ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
                         "Total moves: %zu", selectedItem->moves.size());
+
+                    // Display loop count if formula has loop syntax
+                    if (selectedItem->loopCount > 0) {
+                        ImGui::SameLine();
+                        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.5f, 1.0f),
+                            "| Loop: %d", selectedItem->loopCount);
+                    }
                 }
 
                 ImGui::Spacing();
@@ -717,11 +724,23 @@ int main(int argc, char* argv[]) {
                             renderer.executeMove(inverseMove);
                         }
                     }
+
+                    // Loop Execute button - only show if formula has loop syntax
+                    if (selectedItem->loopCount > 0) {
+                        if (ImGui::Button("Loop Execute", ImVec2(180, 0))) {
+                            // Execute formula loopCount times to restore to original state
+                            for (int i = 0; i < selectedItem->loopCount; ++i) {
+                                for (const Move& move : selectedItem->moves) {
+                                    renderer.executeMove(move);
+                                }
+                            }
+                        }
+                    }
                 } else {
                     // Disabled buttons when no formula selected
                     ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
                     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-                    ImGui::Button("Execute", ImVec2(200, 0));
+                    ImGui::Button("Execute", ImVec2(180, 0));
                     ImGui::PopStyleVar();
                     ImGui::PopItemFlag();
 

@@ -10,6 +10,7 @@
 struct FormulaItem {
     std::string name;
     std::vector<Move> moves;
+    int loopCount = 0;  // 0 means no loop, >0 means loop that many times to restore
 };
 
 // Represents a formula file containing multiple formula items

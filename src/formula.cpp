@@ -125,12 +125,51 @@ bool FormulaManager::parseFormulaFile(const std::string& filePath, FormulaFile& 
             item.name.erase(item.name.find_last_not_of(" \t") + 1);
 
             std::string movesStr = line.substr(colonPos + 1);
+
+            // Check for loop syntax: "* number" at the end
+            size_t starPos = movesStr.rfind('*');
+            if (starPos != std::string::npos) {
+                // Extract the loop count
+                std::string loopStr = movesStr.substr(starPos + 1);
+                // Trim whitespace
+                loopStr.erase(0, loopStr.find_first_not_of(" \t"));
+                loopStr.erase(loopStr.find_last_not_of(" \t") + 1);
+                // Remove loop syntax from moves string
+                movesStr = movesStr.substr(0, starPos);
+                // Parse loop count
+                try {
+                    item.loopCount = std::stoi(loopStr);
+                } catch (...) {
+                    item.loopCount = 0;
+                }
+            }
+
             item.moves = parseMoveSequence(movesStr);
         } else {
             // Format: just "moves", use "公式 N" as name
             static int formulaCounter = 1;
             item.name = "公式 " + std::to_string(formulaCounter++);
-            item.moves = parseMoveSequence(line);
+
+            // Check for loop syntax: "* number" at the end
+            size_t starPos = line.rfind('*');
+            if (starPos != std::string::npos) {
+                // Extract the loop count
+                std::string loopStr = line.substr(starPos + 1);
+                // Trim whitespace
+                loopStr.erase(0, loopStr.find_first_not_of(" \t"));
+                loopStr.erase(loopStr.find_last_not_of(" \t") + 1);
+                // Remove loop syntax from moves string
+                std::string movesStr = line.substr(0, starPos);
+                // Parse loop count
+                try {
+                    item.loopCount = std::stoi(loopStr);
+                } catch (...) {
+                    item.loopCount = 0;
+                }
+                item.moves = parseMoveSequence(movesStr);
+            } else {
+                item.moves = parseMoveSequence(line);
+            }
         }
 
         // Only add if there are valid moves
