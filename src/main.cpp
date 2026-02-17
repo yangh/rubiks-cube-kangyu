@@ -567,7 +567,7 @@ int main(int argc, char* argv[]) {
                 float rightColumnWidth = availableWidth * 0.6f; // 60% for formula items
 
                 // Reserve space for buttons at bottom (about 80px)
-                float listHeight = availableHeight - 80.0f;
+                float listHeight = availableHeight - 220.0f;
 
                 // Left column: Formula file list
                 ImGui::BeginChild("FormulaFileList", ImVec2(leftColumnWidth, listHeight), true);

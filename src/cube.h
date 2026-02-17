@@ -114,8 +114,10 @@ private:
     std::vector<Move> redoHistory_;
 
     // Face rotation functions
+    void rotateRowX(bool prime, int row);
     void rotateUp(bool prime);
     void rotateDown(bool prime);
+    void rotateColY(bool prime, int col);
     void rotateLeft(bool prime);
     void rotateRight(bool prime);
     void rotateFront(bool prime);

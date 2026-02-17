@@ -2,17 +2,18 @@
 # 格式: Name: moves * loopCount
 # loopCount 表示执行该公式几次后可以复原到原始状态
 
-# 三次回原公式 (R' D' R D 执行6次复原)
-三次回原: R' D' R D * 6
+# 6 次回原公式 (R' D' R D 执行6次复原)
+6次回原: R' D' R D * 6
 
 # Sune 公式 (执行3次复原)
-Sune循环: R U R' U R U U R' * 3
+# 6 loop can restore, need turn over in the middle?
+Sune循环: R U R' U R U U R' * 6
+
+# 三次回原公式
+三次回原2: U R D' R' U' R D R' * 3
 
 # 四次回原公式
-四次回原: U R D' R' U' R D R' * 4
+四次回原: R U' L' U R' U' L * 4
 
-# 六次回原公式
-六次回原: R U' L' U R' U' L * 6
-
-# 七次回原公式
-洗刷刷: U R U' R' * 7
+# 6次回原公式
+洗刷刷: U R U' R' * 6

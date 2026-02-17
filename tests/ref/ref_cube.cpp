@@ -120,7 +120,9 @@ void RubiksCube::r(bool prime) {
         // Counter-clockwise: up <- back <- down <- front <- up
         std::array<Color, 3> temp = {up_[2], up_[5], up_[8]};
         up_[2] = back_[6]; up_[5] = back_[3]; up_[8] = back_[0];
-        back_[6] = down_[8]; back_[3] = down_[5]; back_[0] = down_[2];
+        // FIX: Save up_[2] before it's modified by back_[0] = right_[0]
+        Color saved_up2 = up_[2];
+        back_[6] = saved_up2; back_[3] = down_[5]; back_[0] = down_[2];
         down_[2] = front_[2]; down_[5] = front_[5]; down_[8] = front_[8];
         front_[2] = temp[0]; front_[5] = temp[1]; front_[8] = temp[2];
     } else {

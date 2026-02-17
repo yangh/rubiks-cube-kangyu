@@ -117,11 +117,11 @@ std::array<Color, 9> RubiksCube::fillColor(Color color) {
 
 RubiksCube::RubiksCube()
     : front_(fillColor(Color::GREEN))
-    , back_(fillColor(Color::BLUE))
-    , left_(fillColor(Color::ORANGE))
+    , back_( fillColor(Color::BLUE))
+    , left_( fillColor(Color::ORANGE))
     , right_(fillColor(Color::RED))
-    , up_(fillColor(Color::WHITE))
-    , down_(fillColor(Color::YELLOW))
+    , up_(   fillColor(Color::WHITE))
+    , down_( fillColor(Color::YELLOW))
 {
 }
 
@@ -137,13 +137,13 @@ void RubiksCube::executeMove(Move move) {
         case Move::UP: rotateUp(true); break;
         case Move::D:  rotateDown(false); break;
         case Move::DP: rotateDown(true); break;
-        case Move::L: rotateLeft(false); break;
+        case Move::L:  rotateLeft(false); break;
         case Move::LP: rotateLeft(true); break;
-        case Move::R: rotateRight(false); break;
+        case Move::R:  rotateRight(false); break;
         case Move::RP: rotateRight(true); break;
-        case Move::F: rotateFront(false); break;
+        case Move::F:  rotateFront(false); break;
         case Move::FP: rotateFront(true); break;
-        case Move::B: rotateBack(false); break;
+        case Move::B:  rotateBack(false); break;
         case Move::BP: rotateBack(true); break;
         case Move::M:  rotateMiddle(false); break;
         case Move::MP: rotateMiddle(true); break;
@@ -354,86 +354,95 @@ void RubiksCube::dump() const {
 // 3 4 5
 // 6 7 8
 
-void RubiksCube::rotateUp(bool prime) {
-    rotateFaceClockwise(up_, prime);
+#define shiftLeftX(a, b, row) \
+    a[0 + row * 3] = b[0 + row * 3]; \
+    a[1 + row * 3] = b[1 + row * 3]; \
+    a[2 + row * 3] = b[2 + row * 3];
+
+#define shiftLeftY(a, b, col) \
+    a[0 + col] = b[0 + col]; \
+    a[3 + col] = b[3 + col]; \
+    a[6 + col] = b[6 + col];
+
+#define shiftLeftYFromBack(a, b, col) \
+    a[0 + col] = b[8 - col]; \
+    a[3 + col] = b[5 - col]; \
+    a[6 + col] = b[2 - col];
+
+#define shiftLeftYToBack(a, b, col) \
+    a[8 - col] = b[0 + col]; \
+    a[5 - col] = b[3 + col]; \
+    a[2 - col] = b[6 + col];
+
+void RubiksCube::rotateRowX(bool prime, int row = 0) {
+    std::array<Color, 9> temp = front_;
 
     if (prime) {
         // Counter-clockwise: front <- left <- back <- right <- front
-        std::array<Color, 3> temp = {front_[0], front_[1], front_[2]};
-        front_[0] = left_[0]; front_[1] = left_[1]; front_[2] = left_[2];
-        left_[0] = back_[0]; left_[1] = back_[1]; left_[2] = back_[2];
-        back_[0] = right_[0]; back_[1] = right_[1]; back_[2] = right_[2];
-        right_[0] = temp[0]; right_[1] = temp[1]; right_[2] = temp[2];
+        shiftLeftX(front_, left_, row);
+        shiftLeftX(left_,  back_, row);
+        shiftLeftX(back_, right_, row);
+        shiftLeftX(right_, temp, row);
     } else {
         // Clockwise: front <- right <- back <- left <- front
-        std::array<Color, 3> temp = {front_[0], front_[1], front_[2]};
-        front_[0] = right_[0]; front_[1] = right_[1]; front_[2] = right_[2];
-        right_[0] = back_[0]; right_[1] = back_[1]; right_[2] = back_[2];
-        back_[0] = left_[0]; back_[1] = left_[1]; back_[2] = left_[2];
-        left_[0] = temp[0]; left_[1] = temp[1]; left_[2] = temp[2];
+        shiftLeftX(front_, right_, row);
+        shiftLeftX(right_, back_, row);
+        shiftLeftX(back_, left_, row);
+        shiftLeftX(left_,  temp, row);
     }
+}
+
+void RubiksCube::rotateUp(bool prime) {
+    rotateFaceClockwise(up_, prime);
+    rotateRowX(prime, 0);
+}
+
+// E (Equator): Rotate the middle slice between U and D
+void RubiksCube::rotateEquator(bool prime) {
+    // counter-clockwise from top view
+    rotateRowX(!prime, 1);
 }
 
 void RubiksCube::rotateDown(bool prime) {
     rotateFaceClockwise(down_, prime);
+    // counter-clockwise from top view
+    rotateRowX(!prime, 2);
+}
+
+void RubiksCube::rotateColY(bool prime, int col = 0) {
+    std::array<Color, 9> temp = up_;
 
     if (prime) {
-        // Counter-clockwise: front <- right <- back <- left <- front
-        std::array<Color, 3> temp = {front_[6], front_[7], front_[8]};
-        front_[6] = right_[6]; front_[7] = right_[7]; front_[8] = right_[8];
-        right_[6] = back_[6]; right_[7] = back_[7]; right_[8] = back_[8];
-        back_[6] = left_[6]; back_[7] = left_[7]; back_[8] = left_[8];
-        left_[6] = temp[0]; left_[7] = temp[1]; left_[8] = temp[2];
+        // Counter-clockwise: up <- front <- down <- back <- up
+        shiftLeftYFromBack(up_, back_, col);
+        shiftLeftYToBack(back_, down_, col);
+        shiftLeftY(down_, front_, col);
+        shiftLeftY(front_, temp, col);
     } else {
-        // Clockwise: front <- left <- back <- right <- front
-        std::array<Color, 3> temp = {front_[6], front_[7], front_[8]};
-        front_[6] = left_[6]; front_[7] = left_[7]; front_[8] = left_[8];
-        left_[6] = back_[6]; left_[7] = back_[7]; left_[8] = back_[8];
-        back_[6] = right_[6]; back_[7] = right_[7]; back_[8] = right_[8];
-        right_[6] = temp[0]; right_[7] = temp[1]; right_[8] = temp[2];
+        // Clockwise: up <- back <- down <- front <- up
+        shiftLeftY(up_, front_, col);
+        shiftLeftY(front_, down_, col);
+        shiftLeftYFromBack(down_, back_, col);
+        shiftLeftYToBack(back_, temp, col);
     }
 }
 
 void RubiksCube::rotateLeft(bool prime) {
     rotateFaceClockwise(left_, prime);
+    // Counter-clockwise
+    rotateColY(!prime, 0);
+}
 
-    if (prime) {
-        // Counter-clockwise: up <- front <- down <- back <- up
-        std::array<Color, 3> temp = {up_[0], up_[3], up_[6]};
-        up_[0] = front_[0]; up_[3] = front_[3]; up_[6] = front_[6];
-        front_[0] = down_[0]; front_[3] = down_[3]; front_[6] = down_[6];
-        down_[0] = back_[8]; down_[3] = back_[5]; down_[6] = back_[2];
-        back_[8] = temp[0]; back_[5] = temp[1]; back_[2] = temp[2];
-    } else {
-        // Clockwise: up <- back <- down <- front <- up
-        std::array<Color, 3> temp = {up_[0], up_[3], up_[6]};
-        up_[0] = back_[8]; up_[3] = back_[5]; up_[6] = back_[2];
-        back_[8] = down_[6]; back_[5] = down_[3]; back_[2] = down_[0];
-        down_[0] = front_[0]; down_[3] = front_[3]; down_[6] = front_[6];
-        front_[0] = temp[0]; front_[3] = temp[1]; front_[6] = temp[2];
-    }
+// M (Middle): Rotate the middle slice between L and R
+void RubiksCube::rotateMiddle(bool prime) {
+    // Counter-clockwise
+    rotateColY(!prime, 1);
 }
 
 void RubiksCube::rotateRight(bool prime) {
     rotateFaceClockwise(right_, prime);
-
-    if (prime) {
-        // Counter-clockwise: up <- back <- down <- front <- up
-        std::array<Color, 3> temp = {up_[2], up_[5], up_[8]};
-        up_[2] = back_[6]; up_[5] = back_[3]; up_[8] = back_[0];
-        // Back face's left column (0,3,6) maps to Down's right column (8,5,2) mirrored
-        // When viewed from right side, Back's left (0) maps to Down's bottom-right (8)
-        back_[6] = down_[8]; back_[3] = down_[5]; back_[0] = down_[2];
-        down_[2] = front_[2]; down_[5] = front_[5]; down_[8] = front_[8];
-        front_[2] = temp[0]; front_[5] = temp[1]; front_[8] = temp[2];
-    } else {
-        // Clockwise: up <- front <- down <- back <- up
-        std::array<Color, 3> temp = {up_[2], up_[5], up_[8]};
-        up_[2] = front_[2]; up_[5] = front_[5]; up_[8] = front_[8];
-        front_[2] = down_[2]; front_[5] = down_[5]; front_[8] = down_[8];
-        down_[2] = back_[6]; down_[5] = back_[3]; down_[8] = back_[0];
-        back_[6] = temp[0]; back_[3] = temp[1]; back_[0] = temp[2];
-    }
+    // Clockwise
+    rotateColY(prime, 2);
 }
 
 void RubiksCube::rotateFront(bool prime) {
@@ -473,48 +482,6 @@ void RubiksCube::rotateBack(bool prime) {
         right_[2] = down_[6]; right_[5] = down_[7]; right_[8] = down_[8];
         down_[6] = left_[0]; down_[7] = left_[3]; down_[8] = left_[6];
         left_[0] = temp[0]; left_[3] = temp[1]; left_[6] = temp[2];
-    }
-}
-
-// M (Middle): Rotate the middle slice between L and R
-void RubiksCube::rotateMiddle(bool prime) {
-    // Middle slice affects: Up[1,4,7], Down[1,4,7], Front[1,4,7], Back[1,4,7]
-    // Looking from left: M rotates up->down (same as L from left perspective)
-    if (prime) {
-        // M' (clockwise from left): up -> back -> down -> front -> up
-        std::array<Color, 3> temp = {up_[1], up_[4], up_[7]};
-        up_[1] = front_[1]; up_[4] = front_[4]; up_[7] = front_[7];
-        front_[1] = down_[1]; front_[4] = down_[4]; front_[7] = down_[7];
-        down_[1] = back_[1]; down_[4] = back_[4]; down_[7] = back_[7];
-        back_[1] = temp[0]; back_[4] = temp[1]; back_[7] = temp[2];
-    } else {
-        // M (counter-clockwise from left): up -> front -> down -> back -> up
-        std::array<Color, 3> temp = {up_[1], up_[4], up_[7]};
-        up_[1] = back_[1]; up_[4] = back_[4]; up_[7] = back_[7];
-        back_[1] = down_[1]; back_[4] = down_[4]; back_[7] = down_[7];
-        down_[1] = front_[1]; down_[4] = front_[4]; down_[7] = front_[7];
-        front_[1] = temp[0]; front_[4] = temp[1]; front_[7] = temp[2];
-    }
-}
-
-// E (Equator): Rotate the middle slice between U and D
-void RubiksCube::rotateEquator(bool prime) {
-    // Equator slice affects: Front[3,4,5], Back[3,4,5], Left[3,4,5], Right[3,4,5]
-    // Looking from top: E rotates front->left
-    if (prime) {
-        // E (clockwise from top): front -> left -> back -> right -> front
-        std::array<Color, 3> temp = {front_[3], front_[4], front_[5]};
-        front_[3] = right_[3]; front_[4] = right_[4]; front_[5] = right_[5];
-        right_[3] = back_[3]; right_[4] = back_[4]; right_[5] = back_[5];
-        back_[3] = left_[3]; back_[4] = left_[4]; back_[5] = left_[5];
-        left_[3] = temp[0]; left_[4] = temp[1]; left_[5] = temp[2];
-    } else {
-        // E' (counter-clockwise from top): front -> right -> back -> left -> front
-        std::array<Color, 3> temp = {front_[3], front_[4], front_[5]};
-        front_[3] = left_[3]; front_[4] = left_[4]; front_[5] = left_[5];
-        left_[3] = back_[3]; left_[4] = back_[4]; left_[5] = back_[5];
-        back_[3] = right_[3]; back_[4] = right_[4]; back_[5] = right_[5];
-        right_[3] = temp[0]; right_[4] = temp[1]; right_[5] = temp[2];
     }
 }
 

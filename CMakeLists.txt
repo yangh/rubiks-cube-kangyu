@@ -103,6 +103,17 @@ target_include_directories(test_formula
 # Add formula verification test
 add_test(NAME formula_verify COMMAND test_formula)
 
+# Create xiaoyu formula analysis test executable
+add_executable(test_xiaoyu
+    tests/test_xiaoyu.cpp
+    src/cube.cpp
+)
+
+target_include_directories(test_xiaoyu
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
 # Create formula vs reference test executable
 add_executable(test_formula_ref
     tests/test_formula_ref.cpp
@@ -119,3 +130,32 @@ target_include_directories(test_formula_ref
 
 # Add formula vs reference test
 add_test(NAME formula_ref_verify COMMAND test_formula_ref)
+
+# Create U R R' U' verification test executable
+add_executable(test_urrup
+    tests/test_urrup.cpp
+    src/cube.cpp
+    tests/ref/ref_cube.cpp
+)
+
+target_include_directories(test_urrup
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/ref
+)
+
+# Add U R R' U' test
+add_test(NAME urrup_verify COMMAND test_urrup)
+
+# Create comparison test executable
+add_executable(compare_algorithms
+    tests/compare_algorithms.cpp
+    src/cube.cpp
+    tests/ref/ref_cube.cpp
+)
+
+target_include_directories(compare_algorithms
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/ref
+)
