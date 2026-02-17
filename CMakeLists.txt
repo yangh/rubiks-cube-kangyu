@@ -71,3 +71,19 @@ target_include_directories(test_cube_2step
 
 # Add 2-step test
 add_test(NAME cube_2step_combos COMMAND test_cube_2step)
+
+# Create reference verification test executable
+add_executable(test_ref_verify
+    tests/test_ref_verify.cpp
+    src/cube.cpp
+    tests/ref/ref_cube.cpp
+)
+
+target_include_directories(test_ref_verify
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests/ref
+)
+
+# Add reference verification test
+add_test(NAME reference_verify COMMAND test_ref_verify)
