@@ -157,10 +157,10 @@ void CubeRenderer::draw2D(ImDrawList* drawList, ImVec2 offset, float scale) {
             ImVec2(offset.x + spacing, offset.y),
             stickerSize, gap, false, Color::RED);
     drawFace(drawList, cube_.getBack(),
-            ImVec2(offset.x, offset.y + spacing),
+            ImVec2(offset.x + spacing * 2, offset.y),
             stickerSize, gap, false, Color::BLUE);
     drawFace(drawList, cube_.getDown(),
-            ImVec2(offset.x, offset.y + spacing * 2),
+            ImVec2(offset.x, offset.y + spacing),
             stickerSize, gap, false, Color::YELLOW);
 }
 
