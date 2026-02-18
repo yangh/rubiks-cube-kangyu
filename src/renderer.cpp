@@ -228,11 +228,12 @@ void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
         return;
     }
 
-    // Hardcoded 3D view window position (same as in main.cpp)
-    int sidebarWidth = 400;
+    // 3D view window position and size (must match main.cpp)
+    // Sidebar width is 40% of window width, minimum 350px (same as main.cpp)
+    float sidebarWidth = fmaxf(350.0f, windowWidth * 0.4f);
     int viewX = 10;
     int viewY = 10;
-    int viewWidth = windowWidth - sidebarWidth - 20;
+    int viewWidth = windowWidth - (int)sidebarWidth - 20;
     int viewHeight = windowHeight - 20;
 
     // Set viewport to match the 3D view window
@@ -264,18 +265,26 @@ void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
     // Apply camera translation (move back from the cube)
     glTranslatef(0.0f, 0.0f, -3.0f);
 
-    // Apply rotation from user controls
+    // Disable lighting - render colors directly
+    glDisable(GL_LIGHTING);
+    glDisable(GL_LIGHT0);
+    glDisable(GL_COLOR_MATERIAL);
+
+    // Draw the circular canvas beneath the cube (steady, no rotation)
+    glPushMatrix();
+    // Reset rotation to keep circle steady, keep translation for position
+    glLoadIdentity();
+    glTranslatef(0.0f, 0.0f, -3.0f);
+    drawCircleCanvas();
+    glPopMatrix();
+
+    // Apply rotation from user controls (only for the cube)
     glRotatef(rotationX, 1.0f, 0.0f, 0.0f);
     glRotatef(rotationY, 0.0f, 1.0f, 0.0f);
     glRotatef(rotationZ, 0.0f, 0.0f, 1.0f);
 
     // Scale down the cube slightly
     glScalef(0.9f, 0.9f, 0.9f);
-
-    // Disable lighting - render colors directly
-    glDisable(GL_LIGHTING);
-    glDisable(GL_LIGHT0);
-    glDisable(GL_COLOR_MATERIAL);
 
     // Disable face culling to show all faces
     glDisable(GL_CULL_FACE);
@@ -764,6 +773,50 @@ void CubeRenderer::drawTestCube(ImDrawList* drawList, ImVec2 center, float size)
         // Draw the face
         drawList->AddQuadFilled(projected[0], projected[1], projected[2], projected[3], face.color);
     }
+}
+
+// Draw a circular canvas beneath the cube
+void CubeRenderer::drawCircleCanvas() {
+    // Circle parameters
+    float radius = 1.67f;       // Radius larger than cube (2/3 of original 2.5f)
+    float yOffset = -1.5f;       // Position below the cube (cube spans -1 to +1 in Y after 0.3 scale)
+    int segments = 64;           // Number of segments for smooth circle
+    float r = 0.4f;              // Gray color (subtle)
+    float g = 0.45f;             // Slight blue tint
+    float b = 0.5f;              // Light blue-gray
+    float a = 0.7f;              // Semi-transparent
+
+    // Enable blending for transparency
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // Draw filled circle (solid look)
+    glBegin(GL_TRIANGLE_FAN);
+    glColor4f(r, g, b, a);
+    glVertex3f(0.0f, yOffset, 0.0f);  // Center point
+
+    for (int i = 0; i <= segments; i++) {
+        float angle = 2.0f * M_PI * i / segments;
+        float x = radius * cosf(angle);
+        float z = radius * sinf(angle);
+        glVertex3f(x, yOffset, z);
+    }
+    glEnd();
+
+    // Draw circle outline (wireframe ring)
+    glLineWidth(1.5f);
+    glBegin(GL_LINE_LOOP);
+    glColor4f(r * 0.8f, g * 0.8f, b * 0.8f, a * 1.2f);  // Slightly darker outline
+    for (int i = 0; i < segments; i++) {
+        float angle = 2.0f * M_PI * i / segments;
+        float x = radius * cosf(angle);
+        float z = radius * sinf(angle);
+        glVertex3f(x, yOffset, z);
+    }
+    glEnd();
+
+    // Disable blending
+    glDisable(GL_BLEND);
 }
 
 // Animation implementation

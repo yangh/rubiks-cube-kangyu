@@ -22,6 +22,29 @@ std::string g_lastScramble = "No scramble generated";
 // Global formula manager
 FormulaManager g_formulaManager;
 
+// Global flag to show About dialog
+bool g_showAboutDialog = false;
+
+void showAbout() {
+    if (g_showAboutDialog) {
+        ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Appearing);
+        if (ImGui::BeginPopupModal("About", &g_showAboutDialog, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::Text("Rubik's Cube Simulator");
+            ImGui::Separator();
+            ImGui::Text("Version: 1.0.0");
+            ImGui::Text("Author: Walter");
+            ImGui::Spacing();
+            ImGui::TextWrapped("A 3D Rubik's cube simulator built with C++, ImGUI, and OpenGL. Rotate the cube using standard Rubik's cube notation formulas.");
+            ImGui::Spacing();
+            if (ImGui::Button("OK", ImVec2(120, 0))) {
+                g_showAboutDialog = false;
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+    }
+}
+
 void showHelp(const char* programName) {
     std::cout << "Rubik's Cube Simulator\n\n";
     std::cout << "Usage: " << programName << " [OPTIONS]\n\n";
@@ -146,9 +169,6 @@ int main(int argc, char* argv[]) {
         renderer.dump();
     }
 
-    // Window dimensions
-    int sidebarWidth = 600;
-
     // Main loop
     float lastTime = glfwGetTime();
 
@@ -162,6 +182,12 @@ int main(int argc, char* argv[]) {
         // Get current window size
         int windowWidth, windowHeight;
         glfwGetWindowSize(window, &windowWidth, &windowHeight);
+
+        // Calculate responsive layout dimensions
+        // Sidebar width is 40% of window width, minimum 350px
+        float sidebarWidth = fmaxf(350.0f, windowWidth * 0.4f);
+        // 2D Net View height is 30% of window height, minimum 250px
+        float netViewHeight = fmaxf(250.0f, windowHeight * 0.30f);
 
         // Start Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -265,6 +291,11 @@ int main(int argc, char* argv[]) {
                     renderer.reset();
                     renderer.resetView();
                 }
+                if (ImGui::MenuItem("About")) {
+                    g_showAboutDialog = true;
+                    ImGui::OpenPopup("About");
+                }
+                ImGui::Separator();
                 if (ImGui::MenuItem("Exit")) {
                     glfwSetWindowShouldClose(window, 1);
                 }
@@ -317,10 +348,7 @@ int main(int argc, char* argv[]) {
         ImGui::End();
 
         // ===== Window 2: 2D Unfolded View (Top Right) =====
-        // Fixed height based on 2D cube net content (3 face rows + 2 gaps + padding)
-        // With scale2D = 0.8: faceSize = 96, gap = 2.4, content = 3*96 + 2*2.4 = 292.8
-        // Add 40px for padding (20 top + 20 bottom) and window title bar
-        float netViewHeight = 314.0f;  // Content height + padding + title bar (one grid lower)
+        // Responsive height based on window size (25% of window height, min 250px)
         ImGui::SetNextWindowPos(ImVec2(windowWidth - sidebarWidth + 10, 10), ImGuiCond_Always);
         ImGui::SetNextWindowSize(ImVec2(sidebarWidth - 20, netViewHeight), ImGuiCond_Always);
         ImGui::Begin("2D Net View", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
@@ -523,34 +551,6 @@ int main(int argc, char* argv[]) {
                 } else {
                     ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
                         "No moves in history");
-                }
-
-                ImGui::EndTabItem();
-            }
-
-            // Animation tab
-            if (ImGui::BeginTabItem("Animation")) {
-                ImGui::Separator();
-
-                // Enable/Disable animation checkbox
-                ImGui::Checkbox("Enable Animation", &renderer.enableAnimation);
-
-                ImGui::Spacing();
-
-                // Animation speed slider
-                ImGui::Text("Animation Speed:");
-                ImGui::SliderFloat("Speed", &renderer.animationSpeed, 0.1f, 3.0f, "%.1fx", ImGuiSliderFlags_Logarithmic);
-                if (ImGui::IsItemHovered()) {
-                    ImGui::SetTooltip("1.0x = 200ms per move");
-                }
-
-                ImGui::Spacing();
-                ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Animation queue status:");
-                if (renderer.isAnimating()) {
-                    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "  Playing... (%.0f%%)",
-                                      renderer.animationProgress() * 100.0f);
-                } else {
-                    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "  Idle");
                 }
 
                 ImGui::EndTabItem();
@@ -768,8 +768,26 @@ int main(int argc, char* argv[]) {
                 ImGui::EndTabItem();
             }
 
-            // View tab
-            if (ImGui::BeginTabItem("View")) {
+            // Settings tab (consolidated View + Animation)
+            if (ImGui::BeginTabItem("Settings")) {
+                ImGui::Separator();
+
+                // Animation section
+                ImGui::Text("Animation:");
+                ImGui::Checkbox("Enable Animation", &renderer.enableAnimation);
+                ImGui::SameLine();
+                ImGui::SliderFloat("Speed", &renderer.animationSpeed, 0.1f, 3.0f, "%.1fx", ImGuiSliderFlags_Logarithmic);
+                if (ImGui::IsItemHovered()) {
+                    ImGui::SetTooltip("1.0x = 200ms per move");
+                }
+                // Show animation status
+                if (renderer.isAnimating()) {
+                    ImGui::SameLine();
+                    ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "(Playing %.0f%%)",
+                                      renderer.animationProgress() * 100.0f);
+                }
+
+                ImGui::Spacing();
                 ImGui::Separator();
 
                 // 2D view controls
@@ -928,166 +946,13 @@ int main(int argc, char* argv[]) {
                 ImGui::EndTabItem();
             }
 
-            // Colors tab
-            if (ImGui::BeginTabItem("Colors")) {
-                ImGui::Separator();
-
-                ImGui::Text("Select custom colors for each face:");
-                ImGui::Spacing();
-
-                // Front face color picker (Green by default)
-                ImGui::Text("Front:");
-                if (ImGui::ColorEdit3("##FrontColor", &renderer.customFront[0])) {
-                    renderer.useCustomColors = true;
-                    ColorConfig config;
-                    config.setFront(renderer.customFront);
-                    config.setBack(renderer.customBack);
-                    config.setLeft(renderer.customLeft);
-                    config.setRight(renderer.customRight);
-                    config.setUp(renderer.customUp);
-                    config.setDown(renderer.customDown);
-                    config.setUsingDefaults(false);
-                    saveColorConfig(config);
-                }
-
-                ImGui::Spacing();
-
-                // Back face color picker (Blue by default)
-                ImGui::Text("Back:");
-                if (ImGui::ColorEdit3("##BackColor", &renderer.customBack[0])) {
-                    renderer.useCustomColors = true;
-                    ColorConfig config;
-                    config.setFront(renderer.customFront);
-                    config.setBack(renderer.customBack);
-                    config.setLeft(renderer.customLeft);
-                    config.setRight(renderer.customRight);
-                    config.setUp(renderer.customUp);
-                    config.setDown(renderer.customDown);
-                    config.setUsingDefaults(false);
-                    saveColorConfig(config);
-                }
-
-                ImGui::Spacing();
-
-                // Left face color picker (Orange by default)
-                ImGui::Text("Left:");
-                if (ImGui::ColorEdit3("##LeftColor", &renderer.customLeft[0])) {
-                    renderer.useCustomColors = true;
-                    ColorConfig config;
-                    config.setFront(renderer.customFront);
-                    config.setBack(renderer.customBack);
-                    config.setLeft(renderer.customLeft);
-                    config.setRight(renderer.customRight);
-                    config.setUp(renderer.customUp);
-                    config.setDown(renderer.customDown);
-                    config.setUsingDefaults(false);
-                    saveColorConfig(config);
-                }
-
-                ImGui::Spacing();
-
-                // Right face color picker (Red by default)
-                ImGui::Text("Right:");
-                if (ImGui::ColorEdit3("##RightColor", &renderer.customRight[0])) {
-                    renderer.useCustomColors = true;
-                    ColorConfig config;
-                    config.setFront(renderer.customFront);
-                    config.setBack(renderer.customBack);
-                    config.setLeft(renderer.customLeft);
-                    config.setRight(renderer.customRight);
-                    config.setUp(renderer.customUp);
-                    config.setDown(renderer.customDown);
-                    config.setUsingDefaults(false);
-                    saveColorConfig(config);
-                }
-
-                ImGui::Spacing();
-
-                // Up face color picker (White by default)
-                ImGui::Text("Up:");
-                if (ImGui::ColorEdit3("##UpColor", &renderer.customUp[0])) {
-                    renderer.useCustomColors = true;
-                    ColorConfig config;
-                    config.setFront(renderer.customFront);
-                    config.setBack(renderer.customBack);
-                    config.setLeft(renderer.customLeft);
-                    config.setRight(renderer.customRight);
-                    config.setUp(renderer.customUp);
-                    config.setDown(renderer.customDown);
-                    config.setUsingDefaults(false);
-                    saveColorConfig(config);
-                }
-
-                ImGui::Spacing();
-
-                // Down face color picker (Yellow by default)
-                ImGui::Text("Down:");
-                if (ImGui::ColorEdit3("##DownColor", &renderer.customDown[0])) {
-                    renderer.useCustomColors = true;
-                    ColorConfig config;
-                    config.setFront(renderer.customFront);
-                    config.setBack(renderer.customBack);
-                    config.setLeft(renderer.customLeft);
-                    config.setRight(renderer.customRight);
-                    config.setUp(renderer.customUp);
-                    config.setDown(renderer.customDown);
-                    config.setUsingDefaults(false);
-                    saveColorConfig(config);
-                }
-
-                ImGui::Spacing();
-                ImGui::Separator();
-                ImGui::Spacing();
-
-                // Apply button
-                if (ImGui::Button("Apply", ImVec2(180, 0))) {
-                    renderer.useCustomColors = true;
-                    ColorConfig config;
-                    config.setFront(renderer.customFront);
-                    config.setBack(renderer.customBack);
-                    config.setLeft(renderer.customLeft);
-                    config.setRight(renderer.customRight);
-                    config.setUp(renderer.customUp);
-                    config.setDown(renderer.customDown);
-                    config.setUsingDefaults(false);
-                    saveColorConfig(config);
-                }
-
-                ImGui::SameLine();
-
-                // Reset to Default button
-                if (ImGui::Button("Reset to Default", ImVec2(180, 0))) {
-                    // Reset colors to standard Rubik's cube colors
-                    renderer.customFront = {0.0f, 1.0f, 0.0f};  // Green
-                    renderer.customBack = {0.0f, 0.0f, 1.0f};   // Blue
-                    renderer.customLeft = {1.0f, 0.5f, 0.0f};  // Orange
-                    renderer.customRight = {1.0f, 0.0f, 0.0f}; // Red
-                    renderer.customUp = {1.0f, 1.0f, 1.0f};    // White
-                    renderer.customDown = {1.0f, 1.0f, 0.0f};  // Yellow
-                    renderer.useCustomColors = false;
-                    // Remove config file to restore defaults on next startup
-                    std::string configPath = getConfigFilePath();
-                    if (!configPath.empty()) {
-                        std::remove(configPath.c_str());
-                    }
-                }
-
-                ImGui::Spacing();
-
-                // Display current mode
-                if (renderer.useCustomColors) {
-                    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.0f, 1.0f), "Mode: Using custom colors");
-                } else {
-                    ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Mode: Using default colors");
-                }
-
-                ImGui::EndTabItem();
-            }
-
             ImGui::EndTabBar();
         }
 
         ImGui::End();
+
+        // Show About dialog if requested
+        showAbout();
 
         // Rendering
         int display_w, display_h;

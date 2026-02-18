@@ -70,6 +70,9 @@ private:
     // Helper function to draw a single cube
     void drawCube(int cubeIndex, bool usePreAnimationState = false);
 
+    // Draw a circular canvas beneath the cube
+    void drawCircleCanvas();
+
     RubiksCube cube_;
 
     // Animation state
