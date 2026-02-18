@@ -775,42 +775,43 @@ void CubeRenderer::drawTestCube(ImDrawList* drawList, ImVec2 center, float size)
     }
 }
 
-// Draw a circular canvas beneath the cube
+// Draw an elliptical canvas beneath the cube
 void CubeRenderer::drawCircleCanvas() {
-    // Circle parameters
-    float radius = 1.67f;       // Radius larger than cube (2/3 of original 2.5f)
-    float yOffset = -1.5f;       // Position below the cube (cube spans -1 to +1 in Y after 0.3 scale)
-    int segments = 64;           // Number of segments for smooth circle
-    float r = 0.4f;              // Gray color (subtle)
-    float g = 0.45f;             // Slight blue tint
-    float b = 0.5f;              // Light blue-gray
-    float a = 0.7f;              // Semi-transparent
+    // Ellipse parameters - 2x larger size
+    float radiusX = 1.34f;      // Width (X)
+    float radiusZ = 1.08f;      // Depth (Z) - perspective compressed
+    float yOffset = -1.0f;       // Position at bottom of 3D view window
+    int segments = 64;           // Number of segments for smooth ellipse
+    float r = 0.3f;              // Gray color (subtle)
+    float g = 0.35f;             // Blue-gray tint
+    float b = 0.45f;             // Light blue-gray
+    float a = 0.2f;              // More transparent
 
     // Enable blending for transparency
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // Draw filled circle (solid look)
+    // Draw filled ellipse (oval shape)
     glBegin(GL_TRIANGLE_FAN);
     glColor4f(r, g, b, a);
     glVertex3f(0.0f, yOffset, 0.0f);  // Center point
 
     for (int i = 0; i <= segments; i++) {
         float angle = 2.0f * M_PI * i / segments;
-        float x = radius * cosf(angle);
-        float z = radius * sinf(angle);
+        float x = radiusX * cosf(angle);
+        float z = radiusZ * sinf(angle);
         glVertex3f(x, yOffset, z);
     }
     glEnd();
 
-    // Draw circle outline (wireframe ring)
+    // Draw ellipse outline (wireframe)
     glLineWidth(1.5f);
     glBegin(GL_LINE_LOOP);
-    glColor4f(r * 0.8f, g * 0.8f, b * 0.8f, a * 1.2f);  // Slightly darker outline
+    glColor4f(r * 0.8f, g * 0.8f, b * 0.8f, a * 0.8f);  // Slightly darker outline
     for (int i = 0; i < segments; i++) {
         float angle = 2.0f * M_PI * i / segments;
-        float x = radius * cosf(angle);
-        float z = radius * sinf(angle);
+        float x = radiusX * cosf(angle);
+        float z = radiusZ * sinf(angle);
         glVertex3f(x, yOffset, z);
     }
     glEnd();
