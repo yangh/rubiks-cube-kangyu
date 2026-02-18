@@ -1042,7 +1042,7 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
         // Row is inverted to match U/D move behavior
         // Grid: 0 1 2 / 3 4 5 / 6 7 8 (from 2D view perspective)
         // 3D view: col 0 (left visually) = grid col 2, col 2 (right visually) = grid col 0
-        int idx = (2 - row) * 3 + (2 - col);
+        int idx = (2 - row) * 3 + col;
         auto rgb = getFaceColorRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
         glVertex3f(0.5f, 0.5f, -0.5f);  // vertex 0: top-right
@@ -1089,7 +1089,7 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
         const auto& face = cube_.getDown();
         // Down face grid: layer=2 is top (front), layer=0 is bottom (back)
         // When viewed from below (y=-1), left-right is mirrored in visual space
-        int idx = layer * 3 + (2 - col);
+        int idx = layer * 3 +  col;
         auto rgb = getFaceColorRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
         glVertex3f(-0.5f, -0.5f, 0.5f);  // vertex 0: bottom-front-left
