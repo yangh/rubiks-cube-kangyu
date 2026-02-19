@@ -30,6 +30,10 @@ std::vector<Move> g_stepByStepMoves;
 int g_currentStepIndex = 0;
 bool g_isStepByStepMode = false;
 
+// Global variable for editable formula input
+char g_formulaInput[1024] = "";  // Buffer for editable formula input
+bool g_formulaInputDirty = true;  // Flag to indicate input needs update from selected formula
+
 void showAbout() {
     if (g_showAboutDialog) {
         ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Appearing);
@@ -621,6 +625,7 @@ int main(int argc, char* argv[]) {
 
                             if (ImGui::Selectable(items->at(i).name.c_str(), isSelected)) {
                                 g_formulaManager.setSelectedItem(i);
+                                g_formulaInputDirty = true;  // Mark input for update
                                 // Auto-scroll to selected formula item
                                 if (isSelected) {
                                     ImGui::SetScrollHereY();
@@ -636,64 +641,52 @@ int main(int argc, char* argv[]) {
 
                 // Display selected formula's moves
                 const FormulaItem* selectedItem = g_formulaManager.getSelectedItem();
+
+                ImGui::Spacing();
                 if (selectedItem != nullptr && !selectedItem->moves.empty()) {
-                    ImGui::Spacing();
+                    // Update input buffer when formula selection changes
+                    if (g_formulaInputDirty) {
+                        // Build formula string from moves
+                        std::string formulaStr;
+                        for (size_t i = 0; i < selectedItem->moves.size(); ++i) {
+                            if (i > 0) formulaStr += " ";
+                            formulaStr += moveToString(selectedItem->moves[i]);
+                        }
+                        snprintf(g_formulaInput, sizeof(g_formulaInput), "%s", formulaStr.c_str());
+                        g_formulaInputDirty = false;
+                    }
+
                     ImGui::TextColored(ImVec4(1.0f, 0.8f, 0.0f, 1.0f), "Selected: %s",
                         selectedItem->name.c_str());
                     ImGui::Separator();
-
-                    // Display moves with formatting (no line wrapping)
-                    const int movesPerLine = 100;  // Large number to prevent wrapping
-                    int movesOnCurrentLine = 0;
-
-                    for (size_t i = 0; i < selectedItem->moves.size(); ++i) {
-                        if (movesOnCurrentLine > 0 && movesOnCurrentLine % movesPerLine == 0) {
-                            ImGui::NewLine();
-                            movesOnCurrentLine = 0;
-                        }
-
-                        // Color code moves by type
-                        ImVec4 moveColor;
-                        const Move move = selectedItem->moves[i];
-                        if (move == Move::U || move == Move::UP ||
-                            move == Move::D || move == Move::DP) {
-                            moveColor = ImVec4(1.0f, 0.8f, 0.0f, 1.0f); // Orange
-                        } else if (move == Move::L || move == Move::LP ||
-                                   move == Move::R || move == Move::RP) {
-                            moveColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // Green
-                        } else if (move == Move::F || move == Move::FP ||
-                                   move == Move::B || move == Move::BP) {
-                            moveColor = ImVec4(0.0f, 0.8f, 1.0f, 1.0f); // Cyan
-                        } else {
-                            moveColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // White
-                        }
-
-                        if (movesOnCurrentLine > 0) {
-                            ImGui::SameLine(0, 5);
-                        }
-
-                        ImGui::TextColored(moveColor, "%s", moveToString(move).c_str());
-                        movesOnCurrentLine++;
-                    }
-
-                    ImGui::Separator();
-
-                    // Display move count
-                    ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
-                        "Total moves: %zu", selectedItem->moves.size());
-
-                    // Display loop count if formula has loop syntax
-                    if (selectedItem->loopCount > 0) {
-                        ImGui::SameLine();
-                        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.5f, 1.0f),
-                            "| Loop: %d", selectedItem->loopCount);
-                    }
                 }
+
+                // Editable input text box for formula (always visible)
+                if (ImGui::InputText("##FormulaInput", g_formulaInput, sizeof(g_formulaInput),
+                                     ImGuiInputTextFlags_EnterReturnsTrue)) {
+                    // User pressed Enter, re-parse the formula
+                    g_formulaInputDirty = false;
+                }
+
+                // Display move count
+                std::vector<Move> parsedMoves = parseMoveSequence(g_formulaInput);
+                ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
+                    "Total moves: %zu", parsedMoves.size());
+
+                // Display loop count if formula has loop syntax
+                if (selectedItem != nullptr && selectedItem->loopCount > 0) {
+                    ImGui::SameLine();
+                    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.5f, 1.0f),
+                        "| Loop: %d", selectedItem->loopCount);
+                }
+
+                ImGui::Separator();
 
                 ImGui::Spacing();
 
                 // Execute buttons
-                bool hasFormula = (selectedItem != nullptr && !selectedItem->moves.empty());
+                std::vector<Move> movesFromInput = parseMoveSequence(g_formulaInput);
+                bool hasFormula = !movesFromInput.empty();
 
                 if (hasFormula) {
                     // Execute button
@@ -703,8 +696,9 @@ int main(int argc, char* argv[]) {
                         g_currentStepIndex = 0;
                         g_stepByStepMoves.clear();
 
-                        // Execute all moves in formula with animation
-                        for (const Move& move : selectedItem->moves) {
+                        // Parse and execute all moves from input
+                        std::vector<Move> moves = parseMoveSequence(g_formulaInput);
+                        for (const Move& move : moves) {
                             renderer.executeMove(move);
                         }
                     }
@@ -718,8 +712,9 @@ int main(int argc, char* argv[]) {
                         g_currentStepIndex = 0;
                         g_stepByStepMoves.clear();
 
-                        // Execute moves in reverse order with inverse moves
-                        for (auto it = selectedItem->moves.rbegin(); it != selectedItem->moves.rend(); ++it) {
+                        // Parse and execute moves in reverse order with inverse moves
+                        std::vector<Move> moves = parseMoveSequence(g_formulaInput);
+                        for (auto it = moves.rbegin(); it != moves.rend(); ++it) {
                             Move move = *it;
                             Move inverseMove;
 
@@ -758,9 +753,10 @@ int main(int argc, char* argv[]) {
                             g_currentStepIndex = 0;
                             g_stepByStepMoves.clear();
 
-                            // Execute formula loopCount times to restore to original state
+                            // Parse and execute formula loopCount times to restore to original state
+                            std::vector<Move> moves = parseMoveSequence(g_formulaInput);
                             for (int i = 0; i < selectedItem->loopCount; ++i) {
-                                for (const Move& move : selectedItem->moves) {
+                                for (const Move& move : moves) {
                                     renderer.executeMove(move);
                                 }
                             }
@@ -782,7 +778,7 @@ int main(int argc, char* argv[]) {
                         if (ImGui::Button("Step", ImVec2(180, 0))) {
                             // Start step-by-step mode if not already active
                             if (!g_isStepByStepMode) {
-                                g_stepByStepMoves = selectedItem->moves;
+                                g_stepByStepMoves = parseMoveSequence(g_formulaInput);
                                 g_currentStepIndex = 0;
                                 g_isStepByStepMode = true;
                             }
