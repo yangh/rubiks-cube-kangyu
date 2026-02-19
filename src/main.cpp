@@ -25,6 +25,11 @@ FormulaManager g_formulaManager;
 // Global flag to show About dialog
 bool g_showAboutDialog = false;
 
+// Global variables for step-by-step formula execution
+std::vector<Move> g_stepByStepMoves;
+int g_currentStepIndex = 0;
+bool g_isStepByStepMode = false;
+
 void showAbout() {
     if (g_showAboutDialog) {
         ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Appearing);
@@ -270,6 +275,11 @@ int main(int argc, char* argv[]) {
 
         // ESC: reset cube to solved state
         if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+            // Reset step-by-step mode
+            g_isStepByStepMode = false;
+            g_currentStepIndex = 0;
+            g_stepByStepMoves.clear();
+
             renderer.reset();
             renderer.resetView();
         }
@@ -397,6 +407,11 @@ int main(int argc, char* argv[]) {
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Reset Cube", ImVec2(120, 0))) {
+                    // Reset step-by-step mode
+                    g_isStepByStepMode = false;
+                    g_currentStepIndex = 0;
+                    g_stepByStepMoves.clear();
+
                     renderer.reset();
                     renderer.resetView();
                 }
@@ -683,6 +698,11 @@ int main(int argc, char* argv[]) {
                 if (hasFormula) {
                     // Execute button
                     if (ImGui::Button("Execute", ImVec2(180, 0))) {
+                        // Reset step-by-step mode
+                        g_isStepByStepMode = false;
+                        g_currentStepIndex = 0;
+                        g_stepByStepMoves.clear();
+
                         // Execute all moves in formula with animation
                         for (const Move& move : selectedItem->moves) {
                             renderer.executeMove(move);
@@ -693,6 +713,11 @@ int main(int argc, char* argv[]) {
 
                     // Execute Reverse button
                     if (ImGui::Button("Execute Reverse", ImVec2(180, 0))) {
+                        // Reset step-by-step mode
+                        g_isStepByStepMode = false;
+                        g_currentStepIndex = 0;
+                        g_stepByStepMoves.clear();
+
                         // Execute moves in reverse order with inverse moves
                         for (auto it = selectedItem->moves.rbegin(); it != selectedItem->moves.rend(); ++it) {
                             Move move = *it;
@@ -728,6 +753,11 @@ int main(int argc, char* argv[]) {
                     // Loop Execute button - only show if formula has loop syntax
                     if (selectedItem->loopCount > 0) {
                         if (ImGui::Button("Loop Execute", ImVec2(180, 0))) {
+                            // Reset step-by-step mode
+                            g_isStepByStepMode = false;
+                            g_currentStepIndex = 0;
+                            g_stepByStepMoves.clear();
+
                             // Execute formula loopCount times to restore to original state
                             for (int i = 0; i < selectedItem->loopCount; ++i) {
                                 for (const Move& move : selectedItem->moves) {
@@ -735,6 +765,64 @@ int main(int argc, char* argv[]) {
                                 }
                             }
                         }
+                    }
+
+                    ImGui::Separator();
+
+                    // Step-by-step execution
+                    // Show progress if in step-by-step mode
+                    if (g_isStepByStepMode) {
+                        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.5f, 1.0f), "Step: %d/%zu",
+                            g_currentStepIndex + 1, g_stepByStepMoves.size());
+                    }
+
+                    // Step button
+                    bool canStep = hasFormula && (!g_isStepByStepMode || g_currentStepIndex < static_cast<int>(g_stepByStepMoves.size()));
+                    if (canStep) {
+                        if (ImGui::Button("Step", ImVec2(180, 0))) {
+                            // Start step-by-step mode if not already active
+                            if (!g_isStepByStepMode) {
+                                g_stepByStepMoves = selectedItem->moves;
+                                g_currentStepIndex = 0;
+                                g_isStepByStepMode = true;
+                            }
+
+                            // Execute current step
+                            if (g_currentStepIndex < static_cast<int>(g_stepByStepMoves.size())) {
+                                renderer.executeMove(g_stepByStepMoves[g_currentStepIndex]);
+                                g_currentStepIndex++;
+
+                                // Exit step mode when complete
+                                if (g_currentStepIndex >= static_cast<int>(g_stepByStepMoves.size())) {
+                                    g_isStepByStepMode = false;
+                                }
+                            }
+                        }
+                    } else {
+                        // Disabled button when no formula or all steps completed
+                        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+                        ImGui::Button("Step", ImVec2(180, 0));
+                        ImGui::PopStyleVar();
+                        ImGui::PopItemFlag();
+                    }
+
+                    ImGui::SameLine();
+
+                    // Reset Step Mode button - only show when in step-by-step mode
+                    if (g_isStepByStepMode) {
+                        if (ImGui::Button("Reset Step", ImVec2(180, 0))) {
+                            g_isStepByStepMode = false;
+                            g_currentStepIndex = 0;
+                            g_stepByStepMoves.clear();
+                        }
+                    } else {
+                        // Disabled button when not in step mode
+                        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+                        ImGui::Button("Reset Step", ImVec2(180, 0));
+                        ImGui::PopStyleVar();
+                        ImGui::PopItemFlag();
                     }
                 } else {
                     // Disabled buttons when no formula selected
@@ -761,6 +849,11 @@ int main(int argc, char* argv[]) {
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Reset Cube", ImVec2(180, 0))) {
+                    // Reset step-by-step mode
+                    g_isStepByStepMode = false;
+                    g_currentStepIndex = 0;
+                    g_stepByStepMoves.clear();
+
                     renderer.reset();
                     renderer.resetView();
                 }
