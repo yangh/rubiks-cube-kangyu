@@ -670,8 +670,15 @@ int main(int argc, char* argv[]) {
 
                 // Display move count
                 std::vector<Move> parsedMoves = parseMoveSequence(g_formulaInput);
-                ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
-                    "Total moves: %zu", parsedMoves.size());
+                // Show step progress if in step-by-step mode
+                if (g_isStepByStepMode) {
+                    ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.5f, 1.0f),
+                        "Total moves: %zu (Step: %d/%zu)",
+                        parsedMoves.size(), g_currentStepIndex, g_stepByStepMoves.size());
+                } else {
+                    ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
+                        "Total moves: %zu", parsedMoves.size());
+                }
 
                 // Display loop count if formula has loop syntax
                 if (selectedItem != nullptr && selectedItem->loopCount > 0) {
@@ -764,13 +771,6 @@ int main(int argc, char* argv[]) {
                     }
 
                     ImGui::Separator();
-
-                    // Step-by-step execution
-                    // Show progress if in step-by-step mode
-                    if (g_isStepByStepMode) {
-                        ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.5f, 1.0f), "Step: %d/%zu",
-                            g_currentStepIndex + 1, g_stepByStepMoves.size());
-                    }
 
                     // Step button
                     bool canStep = hasFormula && (!g_isStepByStepMode || g_currentStepIndex < static_cast<int>(g_stepByStepMoves.size()));
