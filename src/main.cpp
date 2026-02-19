@@ -586,7 +586,7 @@ int main(int argc, char* argv[]) {
                 float rightColumnWidth = availableWidth * 0.6f; // 60% for formula items
 
                 // Reserve space for buttons at bottom (about 80px)
-                float listHeight = availableHeight - 260.0f;
+                float listHeight = availableHeight - 270.0f;
 
                 // Left column: Formula file list
                 ImGui::BeginChild("FormulaFileList", ImVec2(leftColumnWidth, listHeight), true);
@@ -696,17 +696,22 @@ int main(int argc, char* argv[]) {
                 bool hasFormula = !movesFromInput.empty();
 
                 if (hasFormula) {
-                    // Execute button
+                    // Execute button - automatically loops if formula has loop syntax
                     if (ImGui::Button("Execute", ImVec2(180, 0))) {
                         // Reset step-by-step mode
                         g_isStepByStepMode = false;
                         g_currentStepIndex = 0;
                         g_stepByStepMoves.clear();
 
-                        // Parse and execute all moves from input
+                        // Parse moves from input
                         std::vector<Move> moves = parseMoveSequence(g_formulaInput);
-                        for (const Move& move : moves) {
-                            renderer.executeMove(move);
+
+                        // Execute formula loopCount times if formula has loop syntax, otherwise execute once
+                        int loopCount = (selectedItem != nullptr && selectedItem->loopCount > 0) ? selectedItem->loopCount : 1;
+                        for (int i = 0; i < loopCount; ++i) {
+                            for (const Move& move : moves) {
+                                renderer.executeMove(move);
+                            }
                         }
                     }
 
@@ -749,24 +754,6 @@ int main(int argc, char* argv[]) {
                             }
 
                             renderer.executeMove(inverseMove);
-                        }
-                    }
-
-                    // Loop Execute button - only show if formula has loop syntax
-                    if (selectedItem->loopCount > 0) {
-                        if (ImGui::Button("Loop Execute", ImVec2(180, 0))) {
-                            // Reset step-by-step mode
-                            g_isStepByStepMode = false;
-                            g_currentStepIndex = 0;
-                            g_stepByStepMoves.clear();
-
-                            // Parse and execute formula loopCount times to restore to original state
-                            std::vector<Move> moves = parseMoveSequence(g_formulaInput);
-                            for (int i = 0; i < selectedItem->loopCount; ++i) {
-                                for (const Move& move : moves) {
-                                    renderer.executeMove(move);
-                                }
-                            }
                         }
                     }
 
