@@ -1145,7 +1145,7 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
         const auto& face = cube_.getDown();
         // Down face grid: layer=2 is top (front), layer=0 is bottom (back)
         // When viewed from below (y=-1), left-right is mirrored in visual space
-        int idx = layer * 3 +  col;
+        int idx = (2 - layer) * 3 + col;  // Mirror layer for down face to match 2D view
         auto rgb = getFaceColorRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
         glVertex3f(-0.5f, -0.5f, 0.5f);  // vertex 0: bottom-front-left
