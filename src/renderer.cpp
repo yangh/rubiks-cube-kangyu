@@ -436,7 +436,8 @@ void CubeRenderer::draw3DFace(ImDrawList* drawList, const std::array<Color, 9>& 
     // Each sticker is at a position in the face's local coordinate system
     for (int row = 0; row < 3; ++row) {
         for (int col = 0; col < 3; ++col) {
-            int index = row * 3 + col;
+            // Back face needs col mirroring to match 2D view
+            int index = (face == cube_.getBack()) ? (row * 3 + (2 - col)) : (row * 3 + col);
             float u = (col - 1.0f) / 3.0f * 2.0f;  // -0.67, 0, 0.67
             float v = (row - 1.0f) / 3.0f * 2.0f;  // -0.67, 0, 0.67
 
@@ -547,7 +548,8 @@ void CubeRenderer::drawAnimated3DFace(ImDrawList* drawList, const std::array<Col
     // Draw 3x3 stickers on the face
     for (int row = 0; row < 3; ++row) {
         for (int col = 0; col < 3; ++col) {
-            int stickerIndex = row * 3 + col;
+            // Back face needs col mirroring to match 2D view
+            int stickerIndex = (faceIndex == 1) ? (row * 3 + (2 - col)) : (row * 3 + col);
             float u = (col - 1.0f) / 3.0f * 2.0f;  // -0.67, 0, 0.67
             float v = (row - 1.0f) / 3.0f * 2.0f;  // -0.67, 0, 0.67
 
@@ -1096,7 +1098,7 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
         // Row is inverted to match U/D move behavior
         // Grid: 0 1 2 / 3 4 5 / 6 7 8 (from 2D view perspective)
         // 3D view: col 0 (left visually) = grid col 2, col 2 (right visually) = grid col 0
-        int idx = (2 - row) * 3 + col;
+        int idx = (2 - row) * 3 + (2 - col);  // Mirror col for back face
         auto rgb = getFaceColorRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
         glVertex3f(0.5f, 0.5f, -0.5f);  // vertex 0: top-right
