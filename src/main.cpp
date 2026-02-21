@@ -519,53 +519,28 @@ int main(int argc, char* argv[]) {
 
                 ImGui::Separator();
 
-                // Display move history in a scrollable list with auto-wrapping
+                // Display move history as auto-wrapped text
                 const std::vector<Move>& history = renderer.getMoveHistory();
                 if (!history.empty()) {
-                    // Use a child window for scrolling without horizontal scrollbar
-                    ImGui::BeginChild("MoveHistory", ImVec2(0, 150), true);
-
-                    // Group moves in sets of 6 per line for better readability
-                    const int movesPerLine = 6;
-                    int movesOnCurrentLine = 0;
-
+                    // Build history string with space-separated moves
+                    std::string historyStr;
                     for (size_t i = 0; i < history.size(); ++i) {
-                        // Start a new line every 6 moves (except for the first move)
-                        if (movesOnCurrentLine > 0 && movesOnCurrentLine % movesPerLine == 0) {
-                            ImGui::NewLine();
-                            movesOnCurrentLine = 0;
+                        if (i > 0) {
+                            historyStr += " ";
                         }
-
-                        // Color the move text
-                        ImVec4 moveColor;
-                        if (history[i] == Move::U || history[i] == Move::D ||
-                            history[i] == Move::UP || history[i] == Move::DP) {
-                            moveColor = ImVec4(1.0f, 0.8f, 0.0f, 1.0f); // Orange for U/D
-                        } else if (history[i] == Move::L || history[i] == Move::R ||
-                                   history[i] == Move::LP || history[i] == Move::RP) {
-                            moveColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // Green for L/R
-                        } else if (history[i] == Move::F || history[i] == Move::B ||
-                                   history[i] == Move::FP || history[i] == Move::BP) {
-                            moveColor = ImVec4(0.0f, 0.8f, 1.0f, 1.0f); // Cyan for F/B
-                        } else {
-                            moveColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // White for slice moves
-                        }
-
-                        // Display move with proper spacing
-                        if (movesOnCurrentLine > 0) {
-                            ImGui::SameLine(0, 5); // 5px spacing between moves
-                        }
-
-                        ImGui::TextColored(moveColor, "%zu. %s", i + 1,
-                                        moveToString(history[i]).c_str());
-                        movesOnCurrentLine++;
+                        historyStr += moveToString(history[i]);
                     }
 
-                    // Auto-scroll to bottom when new moves are added
-                    if (ImGui::GetScrollY() >= ImGui::GetScrollMaxY()) {
-                        ImGui::SetScrollHereY(1.0f);
+                    // Copy button
+                    if (ImGui::Button("Copy")) {
+                        glfwSetClipboardString(window, historyStr.c_str());
                     }
 
+                    ImGui::SameLine();
+
+                    // Display auto-wrapped text in scrollable child
+                    ImGui::BeginChild("MoveHistory", ImVec2(0, 120), true);
+                    ImGui::TextWrapped("%s", historyStr.c_str());
                     ImGui::EndChild();
                 } else {
                     ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
