@@ -393,7 +393,7 @@ int main(int argc, char* argv[]) {
         ImGui::SetNextWindowSize(ImVec2(sidebarWidth - 20, controlsHeight), ImGuiCond_Always);
         ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
-        // Tab bar for Moves, History, and Animation controls
+        // Tab bar for Moves, Shortcuts, and Formulas
         if (ImGui::BeginTabBar("ControlsTabBar", ImGuiTabBarFlags_None)) {
             // Moves tab
             if (ImGui::BeginTabItem("Moves")) {
@@ -465,31 +465,20 @@ int main(int argc, char* argv[]) {
 
                 ImGui::Spacing();
                 ImGui::Separator();
-                ImGui::Text("Keyboard Shortcuts:");
-                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  U/D/L/R/F/B/M/E/S - Move (clockwise)");
-                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Shift+Key - Prime move (counter-clockwise)");
-                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Space - Reset view to default angles");
-                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  ESC - Reset cube to solved state");
-                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Ctrl+Q - Quit application");
 
-                ImGui::EndTabItem();
-            }
-
-            // History tab
-            if (ImGui::BeginTabItem("History")) {
-                ImGui::Separator();
+                // Undo, Redo, and Copy buttons (grouped together)
+                bool canUndo = !renderer.getMoveHistory().empty();
+                bool canRedo = renderer.canRedo();
 
                 // Undo button
-                bool canUndo = !renderer.getMoveHistory().empty();
                 if (canUndo) {
-                    if (ImGui::Button("Undo Last Move", ImVec2(200, 0))) {
+                    if (ImGui::Button("Undo", ImVec2(100, 0))) {
                         renderer.undo();
                     }
                 } else {
-                    // Disabled button when no history
                     ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
                     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-                    ImGui::Button("Undo Last Move", ImVec2(160, 0));
+                    ImGui::Button("Undo", ImVec2(100, 0));
                     ImGui::PopStyleVar();
                     ImGui::PopItemFlag();
                 }
@@ -497,16 +486,38 @@ int main(int argc, char* argv[]) {
                 ImGui::SameLine();
 
                 // Redo button
-                bool canRedo = renderer.canRedo();
                 if (canRedo) {
-                    if (ImGui::Button("Redo Next Move", ImVec2(200, 0))) {
+                    if (ImGui::Button("Redo", ImVec2(100, 0))) {
                         renderer.redo();
                     }
                 } else {
-                    // Disabled button when no redo history
                     ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
                     ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-                    ImGui::Button("Redo Next Move", ImVec2(160, 0));
+                    ImGui::Button("Redo", ImVec2(100, 0));
+                    ImGui::PopStyleVar();
+                    ImGui::PopItemFlag();
+                }
+
+                ImGui::SameLine();
+
+                // Copy button
+                if (canUndo) {
+                    if (ImGui::Button("Copy", ImVec2(100, 0))) {
+                        // Build history string
+                        const std::vector<Move>& history = renderer.getMoveHistory();
+                        std::string historyStr;
+                        for (size_t i = 0; i < history.size(); ++i) {
+                            if (i > 0) {
+                                historyStr += " ";
+                            }
+                            historyStr += moveToString(history[i]);
+                        }
+                        glfwSetClipboardString(window, historyStr.c_str());
+                    }
+                } else {
+                    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+                    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+                    ImGui::Button("Copy", ImVec2(100, 0));
                     ImGui::PopStyleVar();
                     ImGui::PopItemFlag();
                 }
@@ -531,13 +542,6 @@ int main(int argc, char* argv[]) {
                         historyStr += moveToString(history[i]);
                     }
 
-                    // Copy button
-                    if (ImGui::Button("Copy")) {
-                        glfwSetClipboardString(window, historyStr.c_str());
-                    }
-
-                    ImGui::SameLine();
-
                     // Display auto-wrapped text in scrollable child
                     ImGui::BeginChild("MoveHistory", ImVec2(0, 120), true);
                     ImGui::TextWrapped("%s", historyStr.c_str());
@@ -546,6 +550,14 @@ int main(int argc, char* argv[]) {
                     ImGui::TextColored(ImVec4(0.5f, 0.5f, 0.5f, 1.0f),
                         "No moves in history");
                 }
+
+                ImGui::Separator();
+                ImGui::Spacing();
+
+                // Cube status
+                const char* status = renderer.isSolved() ? "Solved" : "Unsolved";
+                ImU32 statusColor = renderer.isSolved() ? IM_COL32(0, 255, 0, 255) : IM_COL32(255, 100, 0, 255);
+                ImGui::TextColored(ImVec4(0, 1, 0, 1), "Cube status: %s", status);
 
                 ImGui::EndTabItem();
             }
@@ -986,13 +998,18 @@ int main(int argc, char* argv[]) {
                 ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f), "Config file: %s",
                                   getConfigFilePath().c_str());
 
-                ImGui::Spacing();
-                ImGui::Separator();
+                ImGui::EndTabItem();
+            }
 
-                // Status
-                const char* status = renderer.isSolved() ? "Solved" : "Unsolved";
-                ImU32 statusColor = renderer.isSolved() ? IM_COL32(0, 255, 0, 255) : IM_COL32(255, 100, 0, 255);
-                ImGui::TextColored(ImVec4(0, 1, 0, 1), "Cube status: %s", status);
+            // Shortcuts tab
+            if (ImGui::BeginTabItem("Shortcuts")) {
+                ImGui::Spacing();
+                ImGui::Text("Keyboard Shortcuts:");
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  U/D/L/R/F/B/M/E/S - Move (clockwise)");
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Shift+Key - Prime move (counter-clockwise)");
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Space - Reset view to default angles");
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  ESC - Reset cube to solved state");
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Ctrl+Q - Quit application");
 
                 ImGui::EndTabItem();
             }
