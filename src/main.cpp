@@ -873,8 +873,6 @@ int main(int argc, char* argv[]) {
                 ImGui::Text("Custom Colors:");
 
                 // Color pickers for each face
-                ImGui::Text("Front (Green):");
-                ImGui::SameLine();
                 if (ImGui::ColorEdit3("##FrontColor", renderer.customFront.data())) {
                     renderer.useCustomColors = true;
                     ColorConfig config;
@@ -887,9 +885,9 @@ int main(int argc, char* argv[]) {
                     config.setUsingDefaults(false);
                     saveColorConfig(config);
                 }
-
-                ImGui::Text("Back (Blue):");
                 ImGui::SameLine();
+                ImGui::Text("Front (Green):");
+
                 if (ImGui::ColorEdit3("##BackColor", renderer.customBack.data())) {
                     renderer.useCustomColors = true;
                     ColorConfig config;
@@ -902,9 +900,9 @@ int main(int argc, char* argv[]) {
                     config.setUsingDefaults(false);
                     saveColorConfig(config);
                 }
-
-                ImGui::Text("Left (Orange):");
                 ImGui::SameLine();
+                ImGui::Text("Back (Blue):");
+
                 if (ImGui::ColorEdit3("##LeftColor", renderer.customLeft.data())) {
                     renderer.useCustomColors = true;
                     ColorConfig config;
@@ -917,9 +915,9 @@ int main(int argc, char* argv[]) {
                     config.setUsingDefaults(false);
                     saveColorConfig(config);
                 }
-
-                ImGui::Text("Right (Red):");
                 ImGui::SameLine();
+                ImGui::Text("Left (Orange):");
+
                 if (ImGui::ColorEdit3("##RightColor", renderer.customRight.data())) {
                     renderer.useCustomColors = true;
                     ColorConfig config;
@@ -932,9 +930,9 @@ int main(int argc, char* argv[]) {
                     config.setUsingDefaults(false);
                     saveColorConfig(config);
                 }
-
-                ImGui::Text("Up (White):");
                 ImGui::SameLine();
+                ImGui::Text("Right (Red):");
+
                 if (ImGui::ColorEdit3("##UpColor", renderer.customUp.data())) {
                     renderer.useCustomColors = true;
                     ColorConfig config;
@@ -947,9 +945,9 @@ int main(int argc, char* argv[]) {
                     config.setUsingDefaults(false);
                     saveColorConfig(config);
                 }
-
-                ImGui::Text("Down (Yellow):");
                 ImGui::SameLine();
+                ImGui::Text("Up (White):");
+
                 if (ImGui::ColorEdit3("##DownColor", renderer.customDown.data())) {
                     renderer.useCustomColors = true;
                     ColorConfig config;
@@ -962,6 +960,8 @@ int main(int argc, char* argv[]) {
                     config.setUsingDefaults(false);
                     saveColorConfig(config);
                 }
+                ImGui::SameLine();
+                ImGui::Text("Down (Yellow):");
 
                 ImGui::Spacing();
 
