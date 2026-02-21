@@ -270,6 +270,44 @@ void RubiksCube::undo() {
     }
 }
 
+Move RubiksCube::getInverseMoveForUndo() const {
+    if (moveHistory_.empty()) {
+        return Move::U; // Return default if no history
+    }
+
+    Move lastMove = moveHistory_.back();
+    // Return the inverse move
+    switch (lastMove) {
+        case Move::U: return Move::UP;
+        case Move::UP: return Move::U;
+        case Move::D: return Move::DP;
+        case Move::DP: return Move::D;
+        case Move::L: return Move::LP;
+        case Move::LP: return Move::L;
+        case Move::R: return Move::RP;
+        case Move::RP: return Move::R;
+        case Move::F: return Move::FP;
+        case Move::FP: return Move::F;
+        case Move::B: return Move::BP;
+        case Move::BP: return Move::B;
+        case Move::M: return Move::MP;
+        case Move::MP: return Move::M;
+        case Move::E: return Move::EP;
+        case Move::EP: return Move::E;
+        case Move::S: return Move::SP;
+        case Move::SP: return Move::S;
+        default: return Move::U;
+    }
+}
+
+Move RubiksCube::getMoveForRedo() const {
+    if (redoHistory_.empty()) {
+        return Move::U; // Return default if no redo history
+    }
+
+    return redoHistory_.back();
+}
+
 void RubiksCube::redo() {
     if (redoHistory_.empty()) {
         return; // No moves to redo

@@ -47,26 +47,24 @@ void CubeRenderer::reset() {
 }
 
 void CubeRenderer::undo() {
-    // Undo the move on the cube
-    cube_.undo();
-
-    // Clear animation state
-    isAnimating_ = false;
-    animationProgress_ = 0.0f;
-    while (!moveQueue_.empty()) {
-        moveQueue_.pop();
+    // Get the inverse move and execute it with animation
+    Move inverseMove = cube_.getInverseMoveForUndo();
+    if (inverseMove != Move::U) { // U is the default "no move" value
+        // Execute the inverse move with animation (this adds to history)
+        executeMove(inverseMove);
+        // Then perform the undo on cube (this removes from history and adds to redo history)
+        cube_.undo();
     }
 }
 
 void CubeRenderer::redo() {
-    // Redo the move on the cube
-    cube_.redo();
-
-    // Clear animation state
-    isAnimating_ = false;
-    animationProgress_ = 0.0f;
-    while (!moveQueue_.empty()) {
-        moveQueue_.pop();
+    // Get the move to redo and execute it with animation
+    Move moveToRedo = cube_.getMoveForRedo();
+    if (moveToRedo != Move::U) { // U is the default "no move" value
+        // Execute the move with animation (this adds to history)
+        executeMove(moveToRedo);
+        // Then perform the redo on cube (this removes from redo history and restores to move history)
+        cube_.redo();
     }
 }
 

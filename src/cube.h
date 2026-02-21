@@ -87,6 +87,12 @@ public:
     // Get move history
     const std::vector<Move>& getMoveHistory() const { return moveHistory_; }
 
+    // Get the inverse move for undo (without executing it)
+    Move getInverseMoveForUndo() const;
+
+    // Get the move for redo (without executing it)
+    Move getMoveForRedo() const;
+
     // Undo the last move
     void undo();
 
