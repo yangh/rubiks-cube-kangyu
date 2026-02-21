@@ -845,7 +845,6 @@ int main(int argc, char* argv[]) {
                 bool prevEnableAnim = renderer.enableAnimation;
                 float prevAnimSpeed = renderer.animationSpeed;
                 ImGui::Checkbox("Enable Animation", &renderer.enableAnimation);
-                ImGui::SameLine();
                 ImGui::SliderFloat("Speed", &renderer.animationSpeed, 0.1f, 3.0f, "%.1fx", ImGuiSliderFlags_Logarithmic);
                 if (ImGui::IsItemHovered()) {
                     ImGui::SetTooltip("1.0x = 200ms per move");
