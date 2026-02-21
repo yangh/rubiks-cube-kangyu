@@ -141,6 +141,26 @@ namespace {
         return true;
     }
 
+    // Parse a JSON boolean
+    static bool parseBoolValue(const std::string& json, size_t& pos, bool& value) {
+        skipWhitespace(json, pos);
+        if (pos >= json.length()) {
+            return false;
+        }
+
+        if (json.substr(pos, 4) == "true") {
+            value = true;
+            pos += 4;
+            return true;
+        } else if (json.substr(pos, 5) == "false") {
+            value = false;
+            pos += 5;
+            return true;
+        }
+
+        return false;
+    }
+
     // Parse a JSON object and extract RGB values for a color
     static bool parseColorObject(const std::string& json, size_t& pos, RgbColor& color) {
         skipWhitespace(json, pos);
@@ -272,6 +292,162 @@ namespace {
         pos = startPos;
         return false;
     }
+
+    // Extract a boolean value from JSON by key
+    static bool extractBoolByKey(const std::string& json, size_t& pos,
+                               const std::string& key, bool& value) {
+        skipWhitespace(json, pos);
+        if (pos >= json.length() || json[pos] != '{') {
+            return false;
+        }
+        pos++; // Skip opening brace
+
+        size_t startPos = pos;
+        int braceCount = 1;
+        bool skippingNestedObject = false;
+
+        std::cout << "  extractBoolByKey: searching for '" << key << "' from pos " << startPos << std::endl;
+
+        while (pos < json.length() && braceCount > 0) {
+            if (json[pos] == '{') {
+                braceCount++;
+                std::cout << "  extractBoolByKey: found '{' at pos " << pos << ", braceCount=" << braceCount << std::endl;
+            } else if (json[pos] == '}') {
+                braceCount--;
+                std::cout << "  extractBoolByKey: found '}' at pos " << pos << ", braceCount=" << braceCount << std::endl;
+            } else if (json[pos] == '"' && braceCount == 1) {
+                // Check for key at current level
+                pos++;
+                std::string currentKey;
+                while (pos < json.length() && json[pos] != '"') {
+                    if (json[pos] == '\\' && pos + 1 < json.length()) {
+                        pos++;
+                    }
+                    currentKey += json[pos];
+                    pos++;
+                }
+
+                if (pos >= json.length() || json[pos] != '"') {
+                    std::cout << "  extractBoolByKey: ERROR: no closing quote at pos " << pos << std::endl;
+                    return false;
+                }
+                pos++; // Skip closing quote
+
+                skipWhitespace(json, pos);
+                if (pos >= json.length() || json[pos] != ':') {
+                    std::cout << "  extractBoolByKey: ERROR: no colon at pos " << pos << std::endl;
+                    return false;
+                }
+                pos++; // Skip colon
+
+                std::cout << "  extractBoolByKey: found key='" << currentKey << "' at pos " << pos << std::endl;
+
+                // Check if this is a nested object we should skip
+                skipWhitespace(json, pos);
+                if (pos < json.length() && json[pos] == '{') {
+                    // This is a nested object (like "colors"), skip its entire value
+                    std::cout << "  extractBoolByKey: skipping nested object at pos " << pos << std::endl;
+                    skippingNestedObject = true;
+                    int nestedBraceCount = 1;
+                    pos++; // Skip opening brace of nested object
+                    while (pos < json.length() && nestedBraceCount > 0) {
+                        if (json[pos] == '{') {
+                            nestedBraceCount++;
+                        } else if (json[pos] == '}') {
+                            nestedBraceCount--;
+                        }
+                        pos++;
+                    }
+                    skippingNestedObject = false;
+                    std::cout << "  extractBoolByKey: done skipping nested object, now at pos " << pos << std::endl;
+                    continue;
+                }
+
+                // If this is our key, parse the boolean value
+                if (currentKey == key) {
+                    std::cout << "  extractBoolByKey: MATCH! parsing at pos " << pos << std::endl;
+                    return parseBoolValue(json, pos, value);
+                }
+            }
+            pos++;
+        }
+
+        std::cout << "  extractBoolByKey: NOT FOUND, returning false" << std::endl;
+        pos = startPos;
+        return false;
+    }
+
+    // Extract a number value from JSON by key
+    static bool extractFloatByKey(const std::string& json, size_t& pos,
+                               const std::string& key, float& value) {
+        skipWhitespace(json, pos);
+        if (pos >= json.length() || json[pos] != '{') {
+            return false;
+        }
+        pos++; // Skip opening brace
+
+        size_t startPos = pos;
+        int braceCount = 1;
+        bool skippingNestedObject = false;
+
+        while (pos < json.length() && braceCount > 0) {
+            if (json[pos] == '{') {
+                braceCount++;
+            } else if (json[pos] == '}') {
+                braceCount--;
+            } else if (json[pos] == '"' && braceCount == 1) {
+                // Check for key at current level
+                pos++;
+                std::string currentKey;
+                while (pos < json.length() && json[pos] != '"') {
+                    if (json[pos] == '\\' && pos + 1 < json.length()) {
+                        pos++;
+                    }
+                    currentKey += json[pos];
+                    pos++;
+                }
+
+                if (pos >= json.length() || json[pos] != '"') {
+                    return false;
+                }
+                pos++; // Skip closing quote
+
+                skipWhitespace(json, pos);
+                if (pos >= json.length() || json[pos] != ':') {
+                    return false;
+                }
+                pos++; // Skip colon
+
+                // Check if this is a nested object we should skip
+                skipWhitespace(json, pos);
+                if (pos < json.length() && json[pos] == '{') {
+                    // This is a nested object (like "colors"), skip its entire value
+                    skippingNestedObject = true;
+                    int nestedBraceCount = 1;
+                    pos++; // Skip opening brace of nested object
+                    while (pos < json.length() && nestedBraceCount > 0) {
+                        if (json[pos] == '{') {
+                            nestedBraceCount++;
+                        } else if (json[pos] == '}') {
+                            nestedBraceCount--;
+                        }
+                        pos++;
+                    }
+                    skippingNestedObject = false;
+                    continue;
+                }
+
+                // If this is our key, parse the number value
+                if (currentKey == key) {
+                    return parseNumberValue(json, pos, value);
+                }
+            }
+            pos++;
+        }
+
+        pos = startPos;
+        return false;
+    }
 }
 
 // Load color configuration from JSON file
@@ -377,6 +553,31 @@ ColorConfig loadColorConfig() {
     // Mark that we're using custom colors
     config.setUsingDefaults(false);
 
+    // Load animation settings using direct string search (simpler approach)
+    // Search for "enableAnimation": in JSON
+    std::string enableAnimKey = "\"enableAnimation\":";
+    size_t enableAnimPos = json.find(enableAnimKey);
+    if (enableAnimPos != std::string::npos) {
+        size_t valStart = enableAnimPos + enableAnimKey.length();
+        skipWhitespace(json, valStart);
+        bool enableAnim;
+        if (parseBoolValue(json, valStart, enableAnim)) {
+            config.setEnableAnimation(enableAnim);
+        }
+    }
+
+    // Search for "animationSpeed": in JSON
+    std::string animSpeedKey = "\"animationSpeed\":";
+    size_t animSpeedPos = json.find(animSpeedKey);
+    if (animSpeedPos != std::string::npos) {
+        size_t valStart = animSpeedPos + animSpeedKey.length();
+        skipWhitespace(json, valStart);
+        float animSpeed;
+        if (parseNumberValue(json, valStart, animSpeed)) {
+            config.setAnimationSpeed(animSpeed);
+        }
+    }
+
     return config;
 }
 
@@ -417,11 +618,13 @@ bool saveColorConfig(const ColorConfig& config) {
     file << "    \"right\": " << writeRgbColor(config.right()) << ",\n";
     file << "    \"up\": " << writeRgbColor(config.up()) << ",\n";
     file << "    \"down\": " << writeRgbColor(config.down()) << "\n";
-    file << "  }\n";
+    file << "  },\n";
+    file << "  \"enableAnimation\": " << (config.getEnableAnimation() ? "true" : "false") << ",\n";
+    file << "  \"animationSpeed\": " << config.getAnimationSpeed() << "\n";
     file << "}\n";
 
     file.close();
 
-    std::cout << "Color configuration saved to: " << configPath << std::endl;
+    std::cout << "Configuration saved to: " << configPath << std::endl;
     return true;
 }

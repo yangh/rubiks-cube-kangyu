@@ -165,8 +165,13 @@ int main(int argc, char* argv[]) {
     // Load color configuration from file
     ColorConfig config = loadColorConfig();
     renderer.setCustomColors(config);
+
+    // Load animation settings from config
+    renderer.enableAnimation = config.getEnableAnimation();
+    renderer.animationSpeed = config.getAnimationSpeed();
+
     if (!config.isUsingDefaults()) {
-        std::cout << "Loaded custom color configuration from: " << getConfigFilePath() << std::endl;
+        std::cout << "Loaded custom configuration from: " << getConfigFilePath() << std::endl;
     }
 
     // Load formulas from directory
@@ -837,12 +842,47 @@ int main(int argc, char* argv[]) {
 
                 // Animation section
                 ImGui::Text("Animation:");
+                bool prevEnableAnim = renderer.enableAnimation;
+                float prevAnimSpeed = renderer.animationSpeed;
                 ImGui::Checkbox("Enable Animation", &renderer.enableAnimation);
                 ImGui::SameLine();
                 ImGui::SliderFloat("Speed", &renderer.animationSpeed, 0.1f, 3.0f, "%.1fx", ImGuiSliderFlags_Logarithmic);
                 if (ImGui::IsItemHovered()) {
                     ImGui::SetTooltip("1.0x = 200ms per move");
                 }
+
+                // Save animation settings when slider is deactivated (user released it)
+                static bool wasAnimating = false;
+                static float lastAnimSpeed = 1.0f;
+                if (ImGui::IsItemDeactivatedAfterEdit()) {
+                    ColorConfig config;
+                    config.setFront(renderer.customFront);
+                    config.setBack(renderer.customBack);
+                    config.setLeft(renderer.customLeft);
+                    config.setRight(renderer.customRight);
+                    config.setUp(renderer.customUp);
+                    config.setDown(renderer.customDown);
+                    config.setEnableAnimation(renderer.enableAnimation);
+                    config.setAnimationSpeed(renderer.animationSpeed);
+                    config.setUsingDefaults(false);
+                    saveColorConfig(config);
+                }
+
+                // Also save when checkbox changes
+                if (renderer.enableAnimation != prevEnableAnim) {
+                    ColorConfig config;
+                    config.setFront(renderer.customFront);
+                    config.setBack(renderer.customBack);
+                    config.setLeft(renderer.customLeft);
+                    config.setRight(renderer.customRight);
+                    config.setUp(renderer.customUp);
+                    config.setDown(renderer.customDown);
+                    config.setEnableAnimation(renderer.enableAnimation);
+                    config.setAnimationSpeed(renderer.animationSpeed);
+                    config.setUsingDefaults(false);
+                    saveColorConfig(config);
+                }
+
                 // Show animation status
                 if (renderer.isAnimating()) {
                     ImGui::SameLine();
@@ -882,6 +922,8 @@ int main(int argc, char* argv[]) {
                     config.setRight(renderer.customRight);
                     config.setUp(renderer.customUp);
                     config.setDown(renderer.customDown);
+                    config.setEnableAnimation(renderer.enableAnimation);
+                    config.setAnimationSpeed(renderer.animationSpeed);
                     config.setUsingDefaults(false);
                     saveColorConfig(config);
                 }
@@ -897,6 +939,8 @@ int main(int argc, char* argv[]) {
                     config.setRight(renderer.customRight);
                     config.setUp(renderer.customUp);
                     config.setDown(renderer.customDown);
+                    config.setEnableAnimation(renderer.enableAnimation);
+                    config.setAnimationSpeed(renderer.animationSpeed);
                     config.setUsingDefaults(false);
                     saveColorConfig(config);
                 }
@@ -912,6 +956,8 @@ int main(int argc, char* argv[]) {
                     config.setRight(renderer.customRight);
                     config.setUp(renderer.customUp);
                     config.setDown(renderer.customDown);
+                    config.setEnableAnimation(renderer.enableAnimation);
+                    config.setAnimationSpeed(renderer.animationSpeed);
                     config.setUsingDefaults(false);
                     saveColorConfig(config);
                 }
@@ -927,6 +973,8 @@ int main(int argc, char* argv[]) {
                     config.setRight(renderer.customRight);
                     config.setUp(renderer.customUp);
                     config.setDown(renderer.customDown);
+                    config.setEnableAnimation(renderer.enableAnimation);
+                    config.setAnimationSpeed(renderer.animationSpeed);
                     config.setUsingDefaults(false);
                     saveColorConfig(config);
                 }
@@ -942,6 +990,8 @@ int main(int argc, char* argv[]) {
                     config.setRight(renderer.customRight);
                     config.setUp(renderer.customUp);
                     config.setDown(renderer.customDown);
+                    config.setEnableAnimation(renderer.enableAnimation);
+                    config.setAnimationSpeed(renderer.animationSpeed);
                     config.setUsingDefaults(false);
                     saveColorConfig(config);
                 }
@@ -957,6 +1007,8 @@ int main(int argc, char* argv[]) {
                     config.setRight(renderer.customRight);
                     config.setUp(renderer.customUp);
                     config.setDown(renderer.customDown);
+                    config.setEnableAnimation(renderer.enableAnimation);
+                    config.setAnimationSpeed(renderer.animationSpeed);
                     config.setUsingDefaults(false);
                     saveColorConfig(config);
                 }

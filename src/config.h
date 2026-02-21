@@ -29,9 +29,11 @@ private:
     RgbColor up_;
     RgbColor down_;
     bool usingDefaults_;
+    bool enableAnimation_;
+    float animationSpeed_;
 
 public:
-    ColorConfig() : usingDefaults_(true) {
+    ColorConfig() : usingDefaults_(true), enableAnimation_(true), animationSpeed_(1.0f) {
         front_ = RgbColor(0.0f, 1.0f, 0.0f);    // Green
         back_ = RgbColor(0.0f, 0.0f, 1.0f);     // Blue
         left_ = RgbColor(1.0f, 0.5f, 0.0f);     // Orange
@@ -67,6 +69,12 @@ public:
     // Check if using default colors
     bool isUsingDefaults() const { return usingDefaults_; }
     void setUsingDefaults(bool value) { usingDefaults_ = value; }
+
+    // Animation settings
+    bool getEnableAnimation() const { return enableAnimation_; }
+    void setEnableAnimation(bool value) { enableAnimation_ = value; }
+    float getAnimationSpeed() const { return animationSpeed_; }
+    void setAnimationSpeed(float value) { animationSpeed_ = value; }
 
     // Set from array (for UI convenience)
     void setFront(const std::array<float, 3>& color) { front_ = RgbColor(color[0], color[1], color[2]); }

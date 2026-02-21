@@ -93,8 +93,6 @@ void CubeRenderer::resetView() {
     targetRotationZ = 0.0f;
     scale = 3.1f;
     scale2D = 0.8f;
-    animationSpeed = 1.0f;
-    enableAnimation = true;
 }
 
 bool CubeRenderer::isSolved() const {
