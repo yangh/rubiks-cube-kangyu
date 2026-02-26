@@ -73,6 +73,56 @@ void handleMoveShortcut(ImGuiKey key, Move normalMove, Move primeMove, CubeRende
     }
 }
 
+// Helper function to get inverse of a move
+Move getInverseMove(Move move) {
+    switch (move) {
+        case Move::U:  return Move::UP;
+        case Move::UP: return Move::U;
+        case Move::D:  return Move::DP;
+        case Move::DP: return Move::D;
+        case Move::L:  return Move::LP;
+        case Move::LP: return Move::L;
+        case Move::R:  return Move::RP;
+        case Move::RP: return Move::R;
+        case Move::F:  return Move::FP;
+        case Move::FP: return Move::F;
+        case Move::B:  return Move::BP;
+        case Move::BP: return Move::B;
+        case Move::M:  return Move::MP;
+        case Move::MP: return Move::M;
+        case Move::E:  return Move::EP;
+        case Move::EP: return Move::E;
+        case Move::S:  return Move::SP;
+        case Move::SP: return Move::S;
+        default: return move;
+    }
+}
+
+// Helper function to build move history string
+std::string buildMoveHistoryString(const std::vector<Move>& history) {
+    std::string result;
+    for (size_t i = 0; i < history.size(); ++i) {
+        if (i > 0) result += " ";
+        result += moveToString(history[i]);
+    }
+    return result;
+}
+
+// Helper function to draw disabled button
+void drawDisabledButton(const char* label, ImVec2 size) {
+    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
+    ImGui::Button(label, size);
+    ImGui::PopStyleVar();
+    ImGui::PopItemFlag();
+}
+
+// Helper function to reset cube
+void resetCube(CubeRenderer& renderer) {
+    renderer.reset();
+    renderer.resetView();
+}
+
 void showAbout() {
     if (g_showAboutDialog) {
         ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Appearing);
@@ -236,11 +286,7 @@ int main(int argc, char* argv[]) {
         glfwGetWindowSize(window, &windowWidth, &windowHeight);
 
         // Calculate responsive layout dimensions
-        // Sidebar width is 30% of window width, minimum 360px
-        //float sidebarWidth = fmaxf(360.0f, windowWidth * 0.4f);
         float sidebarWidth = 480.0f;
-        // 2D Net View height is 30% of window height, minimum 300px
-        //float netViewHeight = fmaxf(300.0f, windowHeight * 0.3f);
         float netViewHeight = 300.0f;
 
         // Start Dear ImGui frame
@@ -271,8 +317,7 @@ int main(int argc, char* argv[]) {
         // ESC: reset cube to solved state
         if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
             resetStepByStepMode();
-            renderer.reset();
-            renderer.resetView();
+            resetCube(renderer);
         }
 
         // Ctrl+Q: quit application
@@ -289,8 +334,7 @@ int main(int argc, char* argv[]) {
         if (ImGui::BeginMenuBar()) {
             if (ImGui::BeginMenu("File")) {
                 if (ImGui::MenuItem("Reset")) {
-                    renderer.reset();
-                    renderer.resetView();
+                    resetCube(renderer);
                 }
                 if (ImGui::MenuItem("About")) {
                     g_showAboutDialog = true;
@@ -399,8 +443,7 @@ int main(int argc, char* argv[]) {
                 ImGui::SameLine();
                 if (ImGui::Button("Reset Cube", ImVec2(160, 0))) {
                     resetStepByStepMode();
-                    renderer.reset();
-                    renderer.resetView();
+                    resetCube(renderer);
                 }
 
                 ImGui::Separator();
@@ -459,11 +502,7 @@ int main(int argc, char* argv[]) {
                         renderer.undo();
                     }
                 } else {
-                    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-                    ImGui::Button("Undo", ImVec2(100, 0));
-                    ImGui::PopStyleVar();
-                    ImGui::PopItemFlag();
+                    drawDisabledButton("Undo", ImVec2(100, 0));
                 }
 
                 ImGui::SameLine();
@@ -474,11 +513,7 @@ int main(int argc, char* argv[]) {
                         renderer.redo();
                     }
                 } else {
-                    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-                    ImGui::Button("Redo", ImVec2(100, 0));
-                    ImGui::PopStyleVar();
-                    ImGui::PopItemFlag();
+                    drawDisabledButton("Redo", ImVec2(100, 0));
                 }
 
                 ImGui::SameLine();
@@ -486,23 +521,11 @@ int main(int argc, char* argv[]) {
                 // Copy button
                 if (canUndo) {
                     if (ImGui::Button("Copy", ImVec2(100, 0))) {
-                        // Build history string
                         const std::vector<Move>& history = renderer.getMoveHistory();
-                        std::string historyStr;
-                        for (size_t i = 0; i < history.size(); ++i) {
-                            if (i > 0) {
-                                historyStr += " ";
-                            }
-                            historyStr += moveToString(history[i]);
-                        }
-                        glfwSetClipboardString(window, historyStr.c_str());
+                        glfwSetClipboardString(window, buildMoveHistoryString(history).c_str());
                     }
                 } else {
-                    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-                    ImGui::Button("Copy", ImVec2(100, 0));
-                    ImGui::PopStyleVar();
-                    ImGui::PopItemFlag();
+                    drawDisabledButton("Copy", ImVec2(100, 0));
                 }
 
                 ImGui::Spacing();
@@ -516,16 +539,7 @@ int main(int argc, char* argv[]) {
                 // Display move history as auto-wrapped text
                 const std::vector<Move>& history = renderer.getMoveHistory();
                 if (!history.empty()) {
-                    // Build history string with space-separated moves
-                    std::string historyStr;
-                    for (size_t i = 0; i < history.size(); ++i) {
-                        if (i > 0) {
-                            historyStr += " ";
-                        }
-                        historyStr += moveToString(history[i]);
-                    }
-
-                    // Display auto-wrapped text in scrollable child
+                    std::string historyStr = buildMoveHistoryString(history);
                     ImGui::BeginChild("MoveHistory", ImVec2(0, 120), true);
                     ImGui::TextWrapped("%s", historyStr.c_str());
                     ImGui::EndChild();
@@ -691,33 +705,7 @@ int main(int argc, char* argv[]) {
                         // Parse and execute moves in reverse order with inverse moves
                         std::vector<Move> moves = parseMoveSequence(g_formulaInput);
                         for (auto it = moves.rbegin(); it != moves.rend(); ++it) {
-                            Move move = *it;
-                            Move inverseMove;
-
-                            // Get inverse move
-                            switch (move) {
-                                case Move::U:  inverseMove = Move::UP; break;
-                                case Move::UP: inverseMove = Move::U; break;
-                                case Move::D:  inverseMove = Move::DP; break;
-                                case Move::DP: inverseMove = Move::D; break;
-                                case Move::L:  inverseMove = Move::LP; break;
-                                case Move::LP: inverseMove = Move::L; break;
-                                case Move::R:  inverseMove = Move::RP; break;
-                                case Move::RP: inverseMove = Move::R; break;
-                                case Move::F:  inverseMove = Move::FP; break;
-                                case Move::FP: inverseMove = Move::F; break;
-                                case Move::B:  inverseMove = Move::BP; break;
-                                case Move::BP: inverseMove = Move::B; break;
-                                case Move::M:  inverseMove = Move::MP; break;
-                                case Move::MP: inverseMove = Move::M; break;
-                                case Move::E:  inverseMove = Move::EP; break;
-                                case Move::EP: inverseMove = Move::E; break;
-                                case Move::S:  inverseMove = Move::SP; break;
-                                case Move::SP: inverseMove = Move::S; break;
-                                default: continue;
-                            }
-
-                            renderer.executeMove(inverseMove);
+                            renderer.executeMove(getInverseMove(*it));
                         }
                     }
 
@@ -746,12 +734,7 @@ int main(int argc, char* argv[]) {
                             }
                         }
                     } else {
-                        // Disabled button when no formula or all steps completed
-                        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-                        ImGui::Button("Step", ImVec2(180, 0));
-                        ImGui::PopStyleVar();
-                        ImGui::PopItemFlag();
+                        drawDisabledButton("Step", ImVec2(180, 0));
                     }
 
                     ImGui::SameLine();
@@ -762,28 +745,12 @@ int main(int argc, char* argv[]) {
                             resetStepByStepMode();
                         }
                     } else {
-                        // Disabled button when not in step mode
-                        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-                        ImGui::Button("Reset Step", ImVec2(180, 0));
-                        ImGui::PopStyleVar();
-                        ImGui::PopItemFlag();
+                        drawDisabledButton("Reset Step", ImVec2(180, 0));
                     }
                 } else {
-                    // Disabled buttons when no formula selected
-                    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-                    ImGui::Button("Execute", ImVec2(180, 0));
-                    ImGui::PopStyleVar();
-                    ImGui::PopItemFlag();
-
+                    drawDisabledButton("Execute", ImVec2(180, 0));
                     ImGui::SameLine();
-
-                    ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-                    ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.5f);
-                    ImGui::Button("Execute Reverse", ImVec2(180, 0));
-                    ImGui::PopStyleVar();
-                    ImGui::PopItemFlag();
+                    drawDisabledButton("Execute Reverse", ImVec2(180, 0));
                 }
 
                 ImGui::Spacing();
@@ -795,8 +762,7 @@ int main(int argc, char* argv[]) {
                 ImGui::SameLine();
                 if (ImGui::Button("Reset Cube", ImVec2(180, 0))) {
                     resetStepByStepMode();
-                    renderer.reset();
-                    renderer.resetView();
+                    resetCube(renderer);
                 }
 
                 ImGui::EndTabItem();
@@ -817,8 +783,6 @@ int main(int argc, char* argv[]) {
                 }
 
                 // Save animation settings when slider is deactivated (user released it)
-                static bool wasAnimating = false;
-                static float lastAnimSpeed = 1.0f;
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
                     saveRendererConfig(renderer);
                 }
