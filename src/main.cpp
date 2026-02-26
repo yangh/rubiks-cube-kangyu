@@ -94,7 +94,6 @@ int main(int argc, char* argv[]) {
     }
 
     // Initialize GLFW
-    // Initialize GLFW
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
         return -1;

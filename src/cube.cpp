@@ -451,13 +451,13 @@ void RubiksCube::rotateColY(bool prime, int col = 0) {
     std::array<Color, 9> temp = up_;
 
     if (prime) {
-        // Counter-clockwise: up <- front <- down <- back <- up
+        // Counter-clockwise: up <- back <- down <- front <- up
         shiftLeftYFromBack(up_, back_, col);
         shiftLeftYToBack(back_, down_, col);
         shiftLeftY(down_, front_, col);
         shiftLeftY(front_, temp, col);
     } else {
-        // Clockwise: up <- back <- down <- front <- up
+        // Clockwise: up <- front <- down <- back <- up
         shiftLeftY(up_, front_, col);
         shiftLeftY(front_, down_, col);
         shiftLeftYFromBack(down_, back_, col);
