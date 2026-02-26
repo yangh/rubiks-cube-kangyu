@@ -108,7 +108,7 @@ int main(int argc, char* argv[]) {
     glfwWindowHint(GLFW_SAMPLES, 4);
 
     // Create window - wider to accommodate T-shaped layout
-    GLFWwindow* window = glfwCreateWindow(1600, 1200, "Rubik's Cube Simulator", nullptr, nullptr);
+    GLFWwindow* window = glfwCreateWindow(1400, 900, "Rubik's Cube Simulator", nullptr, nullptr);
     if (!window) {
         std::cerr << "Failed to create GLFW window" << std::endl;
         glfwTerminate();
@@ -197,10 +197,12 @@ int main(int argc, char* argv[]) {
         glfwGetWindowSize(window, &windowWidth, &windowHeight);
 
         // Calculate responsive layout dimensions
-        // Sidebar width is 40% of window width, minimum 350px
-        float sidebarWidth = fmaxf(350.0f, windowWidth * 0.4f);
-        // 2D Net View height is 30% of window height, minimum 250px
-        float netViewHeight = fmaxf(250.0f, windowHeight * 0.30f);
+        // Sidebar width is 30% of window width, minimum 360px
+        //float sidebarWidth = fmaxf(360.0f, windowWidth * 0.4f);
+        float sidebarWidth = 480.0f;
+        // 2D Net View height is 30% of window height, minimum 300px
+        //float netViewHeight = fmaxf(300.0f, windowHeight * 0.3f);
+        float netViewHeight = 300.0f;
 
         // Start Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -402,7 +404,7 @@ int main(int argc, char* argv[]) {
             // Moves tab
             if (ImGui::BeginTabItem("Moves")) {
                 // Scramble and Reset buttons
-                if (ImGui::Button("Scramble", ImVec2(120, 0))) {
+                if (ImGui::Button("Scramble", ImVec2(160, 0))) {
                     // Disable animation for instant scramble
                     bool oldAnimation = renderer.enableAnimation;
                     renderer.enableAnimation = false;
@@ -414,7 +416,7 @@ int main(int argc, char* argv[]) {
                     renderer.enableAnimation = oldAnimation;
                 }
                 ImGui::SameLine();
-                if (ImGui::Button("Reset Cube", ImVec2(120, 0))) {
+                if (ImGui::Button("Reset Cube", ImVec2(160, 0))) {
                     // Reset step-by-step mode
                     g_isStepByStepMode = false;
                     g_currentStepIndex = 0;
@@ -818,7 +820,7 @@ int main(int argc, char* argv[]) {
                 ImGui::Spacing();
 
                 // Refresh and Reset buttons
-                if (ImGui::Button("Refresh Formulas", ImVec2(180, 0))) {
+                if (ImGui::Button("Reload Formulas", ImVec2(180, 0))) {
                     g_formulaManager.refresh();
                 }
                 ImGui::SameLine();
@@ -1017,7 +1019,7 @@ int main(int argc, char* argv[]) {
 
                 // Save and Reset buttons
                 // Note: Colors are now auto-saved when modified, but we keep this button for explicit save
-                if (ImGui::Button("Save Colors", ImVec2(120, 0))) {
+                if (ImGui::Button("Save Colors", ImVec2(160, 0))) {
                     ColorConfig config;
                     config.setFront(renderer.customFront);
                     config.setBack(renderer.customBack);
@@ -1029,7 +1031,7 @@ int main(int argc, char* argv[]) {
                     saveColorConfig(config);
                 }
                 ImGui::SameLine();
-                if (ImGui::Button("Reset to Defaults", ImVec2(140, 0))) {
+                if (ImGui::Button("Reset to Defaults", ImVec2(180, 0))) {
                     renderer.customFront = {0.0f, 1.0f, 0.0f};  // Green
                     renderer.customBack = {0.0f, 0.0f, 1.0f};   // Blue
                     renderer.customLeft = {1.0f, 0.5f, 0.0f};  // Orange
