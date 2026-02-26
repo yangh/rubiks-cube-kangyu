@@ -34,6 +34,45 @@ bool g_isStepByStepMode = false;
 char g_formulaInput[1024] = "";  // Buffer for editable formula input
 bool g_formulaInputDirty = true;  // Flag to indicate input needs update from selected formula
 
+// Helper function to reset step-by-step mode
+void resetStepByStepMode() {
+    g_isStepByStepMode = false;
+    g_currentStepIndex = 0;
+    g_stepByStepMoves.clear();
+}
+
+// Helper function to save current renderer configuration
+void saveRendererConfig(CubeRenderer& renderer) {
+    ColorConfig config;
+    config.setFront(renderer.customFront);
+    config.setBack(renderer.customBack);
+    config.setLeft(renderer.customLeft);
+    config.setRight(renderer.customRight);
+    config.setUp(renderer.customUp);
+    config.setDown(renderer.customDown);
+    config.setEnableAnimation(renderer.enableAnimation);
+    config.setAnimationSpeed(renderer.animationSpeed);
+    config.setUsingDefaults(false);
+    saveColorConfig(config);
+}
+
+// Helper function to create color picker with auto-save
+void addColorPicker(const char* id, const char* label, std::array<float, 3>& color, CubeRenderer& renderer) {
+    if (ImGui::ColorEdit3(id, color.data())) {
+        renderer.useCustomColors = true;
+        saveRendererConfig(renderer);
+    }
+    ImGui::SameLine();
+    ImGui::Text("%s", label);
+}
+
+// Helper function to handle keyboard shortcuts for moves
+void handleMoveShortcut(ImGuiKey key, Move normalMove, Move primeMove, CubeRenderer& renderer, bool keyShift) {
+    if (ImGui::IsKeyPressed(key)) {
+        renderer.executeMove(keyShift ? primeMove : normalMove);
+    }
+}
+
 void showAbout() {
     if (g_showAboutDialog) {
         ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Appearing);
@@ -214,69 +253,15 @@ int main(int argc, char* argv[]) {
 
         // Handle keyboard shortcuts for cube moves
         // These work globally, even when mouse is over UI
-
-        // U moves (Up face)
-        if (ImGui::IsKeyPressed(ImGuiKey_U)) {
-            // Check for shift modifier for prime move
-            bool isPrime = io.KeyShift;
-            renderer.executeMove(isPrime ? Move::UP : Move::U);
-        }
-
-        // D moves (Down face)
-        if (ImGui::IsKeyPressed(ImGuiKey_D)) {
-            // Check for shift modifier for prime move
-            bool isPrime = io.KeyShift;
-            renderer.executeMove(isPrime ? Move::DP : Move::D);
-        }
-
-        // L moves (Left face)
-        if (ImGui::IsKeyPressed(ImGuiKey_L)) {
-            // Check for shift modifier for prime move
-            bool isPrime = io.KeyShift;
-            renderer.executeMove(isPrime ? Move::LP : Move::L);
-        }
-
-        // R moves (Right face)
-        if (ImGui::IsKeyPressed(ImGuiKey_R)) {
-            // Check for shift modifier for prime move
-            bool isPrime = io.KeyShift;
-            renderer.executeMove(isPrime ? Move::RP : Move::R);
-        }
-
-        // F moves (Front face)
-        if (ImGui::IsKeyPressed(ImGuiKey_F)) {
-            // Check for shift modifier for prime move
-            bool isPrime = io.KeyShift;
-            renderer.executeMove(isPrime ? Move::FP : Move::F);
-        }
-
-        // B moves (Back face)
-        if (ImGui::IsKeyPressed(ImGuiKey_B)) {
-            // Check for shift modifier for prime move
-            bool isPrime = io.KeyShift;
-            renderer.executeMove(isPrime ? Move::BP : Move::B);
-        }
-
-        // M moves (Middle slice)
-        if (ImGui::IsKeyPressed(ImGuiKey_M)) {
-            // Check for shift modifier for prime move
-            bool isPrime = io.KeyShift;
-            renderer.executeMove(isPrime ? Move::MP : Move::M);
-        }
-
-        // E moves (Equator slice)
-        if (ImGui::IsKeyPressed(ImGuiKey_E)) {
-            // Check for shift modifier for prime move
-            bool isPrime = io.KeyShift;
-            renderer.executeMove(isPrime ? Move::EP : Move::E);
-        }
-
-        // S moves (Standing slice)
-        if (ImGui::IsKeyPressed(ImGuiKey_S)) {
-            // Check for shift modifier for prime move
-            bool isPrime = io.KeyShift;
-            renderer.executeMove(isPrime ? Move::SP : Move::S);
-        }
+        handleMoveShortcut(ImGuiKey_U, Move::U, Move::UP, renderer, io.KeyShift);
+        handleMoveShortcut(ImGuiKey_D, Move::D, Move::DP, renderer, io.KeyShift);
+        handleMoveShortcut(ImGuiKey_L, Move::L, Move::LP, renderer, io.KeyShift);
+        handleMoveShortcut(ImGuiKey_R, Move::R, Move::RP, renderer, io.KeyShift);
+        handleMoveShortcut(ImGuiKey_F, Move::F, Move::FP, renderer, io.KeyShift);
+        handleMoveShortcut(ImGuiKey_B, Move::B, Move::BP, renderer, io.KeyShift);
+        handleMoveShortcut(ImGuiKey_M, Move::M, Move::MP, renderer, io.KeyShift);
+        handleMoveShortcut(ImGuiKey_E, Move::E, Move::EP, renderer, io.KeyShift);
+        handleMoveShortcut(ImGuiKey_S, Move::S, Move::SP, renderer, io.KeyShift);
 
         // Spacebar: reset view to default angles
         if (ImGui::IsKeyPressed(ImGuiKey_Space)) {
@@ -285,11 +270,7 @@ int main(int argc, char* argv[]) {
 
         // ESC: reset cube to solved state
         if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
-            // Reset step-by-step mode
-            g_isStepByStepMode = false;
-            g_currentStepIndex = 0;
-            g_stepByStepMoves.clear();
-
+            resetStepByStepMode();
             renderer.reset();
             renderer.resetView();
         }
@@ -417,11 +398,7 @@ int main(int argc, char* argv[]) {
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Reset Cube", ImVec2(160, 0))) {
-                    // Reset step-by-step mode
-                    g_isStepByStepMode = false;
-                    g_currentStepIndex = 0;
-                    g_stepByStepMoves.clear();
-
+                    resetStepByStepMode();
                     renderer.reset();
                     renderer.resetView();
                 }
@@ -691,10 +668,7 @@ int main(int argc, char* argv[]) {
                 if (hasFormula) {
                     // Execute button - automatically loops if formula has loop syntax
                     if (ImGui::Button("Execute", ImVec2(180, 0))) {
-                        // Reset step-by-step mode
-                        g_isStepByStepMode = false;
-                        g_currentStepIndex = 0;
-                        g_stepByStepMoves.clear();
+                        resetStepByStepMode();
 
                         // Parse moves from input
                         std::vector<Move> moves = parseMoveSequence(g_formulaInput);
@@ -712,10 +686,7 @@ int main(int argc, char* argv[]) {
 
                     // Execute Reverse button
                     if (ImGui::Button("Execute Reverse", ImVec2(180, 0))) {
-                        // Reset step-by-step mode
-                        g_isStepByStepMode = false;
-                        g_currentStepIndex = 0;
-                        g_stepByStepMoves.clear();
+                        resetStepByStepMode();
 
                         // Parse and execute moves in reverse order with inverse moves
                         std::vector<Move> moves = parseMoveSequence(g_formulaInput);
@@ -788,9 +759,7 @@ int main(int argc, char* argv[]) {
                     // Reset Step Mode button - only show when in step-by-step mode
                     if (g_isStepByStepMode) {
                         if (ImGui::Button("Reset Step", ImVec2(180, 0))) {
-                            g_isStepByStepMode = false;
-                            g_currentStepIndex = 0;
-                            g_stepByStepMoves.clear();
+                            resetStepByStepMode();
                         }
                     } else {
                         // Disabled button when not in step mode
@@ -825,11 +794,7 @@ int main(int argc, char* argv[]) {
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Reset Cube", ImVec2(180, 0))) {
-                    // Reset step-by-step mode
-                    g_isStepByStepMode = false;
-                    g_currentStepIndex = 0;
-                    g_stepByStepMoves.clear();
-
+                    resetStepByStepMode();
                     renderer.reset();
                     renderer.resetView();
                 }
@@ -855,32 +820,12 @@ int main(int argc, char* argv[]) {
                 static bool wasAnimating = false;
                 static float lastAnimSpeed = 1.0f;
                 if (ImGui::IsItemDeactivatedAfterEdit()) {
-                    ColorConfig config;
-                    config.setFront(renderer.customFront);
-                    config.setBack(renderer.customBack);
-                    config.setLeft(renderer.customLeft);
-                    config.setRight(renderer.customRight);
-                    config.setUp(renderer.customUp);
-                    config.setDown(renderer.customDown);
-                    config.setEnableAnimation(renderer.enableAnimation);
-                    config.setAnimationSpeed(renderer.animationSpeed);
-                    config.setUsingDefaults(false);
-                    saveColorConfig(config);
+                    saveRendererConfig(renderer);
                 }
 
                 // Also save when checkbox changes
                 if (renderer.enableAnimation != prevEnableAnim) {
-                    ColorConfig config;
-                    config.setFront(renderer.customFront);
-                    config.setBack(renderer.customBack);
-                    config.setLeft(renderer.customLeft);
-                    config.setRight(renderer.customRight);
-                    config.setUp(renderer.customUp);
-                    config.setDown(renderer.customDown);
-                    config.setEnableAnimation(renderer.enableAnimation);
-                    config.setAnimationSpeed(renderer.animationSpeed);
-                    config.setUsingDefaults(false);
-                    saveColorConfig(config);
+                    saveRendererConfig(renderer);
                 }
 
                 // Show animation status
@@ -913,122 +858,19 @@ int main(int argc, char* argv[]) {
                 ImGui::Text("Custom Colors:");
 
                 // Color pickers for each face
-                if (ImGui::ColorEdit3("##FrontColor", renderer.customFront.data())) {
-                    renderer.useCustomColors = true;
-                    ColorConfig config;
-                    config.setFront(renderer.customFront);
-                    config.setBack(renderer.customBack);
-                    config.setLeft(renderer.customLeft);
-                    config.setRight(renderer.customRight);
-                    config.setUp(renderer.customUp);
-                    config.setDown(renderer.customDown);
-                    config.setEnableAnimation(renderer.enableAnimation);
-                    config.setAnimationSpeed(renderer.animationSpeed);
-                    config.setUsingDefaults(false);
-                    saveColorConfig(config);
-                }
-                ImGui::SameLine();
-                ImGui::Text("Front (Green):");
-
-                if (ImGui::ColorEdit3("##BackColor", renderer.customBack.data())) {
-                    renderer.useCustomColors = true;
-                    ColorConfig config;
-                    config.setFront(renderer.customFront);
-                    config.setBack(renderer.customBack);
-                    config.setLeft(renderer.customLeft);
-                    config.setRight(renderer.customRight);
-                    config.setUp(renderer.customUp);
-                    config.setDown(renderer.customDown);
-                    config.setEnableAnimation(renderer.enableAnimation);
-                    config.setAnimationSpeed(renderer.animationSpeed);
-                    config.setUsingDefaults(false);
-                    saveColorConfig(config);
-                }
-                ImGui::SameLine();
-                ImGui::Text("Back (Blue):");
-
-                if (ImGui::ColorEdit3("##LeftColor", renderer.customLeft.data())) {
-                    renderer.useCustomColors = true;
-                    ColorConfig config;
-                    config.setFront(renderer.customFront);
-                    config.setBack(renderer.customBack);
-                    config.setLeft(renderer.customLeft);
-                    config.setRight(renderer.customRight);
-                    config.setUp(renderer.customUp);
-                    config.setDown(renderer.customDown);
-                    config.setEnableAnimation(renderer.enableAnimation);
-                    config.setAnimationSpeed(renderer.animationSpeed);
-                    config.setUsingDefaults(false);
-                    saveColorConfig(config);
-                }
-                ImGui::SameLine();
-                ImGui::Text("Left (Orange):");
-
-                if (ImGui::ColorEdit3("##RightColor", renderer.customRight.data())) {
-                    renderer.useCustomColors = true;
-                    ColorConfig config;
-                    config.setFront(renderer.customFront);
-                    config.setBack(renderer.customBack);
-                    config.setLeft(renderer.customLeft);
-                    config.setRight(renderer.customRight);
-                    config.setUp(renderer.customUp);
-                    config.setDown(renderer.customDown);
-                    config.setEnableAnimation(renderer.enableAnimation);
-                    config.setAnimationSpeed(renderer.animationSpeed);
-                    config.setUsingDefaults(false);
-                    saveColorConfig(config);
-                }
-                ImGui::SameLine();
-                ImGui::Text("Right (Red):");
-
-                if (ImGui::ColorEdit3("##UpColor", renderer.customUp.data())) {
-                    renderer.useCustomColors = true;
-                    ColorConfig config;
-                    config.setFront(renderer.customFront);
-                    config.setBack(renderer.customBack);
-                    config.setLeft(renderer.customLeft);
-                    config.setRight(renderer.customRight);
-                    config.setUp(renderer.customUp);
-                    config.setDown(renderer.customDown);
-                    config.setEnableAnimation(renderer.enableAnimation);
-                    config.setAnimationSpeed(renderer.animationSpeed);
-                    config.setUsingDefaults(false);
-                    saveColorConfig(config);
-                }
-                ImGui::SameLine();
-                ImGui::Text("Up (White):");
-
-                if (ImGui::ColorEdit3("##DownColor", renderer.customDown.data())) {
-                    renderer.useCustomColors = true;
-                    ColorConfig config;
-                    config.setFront(renderer.customFront);
-                    config.setBack(renderer.customBack);
-                    config.setLeft(renderer.customLeft);
-                    config.setRight(renderer.customRight);
-                    config.setUp(renderer.customUp);
-                    config.setDown(renderer.customDown);
-                    config.setEnableAnimation(renderer.enableAnimation);
-                    config.setAnimationSpeed(renderer.animationSpeed);
-                    config.setUsingDefaults(false);
-                    saveColorConfig(config);
-                }
-                ImGui::SameLine();
-                ImGui::Text("Down (Yellow):");
+                addColorPicker("##FrontColor", "Front (Green):", renderer.customFront, renderer);
+                addColorPicker("##BackColor", "Back (Blue):", renderer.customBack, renderer);
+                addColorPicker("##LeftColor", "Left (Orange):", renderer.customLeft, renderer);
+                addColorPicker("##RightColor", "Right (Red):", renderer.customRight, renderer);
+                addColorPicker("##UpColor", "Up (White):", renderer.customUp, renderer);
+                addColorPicker("##DownColor", "Down (Yellow):", renderer.customDown, renderer);
 
                 ImGui::Spacing();
 
                 // Save and Reset buttons
                 // Note: Colors are now auto-saved when modified, but we keep this button for explicit save
                 if (ImGui::Button("Save Colors", ImVec2(160, 0))) {
-                    ColorConfig config;
-                    config.setFront(renderer.customFront);
-                    config.setBack(renderer.customBack);
-                    config.setLeft(renderer.customLeft);
-                    config.setRight(renderer.customRight);
-                    config.setUp(renderer.customUp);
-                    config.setDown(renderer.customDown);
-                    config.setUsingDefaults(false);
-                    saveColorConfig(config);
+                    saveRendererConfig(renderer);
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Reset to Defaults", ImVec2(180, 0))) {
