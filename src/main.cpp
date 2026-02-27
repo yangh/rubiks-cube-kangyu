@@ -16,6 +16,11 @@
 // Global flag to enable/disable cube dump
 bool g_enableDump = false;
 
+// Global variables for fullscreen toggle
+bool g_isFullscreen = false;
+int g_windowedX = 0, g_windowedY = 0;
+int g_windowedWidth = 1400, g_windowedHeight = 900;
+
 // Global variable to store the last scramble sequence
 std::string g_lastScramble = "No scramble generated";
 
@@ -152,8 +157,10 @@ void showHelp(const char* programName) {
     std::cout << "Keyboard Shortcuts:\n";
     std::cout << "  U/D/L/R/F/B/M/E/S - Execute corresponding move (clockwise)\n";
     std::cout << "  Shift+Key           - Execute prime move (counter-clockwise)\n";
+    std::cout << "  Space               - Reset view to default angles\n";
     std::cout << "  ESC                 - Reset cube to solved state\n";
     std::cout << "  Ctrl+Q              - Quit application\n";
+    std::cout << "  F11                 - Toggle fullscreen mode\n";
     std::cout << "  Example: 'U' = U move, 'Shift+U' = U' move\n";
 }
 
@@ -323,6 +330,25 @@ int main(int argc, char* argv[]) {
         // Ctrl+Q: quit application
         if (ImGui::IsKeyPressed(ImGuiKey_Q) && io.KeyCtrl) {
             glfwSetWindowShouldClose(window, 1);
+        }
+
+        // F11: toggle fullscreen
+        if (ImGui::IsKeyPressed(ImGuiKey_F11)) {
+            if (g_isFullscreen) {
+                // Switch back to windowed mode
+                glfwSetWindowMonitor(window, nullptr, g_windowedX, g_windowedY, g_windowedWidth, g_windowedHeight, 0);
+                g_isFullscreen = false;
+            } else {
+                // Save current window position and size
+                glfwGetWindowPos(window, &g_windowedX, &g_windowedY);
+                glfwGetWindowSize(window, &g_windowedWidth, &g_windowedHeight);
+
+                // Switch to fullscreen
+                GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+                const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+                glfwSetWindowMonitor(window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+                g_isFullscreen = true;
+            }
         }
 
         // ===== Window 1: 3D View (Left side) =====
@@ -868,6 +894,7 @@ int main(int argc, char* argv[]) {
                 ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Space - Reset view to default angles");
                 ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  ESC - Reset cube to solved state");
                 ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Ctrl+Q - Quit application");
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  F11 - Toggle fullscreen mode");
 
                 ImGui::EndTabItem();
             }

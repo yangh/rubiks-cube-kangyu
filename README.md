@@ -26,7 +26,7 @@ A 3D Rubik's cube simulator built with C++, ImGUI, and OpenGL with advanced feat
 - **Mouse Controls**:
   - 3D View: Left-click drag (XY rotation), Right-click drag (Z rotation), Scroll wheel (Z rotation + zoom)
   - 2D View: Mouse wheel zoom
-- **Keyboard Shortcuts**: Comprehensive keyboard support with Shift+Key for prime moves
+- **Keyboard Shortcuts**: Comprehensive keyboard support with Shift+Key for prime moves, fullscreen toggle
 - **Settings Persistence**: All preferences saved to config.json
 
 ## Requirements
@@ -99,6 +99,7 @@ make -C build
 - **Space**: Reset 3D view to default angles
 - **ESC**: Reset cube to solved state
 - **Ctrl+Q**: Quit application
+- **F11**: Toggle fullscreen mode
 - **Example**: 'U' = U move, 'Shift+U' = U' move
 
 ### Formula System
