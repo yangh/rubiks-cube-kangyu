@@ -392,22 +392,22 @@ void RubiksCube::dump() const {
 // 3 4 5
 // 6 7 8
 
-#define shiftLeftX(a, b, row) \
+#define shiftLeftOnY(a, b, row) \
     a[0 + row * 3] = b[0 + row * 3]; \
     a[1 + row * 3] = b[1 + row * 3]; \
     a[2 + row * 3] = b[2 + row * 3];
 
-#define shiftLeftY(a, b, col) \
+#define shiftLeftOnX(a, b, col) \
     a[0 + col] = b[0 + col]; \
     a[3 + col] = b[3 + col]; \
     a[6 + col] = b[6 + col];
 
-#define shiftLeftYFromBack(a, b, col) \
+#define shiftLeftOnXfromBack(a, b, col) \
     a[0 + col] = b[8 - col]; \
     a[3 + col] = b[5 - col]; \
     a[6 + col] = b[2 - col];
 
-#define shiftLeftYToBack(a, b, col) \
+#define shiftLeftOnXtoBack(a, b, col) \
     a[8 - col] = b[0 + col]; \
     a[5 - col] = b[3 + col]; \
     a[2 - col] = b[6 + col];
@@ -417,16 +417,16 @@ void RubiksCube::rotateRowX(bool prime, int row = 0) {
 
     if (prime) {
         // Counter-clockwise: front <- left <- back <- right <- front
-        shiftLeftX(front_, left_, row);
-        shiftLeftX(left_,  back_, row);
-        shiftLeftX(back_, right_, row);
-        shiftLeftX(right_, temp, row);
+        shiftLeftOnY(front_, left_, row);
+        shiftLeftOnY(left_,  back_, row);
+        shiftLeftOnY(back_, right_, row);
+        shiftLeftOnY(right_, temp, row);
     } else {
         // Clockwise: front <- right <- back <- left <- front
-        shiftLeftX(front_, right_, row);
-        shiftLeftX(right_, back_, row);
-        shiftLeftX(back_, left_, row);
-        shiftLeftX(left_,  temp, row);
+        shiftLeftOnY(front_, right_, row);
+        shiftLeftOnY(right_, back_, row);
+        shiftLeftOnY(back_, left_, row);
+        shiftLeftOnY(left_,  temp, row);
     }
 }
 
@@ -452,16 +452,16 @@ void RubiksCube::rotateColY(bool prime, int col = 0) {
 
     if (prime) {
         // Counter-clockwise: up <- back <- down <- front <- up
-        shiftLeftYFromBack(up_, back_, col);
-        shiftLeftYToBack(back_, down_, col);
-        shiftLeftY(down_, front_, col);
-        shiftLeftY(front_, temp, col);
+        shiftLeftOnXfromBack(up_, back_, col);
+        shiftLeftOnXtoBack(back_, down_, col);
+        shiftLeftOnX(down_, front_, col);
+        shiftLeftOnX(front_, temp, col);
     } else {
         // Clockwise: up <- front <- down <- back <- up
-        shiftLeftY(up_, front_, col);
-        shiftLeftY(front_, down_, col);
-        shiftLeftYFromBack(down_, back_, col);
-        shiftLeftYToBack(back_, temp, col);
+        shiftLeftOnX(up_, front_, col);
+        shiftLeftOnX(front_, down_, col);
+        shiftLeftOnXfromBack(down_, back_, col);
+        shiftLeftOnXtoBack(back_, temp, col);
     }
 }
 
