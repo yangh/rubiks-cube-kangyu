@@ -126,12 +126,19 @@ RubiksCube::RubiksCube()
 }
 
 void RubiksCube::executeMove(Move move) {
-    // Clear redo history when a new move is executed
-    redoHistory_.clear();
+    // Default behavior: record history
+    executeMove(move, true);
+}
 
-    // Add move to history
-    moveHistory_.push_back(move);
+void RubiksCube::executeMove(Move move, bool recordHistory) {
+    if (recordHistory) {
+        // Clear redo history when a new move is executed
+        redoHistory_.clear();
+        // Add move to history
+        moveHistory_.push_back(move);
+    }
 
+    // Execute the move (rotation algorithm only)
     switch (move) {
         case Move::U:  rotateUp(false); break;
         case Move::UP: rotateUp(true); break;
@@ -152,6 +159,26 @@ void RubiksCube::executeMove(Move move) {
         case Move::S:  rotateStanding(false); break;
         case Move::SP: rotateStanding(true); break;
     }
+}
+
+void RubiksCube::popMoveHistory() {
+    if (!moveHistory_.empty()) {
+        moveHistory_.pop_back();
+    }
+}
+
+void RubiksCube::pushToMoveHistory(Move move) {
+    moveHistory_.push_back(move);
+}
+
+void RubiksCube::popRedoHistory() {
+    if (!redoHistory_.empty()) {
+        redoHistory_.pop_back();
+    }
+}
+
+void RubiksCube::pushToRedoHistory(Move move) {
+    redoHistory_.push_back(move);
 }
 
 bool RubiksCube::isSolved() const {

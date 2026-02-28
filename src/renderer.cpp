@@ -7,6 +7,9 @@
 // Global flag to enable/disable cube dump (defined in main.cpp)
 extern bool g_enableDump;
 
+// Helper function to get inverse of a move (defined in main.cpp)
+Move getInverseMove(Move move);
+
 CubeRenderer::CubeRenderer()
     : cube_()
 {
@@ -26,7 +29,12 @@ void CubeRenderer::setCustomColors(const ColorConfig& config) {
 }
 
 void CubeRenderer::executeMove(Move move) {
+    executeMove(move, true);
+}
+
+void CubeRenderer::executeMove(Move move, bool recordHistory) {
     moveQueue_.push(move);
+    recordCurrentMoveHistory_ = recordHistory;  // Store whether to record history for this animation
 
     if (!isAnimating_ && moveQueue_.size() == 1) {
         startNextAnimation();
@@ -47,25 +55,36 @@ void CubeRenderer::reset() {
 }
 
 void CubeRenderer::undo() {
-    // Get the inverse move and execute it with animation
-    Move inverseMove = cube_.getInverseMoveForUndo();
-    if (inverseMove != Move::U) { // U is the default "no move" value
-        // Execute the inverse move with animation (this adds to history)
-        executeMove(inverseMove);
-        // Then perform the undo on cube (this removes from history and adds to redo history)
-        cube_.undo();
+    if (cube_.getMoveHistory().empty()) {
+        return; // No moves to undo
     }
+
+    // Get the last move from history
+    Move lastMove = cube_.getMoveHistory().back();
+    Move inverseMove = getInverseMove(lastMove);
+
+    // Execute the inverse move with animation
+    executeMove(inverseMove, false);
+
+    // Manually manage history: remove original move, add original to redo history
+    cube_.popMoveHistory();
+    cube_.pushToRedoHistory(lastMove);  // Store original move, not inverse
 }
 
 void CubeRenderer::redo() {
-    // Get the move to redo and execute it with animation
-    Move moveToRedo = cube_.getMoveForRedo();
-    if (moveToRedo != Move::U) { // U is the default "no move" value
-        // Execute the move with animation (this adds to history)
-        executeMove(moveToRedo);
-        // Then perform the redo on cube (this removes from redo history and restores to move history)
-        cube_.redo();
+    if (cube_.getRedoHistory().empty()) {
+        return; // No moves to redo
     }
+
+    // Get the move from redo history (this is the original move to redo)
+    Move moveToRedo = cube_.getRedoHistory().back();
+
+    // Execute it with animation (execute the original move, not inverse)
+    executeMove(moveToRedo, false);
+
+    // Manually manage history: remove from redo, add back to move history
+    cube_.popRedoHistory();
+    cube_.pushToMoveHistory(moveToRedo);
 }
 
 std::vector<Move> CubeRenderer::scramble(int numMoves) {
@@ -827,7 +846,7 @@ void CubeRenderer::updateAnimation(float deltaTime) {
 
         if (animationProgress_ >= 1.0f) {
             animationProgress_ = 1.0f;
-            cube_.executeMove(currentMove_);  // Apply actual move
+            cube_.executeMove(currentMove_, recordCurrentMoveHistory_);  // Apply actual move with history control
             isAnimating_ = false;
 
             if (g_enableDump) {
@@ -856,7 +875,7 @@ void CubeRenderer::startNextAnimation() {
         while (!moveQueue_.empty()) {
             Move move = moveQueue_.front();
             moveQueue_.pop();
-            cube_.executeMove(move);
+            cube_.executeMove(move, recordCurrentMoveHistory_);
             if (g_enableDump) {
                 std::cout << "\n=== Completed " << moveToString(move) << " ===" << std::endl;
                 cube_.dump();

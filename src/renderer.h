@@ -22,6 +22,7 @@ public:
     void render3DOverlay(int windowWidth, int windowHeight);
 
     void executeMove(Move move);
+    void executeMove(Move move, bool recordHistory);  // For animated undo/redo
     void updateAnimation(float deltaTime);
     void reset();
 
@@ -81,6 +82,7 @@ private:
     Move currentMove_ = Move::U;
     RubiksCube preAnimationCube_;  // Cube state before animation
     std::queue<Move> moveQueue_;
+    bool recordCurrentMoveHistory_ = true;  // Whether current animation should record history
 
     // Project 3D point to 2D screen coordinates
     ImVec2 project(float x, float y, float z, ImVec2 center, float scale);

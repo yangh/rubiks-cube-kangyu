@@ -64,6 +64,15 @@ public:
     // Execute a move on the cube
     void executeMove(Move move);
 
+    // Execute a move with control over history recording (for animated undo/redo)
+    void executeMove(Move move, bool recordHistory);
+
+    // Manual history management (for animated undo/redo)
+    void popMoveHistory();
+    void pushToMoveHistory(Move move);
+    void popRedoHistory();
+    void pushToRedoHistory(Move move);
+
     // Check if the cube is solved
     bool isSolved() const;
 
