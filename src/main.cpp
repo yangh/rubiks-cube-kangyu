@@ -159,6 +159,8 @@ void showHelp(const char* programName) {
     std::cout << "  Shift+Key           - Execute prime move (counter-clockwise)\n";
     std::cout << "  Space               - Reset view to default angles\n";
     std::cout << "  ESC                 - Reset cube to solved state\n";
+    std::cout << "  Ctrl+Z              - Undo last move\n";
+    std::cout << "  Ctrl+R              - Redo last undone move\n";
     std::cout << "  Ctrl+Q              - Quit application\n";
     std::cout << "  F11                 - Toggle fullscreen mode\n";
     std::cout << "  Example: 'U' = U move, 'Shift+U' = U' move\n";
@@ -330,6 +332,16 @@ int main(int argc, char* argv[]) {
         // Ctrl+Q: quit application
         if (ImGui::IsKeyPressed(ImGuiKey_Q) && io.KeyCtrl) {
             glfwSetWindowShouldClose(window, 1);
+        }
+
+        // Ctrl+Z: undo
+        if (ImGui::IsKeyPressed(ImGuiKey_Z) && io.KeyCtrl) {
+            renderer.undo();
+        }
+
+        // Ctrl+R: redo
+        if (ImGui::IsKeyPressed(ImGuiKey_R) && io.KeyCtrl) {
+            renderer.redo();
         }
 
         // F11: toggle fullscreen
@@ -893,6 +905,8 @@ int main(int argc, char* argv[]) {
                 ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Shift+Key - Prime move (counter-clockwise)");
                 ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Space - Reset view to default angles");
                 ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  ESC - Reset cube to solved state");
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Ctrl+Z - Undo last move");
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Ctrl+R - Redo last undone move");
                 ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Ctrl+Q - Quit application");
                 ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  F11 - Toggle fullscreen mode");
 
