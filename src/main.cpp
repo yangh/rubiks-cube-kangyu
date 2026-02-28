@@ -72,9 +72,12 @@ void addColorPicker(const char* id, const char* label, std::array<float, 3>& col
 }
 
 // Helper function to handle keyboard shortcuts for moves
-void handleMoveShortcut(ImGuiKey key, Move normalMove, Move primeMove, CubeRenderer& renderer, bool keyShift) {
+void handleMoveShortcut(ImGuiKey key, Move normalMove, Move primeMove, CubeRenderer& renderer, bool keyShift, bool keyCtrl) {
     if (ImGui::IsKeyPressed(key)) {
-        renderer.executeMove(keyShift ? primeMove : normalMove);
+        // Don't execute move if Ctrl is pressed (for Ctrl+Z, Ctrl+R, Ctrl+Q)
+        if (!keyCtrl) {
+            renderer.executeMove(keyShift ? primeMove : normalMove);
+        }
     }
 }
 
@@ -308,15 +311,19 @@ int main(int argc, char* argv[]) {
 
         // Handle keyboard shortcuts for cube moves
         // These work globally, even when mouse is over UI
-        handleMoveShortcut(ImGuiKey_U, Move::U, Move::UP, renderer, io.KeyShift);
-        handleMoveShortcut(ImGuiKey_D, Move::D, Move::DP, renderer, io.KeyShift);
-        handleMoveShortcut(ImGuiKey_L, Move::L, Move::LP, renderer, io.KeyShift);
-        handleMoveShortcut(ImGuiKey_R, Move::R, Move::RP, renderer, io.KeyShift);
-        handleMoveShortcut(ImGuiKey_F, Move::F, Move::FP, renderer, io.KeyShift);
-        handleMoveShortcut(ImGuiKey_B, Move::B, Move::BP, renderer, io.KeyShift);
-        handleMoveShortcut(ImGuiKey_M, Move::M, Move::MP, renderer, io.KeyShift);
-        handleMoveShortcut(ImGuiKey_E, Move::E, Move::EP, renderer, io.KeyShift);
-        handleMoveShortcut(ImGuiKey_S, Move::S, Move::SP, renderer, io.KeyShift);
+        handleMoveShortcut(ImGuiKey_U, Move::U, Move::UP, renderer, io.KeyShift, io.KeyCtrl);
+        handleMoveShortcut(ImGuiKey_D, Move::D, Move::DP, renderer, io.KeyShift, io.KeyCtrl);
+        handleMoveShortcut(ImGuiKey_L, Move::L, Move::LP, renderer, io.KeyShift, io.KeyCtrl);
+        handleMoveShortcut(ImGuiKey_F, Move::F, Move::FP, renderer, io.KeyShift, io.KeyCtrl);
+        handleMoveShortcut(ImGuiKey_B, Move::B, Move::BP, renderer, io.KeyShift, io.KeyCtrl);
+        handleMoveShortcut(ImGuiKey_M, Move::M, Move::MP, renderer, io.KeyShift, io.KeyCtrl);
+        handleMoveShortcut(ImGuiKey_E, Move::E, Move::EP, renderer, io.KeyShift, io.KeyCtrl);
+        handleMoveShortcut(ImGuiKey_S, Move::S, Move::SP, renderer, io.KeyShift, io.KeyCtrl);
+
+        // R move shortcut (handle after other shortcuts to check Ctrl+R first)
+        if (ImGui::IsKeyPressed(ImGuiKey_R) && !io.KeyCtrl) {
+            renderer.executeMove(io.KeyShift ? Move::RP : Move::R);
+        }
 
         // Spacebar: reset view to default angles
         if (ImGui::IsKeyPressed(ImGuiKey_Space)) {
