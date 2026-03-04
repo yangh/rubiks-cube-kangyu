@@ -2,6 +2,8 @@
 
 A 3D Rubik's cube simulator built with C++, ImGUI, and OpenGL with advanced features including animations, formula execution, and undo/redo capabilities.
 
+![Rubik's Cube Screenshot](data/rubiks-cube-kangyu-v1.0.png)
+
 ## Features
 
 ### Core Functionality
