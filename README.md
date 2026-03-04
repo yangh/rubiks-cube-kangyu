@@ -61,8 +61,7 @@ brew install cmake glfw
 1. Clone ImGUI (required, first time only):
 ```bash
 cd third_party
-# If you need a proxy for git:
-git -c http.proxy=http://127.0.0.1:20170 clone https://github.com/ocornut/imgui.git
+git clone https://github.com/ocornut/imgui.git
 cd ..
 ```
 
@@ -220,8 +219,7 @@ brew install cmake glfw
 1. Clone ImGUI (required, first time only):
 ```bash
 cd third_party
-# If you need a proxy for git:
-git -c http.proxy=http://127.0.0.1:20170 clone https://github.com/ocornut/imgui.git
+git clone https://github.com/ocornut/imgui.git
 cd ..
 ```
 
