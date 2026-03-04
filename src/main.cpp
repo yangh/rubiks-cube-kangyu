@@ -142,6 +142,8 @@ void showAbout() {
             ImGui::Spacing();
             ImGui::TextWrapped("A 3D Rubik's cube simulator built with C++, ImGUI, and OpenGL. Rotate the cube using standard Rubik's cube notation formulas.");
             ImGui::Spacing();
+            ImGui::TextWrapped("Dedicated for my mother, Kangyu Qiu. @2026");
+            ImGui::Spacing();
             if (ImGui::Button("OK", ImVec2(120, 0))) {
                 g_showAboutDialog = false;
                 ImGui::CloseCurrentPopup();
