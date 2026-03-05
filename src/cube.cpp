@@ -37,6 +37,16 @@ std::string moveToString(Move move) {
         case Move::EP: return "E'";
         case Move::S:  return "S";
         case Move::SP: return "S'";
+        // Double moves (180° rotation)
+        case Move::U2: return "U2";
+        case Move::D2: return "D2";
+        case Move::L2: return "L2";
+        case Move::R2: return "R2";
+        case Move::F2: return "F2";
+        case Move::B2: return "B2";
+        case Move::M2: return "M2";
+        case Move::E2: return "E2";
+        case Move::S2: return "S2";
         default:       return "?";
     }
 }
@@ -76,6 +86,20 @@ bool parseMoveString(const std::string& moveStr, Move& outMove) {
             case 'M': outMove = Move::MP; return true;
             case 'E': outMove = Move::EP; return true;
             case 'S': outMove = Move::SP; return true;
+        }
+    }
+    // Handle double moves (X2 notation)
+    else if (upper.length() == 2 && upper[1] == '2') {
+        switch (upper[0]) {
+            case 'U': outMove = Move::U2; return true;
+            case 'D': outMove = Move::D2; return true;
+            case 'L': outMove = Move::L2; return true;
+            case 'R': outMove = Move::R2; return true;
+            case 'F': outMove = Move::F2; return true;
+            case 'B': outMove = Move::B2; return true;
+            case 'M': outMove = Move::M2; return true;
+            case 'E': outMove = Move::E2; return true;
+            case 'S': outMove = Move::S2; return true;
         }
     }
     // Handle single letter moves

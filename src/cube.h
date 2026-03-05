@@ -34,7 +34,17 @@ enum class Move {
     E,  // Equator slice (between U and D)
     EP, // Equator slice prime
     S,  // Standing slice (between F and B)
-    SP  // Standing slice prime
+    SP, // Standing slice prime
+    // Double moves (180° rotation)
+    U2,  // Up face double
+    D2,  // Down face double
+    L2,  // Left face double
+    R2,  // Right face double
+    F2,  // Front face double
+    B2,  // Back face double
+    M2,  // Middle slice double
+    E2,  // Equator slice double
+    S2   // Standing slice double
 };
 
 // Convert color to RGB
@@ -43,7 +53,7 @@ std::array<float, 3> colorToRgb(Color color);
 // Convert move to string
 std::string moveToString(Move move);
 
-// Parse a move string (e.g., "U", "R'", "F2") to Move enum
+// Parse a move string (e.g., "U", "R'") to Move enum
 // Returns true if parsing succeeded
 bool parseMoveString(const std::string& moveStr, Move& outMove);
 
