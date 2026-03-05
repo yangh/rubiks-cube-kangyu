@@ -102,6 +102,15 @@ Move getInverseMove(Move move) {
         case Move::EP: return Move::E;
         case Move::S:  return Move::SP;
         case Move::SP: return Move::S;
+        case Move::U2: return Move::U2;
+        case Move::D2: return Move::D2;
+        case Move::L2: return Move::L2;
+        case Move::R2: return Move::R2;
+        case Move::F2: return Move::F2;
+        case Move::B2: return Move::B2;
+        case Move::M2: return Move::M2;
+        case Move::E2: return Move::E2;
+        case Move::S2: return Move::S2;
         default: return move;
     }
 }

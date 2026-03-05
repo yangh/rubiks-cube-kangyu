@@ -304,6 +304,15 @@ void RubiksCube::undo() {
         case Move::EP: inverseMove = Move::E; break;
         case Move::S:  inverseMove = Move::SP; break;
         case Move::SP: inverseMove = Move::S; break;
+        case Move::U2: inverseMove = Move::U2; break;
+        case Move::D2: inverseMove = Move::D2; break;
+        case Move::L2: inverseMove = Move::L2; break;
+        case Move::R2: inverseMove = Move::R2; break;
+        case Move::F2: inverseMove = Move::F2; break;
+        case Move::B2: inverseMove = Move::B2; break;
+        case Move::M2: inverseMove = Move::M2; break;
+        case Move::E2: inverseMove = Move::E2; break;
+        case Move::S2: inverseMove = Move::S2; break;
         default: return;
     }
 
@@ -357,6 +366,15 @@ Move RubiksCube::getInverseMoveForUndo() const {
         case Move::EP: return Move::E;
         case Move::S: return Move::SP;
         case Move::SP: return Move::S;
+        case Move::U2: return Move::U2;
+        case Move::D2: return Move::D2;
+        case Move::L2: return Move::L2;
+        case Move::R2: return Move::R2;
+        case Move::F2: return Move::F2;
+        case Move::B2: return Move::B2;
+        case Move::M2: return Move::M2;
+        case Move::E2: return Move::E2;
+        case Move::S2: return Move::S2;
         default: return Move::U;
     }
 }
