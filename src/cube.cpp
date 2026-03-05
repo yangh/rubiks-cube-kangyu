@@ -182,6 +182,16 @@ void RubiksCube::executeMove(Move move, bool recordHistory) {
         case Move::EP: rotateEquator(true); break;
         case Move::S:  rotateStanding(false); break;
         case Move::SP: rotateStanding(true); break;
+        // Double moves (execute rotation twice)
+        case Move::U2: rotateUp(false); rotateUp(false); break;
+        case Move::D2: rotateDown(false); rotateDown(false); break;
+        case Move::L2: rotateLeft(false); rotateLeft(false); break;
+        case Move::R2: rotateRight(false); rotateRight(false); break;
+        case Move::F2: rotateFront(false); rotateFront(false); break;
+        case Move::B2: rotateBack(false); rotateBack(false); break;
+        case Move::M2: rotateMiddle(false); rotateMiddle(false); break;
+        case Move::E2: rotateEquator(false); rotateEquator(false); break;
+        case Move::S2: rotateStanding(false); rotateStanding(false); break;
     }
 }
 
