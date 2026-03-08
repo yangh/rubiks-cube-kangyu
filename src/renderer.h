@@ -99,7 +99,7 @@ private:
     // Draw a 3D face with animation transformation applied
     void drawAnimated3DFace(ImDrawList* drawList, const std::array<Color, 9>& face,
                             const ImVec2 (&faceVerts)[4], ImVec2 center, float size,
-                            int faceIndex);
+                            Face faceIndex);
 
     // Get face color for 3D drawing
     ImU32 getFaceColor(Color color);
@@ -115,7 +115,7 @@ private:
 
     // Animation helpers
     void startNextAnimation();
-    bool isStickerAnimating(Move move, int faceIndex, int stickerIndex) const;
+    bool isStickerAnimating(Move move, Face faceIndex, int stickerIndex) const;
     std::array<float, 3> rotateSticker(const std::array<float, 3>& pos, Move move, float angle) const;
 
     // View rotation animation helper - smooth interpolation considering 360 degree wraparound

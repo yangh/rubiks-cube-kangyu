@@ -533,7 +533,7 @@ void CubeRenderer::draw3DFace(ImDrawList* drawList, const std::array<Color, 9>& 
 
 void CubeRenderer::drawAnimated3DFace(ImDrawList* drawList, const std::array<Color, 9>& face,
                                       const ImVec2 (&faceVerts)[4], ImVec2 center, float size,
-                                      int faceIndex) {
+                                      Face faceIndex) {
     // Quadratic ease-in-out: 3t^2 - 2t^3
     float easeProgress = animationProgress_ * animationProgress_ * (3.0f - 2.0f * animationProgress_);
     float currentAngle = 90.0f * easeProgress;  // Always use positive 90 degrees, rotateSticker handles direction
@@ -544,12 +544,12 @@ void CubeRenderer::drawAnimated3DFace(ImDrawList* drawList, const std::array<Col
         float x = 0, y = 0, z = 0;
 
         // Map face vertices to 3D positions
-        if (faceIndex == 0) { z = 1.0f; x = faceVerts[i].x; y = faceVerts[i].y; }
-        else if (faceIndex == 1) { z = -1.0f; x = faceVerts[i].x; y = faceVerts[i].y; }
-        else if (faceIndex == 2) { x = -1.0f; y = faceVerts[i].x; z = faceVerts[i].y; }
-        else if (faceIndex == 3) { x = 1.0f; y = faceVerts[i].x; z = faceVerts[i].y; }
-        else if (faceIndex == 4) { y = 1.0f; x = faceVerts[i].x; z = faceVerts[i].y; }
-        else if (faceIndex == 5) { y = -1.0f; x = faceVerts[i].x; z = faceVerts[i].y; }
+        if (faceIndex == Face::FRONT) { z = 1.0f; x = faceVerts[i].x; y = faceVerts[i].y; }
+        else if (faceIndex == Face::BACK) { z = -1.0f; x = faceVerts[i].x; y = faceVerts[i].y; }
+        else if (faceIndex == Face::LEFT) { x = -1.0f; y = faceVerts[i].x; z = faceVerts[i].y; }
+        else if (faceIndex == Face::RIGHT) { x = 1.0f; y = faceVerts[i].x; z = faceVerts[i].y; }
+        else if (faceIndex == Face::UP) { y = 1.0f; x = faceVerts[i].x; z = faceVerts[i].y; }
+        else if (faceIndex == Face::DOWN) { y = -1.0f; x = faceVerts[i].x; z = faceVerts[i].y; }
 
         projected[i] = project(x * 1.1f, y * 1.1f, z * 1.1f, center, size);
     }
@@ -561,7 +561,7 @@ void CubeRenderer::drawAnimated3DFace(ImDrawList* drawList, const std::array<Col
     for (int row = 0; row < 3; ++row) {
         for (int col = 0; col < 3; ++col) {
             // Back face needs col mirroring to match 2D view
-            int stickerIndex = (faceIndex == 1) ? (row * 3 + (2 - col)) : (row * 3 + col);
+            int stickerIndex = (faceIndex == Face::BACK) ? (row * 3 + (2 - col)) : (row * 3 + col);
             float u = (col - 1.0f) / 3.0f * 2.0f;  // -0.67, 0, 0.67
             float v = (row - 1.0f) / 3.0f * 2.0f;  // -0.67, 0, 0.67
 
@@ -571,12 +571,12 @@ void CubeRenderer::drawAnimated3DFace(ImDrawList* drawList, const std::array<Col
             // Calculate sticker center position in 3D space
             float x = 0, y = 0, z = 0;
 
-            if (faceIndex == 0) { x = u; y = -v; z = 1.0f; }
-            else if (faceIndex == 1) { x = -u; y = -v; z = -1.0f; }
-            else if (faceIndex == 2) { x = -1.0f; y = -v; z = u; }
-            else if (faceIndex == 3) { x = 1.0f; y = -v; z = -u; }
-            else if (faceIndex == 4) { x = u; y = 1.0f; z = v; }
-            else if (faceIndex == 5) { x = u; y = -1.0f; z = -v; }
+            if (faceIndex == Face::FRONT) { x = u; y = -v; z = 1.0f; }
+            else if (faceIndex == Face::BACK) { x = -u; y = -v; z = -1.0f; }
+            else if (faceIndex == Face::LEFT) { x = -1.0f; y = -v; z = u; }
+            else if (faceIndex == Face::RIGHT) { x = 1.0f; y = -v; z = -u; }
+            else if (faceIndex == Face::UP) { x = u; y = 1.0f; z = v; }
+            else if (faceIndex == Face::DOWN) { x = u; y = -1.0f; z = -v; }
 
             // Calculate sticker corners relative to sticker center
             float stickerSize = 0.6f;
@@ -598,12 +598,12 @@ void CubeRenderer::drawAnimated3DFace(ImDrawList* drawList, const std::array<Col
                 float cx = 0, cy = 0, cz = 0;
 
                 // Map local offsets to 3D space based on face orientation
-                if (faceIndex == 0) { cx = x + dx; cy = y + dy; cz = 1.0f; }
-                else if (faceIndex == 1) { cx = x - dx; cy = y + dy; cz = -1.0f; }
-                else if (faceIndex == 2) { cx = -1.0f; cy = y + dy; cz = z + dx; }
-                else if (faceIndex == 3) { cx = 1.0f; cy = y + dy; cz = z - dx; }
-                else if (faceIndex == 4) { cx = x + dx; cy = 1.0f; cz = z + dy; }
-                else if (faceIndex == 5) { cx = x + dx; cy = -1.0f; cz = z - dy; }
+                if (faceIndex == Face::FRONT) { cx = x + dx; cy = y + dy; cz = 1.0f; }
+                else if (faceIndex == Face::BACK) { cx = x - dx; cy = y + dy; cz = -1.0f; }
+                else if (faceIndex == Face::LEFT) { cx = -1.0f; cy = y + dy; cz = z + dx; }
+                else if (faceIndex == Face::RIGHT) { cx = 1.0f; cy = y + dy; cz = z - dx; }
+                else if (faceIndex == Face::UP) { cx = x + dx; cy = 1.0f; cz = z + dy; }
+                else if (faceIndex == Face::DOWN) { cx = x + dx; cy = -1.0f; cz = z - dy; }
 
                 // Apply animation rotation if this sticker is part of the rotating slice
                 if (isStickerAnimating(currentMove_, faceIndex, stickerIndex)) {
@@ -894,8 +894,8 @@ void CubeRenderer::startNextAnimation() {
 }
 
 // Check if a specific sticker is part of the rotating slice for the current move
-bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex) const {
-    // faceIndex: 0=Front, 1=Back, 2=Left, 3=Right, 4=Up, 5=Down
+bool CubeRenderer::isStickerAnimating(Move move, Face faceIndex, int stickerIndex) const {
+    // faceIndex: Face::FRONT, Face::BACK, Face::LEFT, Face::RIGHT, Face::UP, Face::DOWN
     // stickerIndex: 0-8 (row*3 + col)
 
     switch (move) {
@@ -903,9 +903,9 @@ bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex
         case Move::U:
         case Move::UP:
         case Move::U2:  // Double move uses same stickers
-            if (faceIndex == 4) return true;  // Up face
+            if (faceIndex == Face::UP) return true;  // Up face
             if (stickerIndex >= 0 && stickerIndex <= 2) {  // Top row
-                return faceIndex == 0 || faceIndex == 2 || faceIndex == 1 || faceIndex == 3;  // F, L, B, R
+                return faceIndex == Face::FRONT || faceIndex == Face::LEFT || faceIndex == Face::BACK || faceIndex == Face::RIGHT;  // F, L, B, R
             }
             return false;
 
@@ -913,9 +913,9 @@ bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex
         case Move::D:
         case Move::DP:
         case Move::D2:  // Double move uses same stickers
-            if (faceIndex == 5) return true;  // Down face
+            if (faceIndex == Face::DOWN) return true;  // Down face
             if (stickerIndex >= 6 && stickerIndex <= 8) {  // Bottom row
-                return faceIndex == 0 || faceIndex == 2 || faceIndex == 1 || faceIndex == 3;  // F, L, B, R
+                return faceIndex == Face::FRONT || faceIndex == Face::LEFT || faceIndex == Face::BACK || faceIndex == Face::RIGHT;  // F, L, B, R
             }
             return false;
 
@@ -923,9 +923,9 @@ bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex
         case Move::L:
         case Move::LP:
         case Move::L2:  // Double move uses same stickers
-            if (faceIndex == 2) return true;  // Left face
+            if (faceIndex == Face::LEFT) return true;  // Left face
             if (stickerIndex == 0 || stickerIndex == 3 || stickerIndex == 6) {  // Left column
-                return faceIndex == 4 || faceIndex == 0 || faceIndex == 5 || faceIndex == 1;  // U, F, D, B
+                return faceIndex == Face::UP || faceIndex == Face::FRONT || faceIndex == Face::DOWN || faceIndex == Face::BACK;  // U, F, D, B
             }
             return false;
 
@@ -933,9 +933,9 @@ bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex
         case Move::R:
         case Move::RP:
         case Move::R2:
-            if (faceIndex == 3) return true;  // Right face
+            if (faceIndex == Face::RIGHT) return true;  // Right face
             if (stickerIndex == 2 || stickerIndex == 5 || stickerIndex == 8) {  // Right column
-                return faceIndex == 4 || faceIndex == 0 || faceIndex == 5 || faceIndex == 1;  // U, F, D, B
+                return faceIndex == Face::UP || faceIndex == Face::FRONT || faceIndex == Face::DOWN || faceIndex == Face::BACK;  // U, F, D, B
             }
             return false;
 
@@ -943,22 +943,22 @@ bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex
         case Move::F:
         case Move::FP:
         case Move::F2:
-            if (faceIndex == 0) return true;  // Front face
-            if (faceIndex == 4 && stickerIndex >= 6 && stickerIndex <= 8) return true;  // Up bottom row
-            if (faceIndex == 2 && (stickerIndex == 2 || stickerIndex == 5 || stickerIndex == 8)) return true;  // Left right col
-            if (faceIndex == 5 && stickerIndex >= 0 && stickerIndex <= 2) return true;  // Down top row
-            if (faceIndex == 3 && (stickerIndex == 0 || stickerIndex == 3 || stickerIndex == 6)) return true;  // Right left col
+            if (faceIndex == Face::FRONT) return true;  // Front face
+            if (faceIndex == Face::UP && stickerIndex >= 6 && stickerIndex <= 8) return true;  // Up bottom row
+            if (faceIndex == Face::LEFT && (stickerIndex == 2 || stickerIndex == 5 || stickerIndex == 8)) return true;  // Left right col
+            if (faceIndex == Face::DOWN && stickerIndex >= 0 && stickerIndex <= 2) return true;  // Down top row
+            if (faceIndex == Face::RIGHT && (stickerIndex == 0 || stickerIndex == 3 || stickerIndex == 6)) return true;  // Right left col
             return false;
 
         // B move: Back face (all 9) + Up[0,1,2] + Left[0,3,6] + Down[6,7,8] + Right[2,5,8]
         case Move::B:
         case Move::BP:
         case Move::B2:
-            if (faceIndex == 1) return true;  // Back face
-            if (faceIndex == 4 && stickerIndex >= 0 && stickerIndex <= 2) return true;  // Up top row
-            if (faceIndex == 2 && (stickerIndex == 0 || stickerIndex == 3 || stickerIndex == 6)) return true;  // Left left col
-            if (faceIndex == 5 && stickerIndex >= 6 && stickerIndex <= 8) return true;  // Down bottom row
-            if (faceIndex == 3 && (stickerIndex == 2 || stickerIndex == 5 || stickerIndex == 8)) return true;  // Right right col
+            if (faceIndex == Face::BACK) return true;  // Back face
+            if (faceIndex == Face::UP && stickerIndex >= 0 && stickerIndex <= 2) return true;  // Up top row
+            if (faceIndex == Face::LEFT && (stickerIndex == 0 || stickerIndex == 3 || stickerIndex == 6)) return true;  // Left left col
+            if (faceIndex == Face::DOWN && stickerIndex >= 6 && stickerIndex <= 8) return true;  // Down bottom row
+            if (faceIndex == Face::RIGHT && (stickerIndex == 2 || stickerIndex == 5 || stickerIndex == 8)) return true;  // Right right col
             return false;
 
         // M move: Middle slice - Up[1,4,7] + Down[1,4,7] + Front[1,4,7] + Back[1,4,7]
@@ -966,7 +966,7 @@ bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex
         case Move::MP:
         case Move::M2:
             if (stickerIndex == 1 || stickerIndex == 4 || stickerIndex == 7) {
-                return faceIndex == 4 || faceIndex == 5 || faceIndex == 0 || faceIndex == 1;  // U, D, F, B
+                return faceIndex == Face::UP || faceIndex == Face::DOWN || faceIndex == Face::FRONT || faceIndex == Face::BACK;  // U, D, F, B
             }
             return false;
 
@@ -975,7 +975,7 @@ bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex
         case Move::EP:
         case Move::E2:
             if (stickerIndex >= 3 && stickerIndex <= 5) {
-                return faceIndex == 0 || faceIndex == 1 || faceIndex == 2 || faceIndex == 3;  // F, B, L, R
+                return faceIndex == Face::FRONT || faceIndex == Face::BACK || faceIndex == Face::LEFT || faceIndex == Face::RIGHT;  // F, B, L, R
             }
             return false;
 
@@ -983,10 +983,10 @@ bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex
         case Move::S:
         case Move::SP:
         case Move::S2:
-            if (faceIndex == 4 || faceIndex == 5) {  // U or D
+            if (faceIndex == Face::UP || faceIndex == Face::DOWN) {  // U or D
                 return stickerIndex >= 3 && stickerIndex <= 5;  // Middle row
             }
-            if (faceIndex == 2 || faceIndex == 3) {  // L or R
+            if (faceIndex == Face::LEFT || faceIndex == Face::RIGHT) {  // L or R
                 return stickerIndex == 1 || stickerIndex == 4 || stickerIndex == 7;  // Middle column
             }
             return false;

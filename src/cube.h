@@ -15,6 +15,16 @@ enum class Color {
     BLUE
 };
 
+// Face representation for cube faces
+enum class Face {
+    FRONT,
+    BACK,
+    LEFT,
+    RIGHT,
+    UP,
+    DOWN
+};
+
 // Standard Rubik's cube moves
 enum class Move {
     U,  // Up
