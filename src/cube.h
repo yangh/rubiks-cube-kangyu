@@ -64,6 +64,9 @@ std::vector<Move> parseMoveSequence(const std::string& sequence);
 // Convert color to string abbreviation
 std::string colorToString(Color color);
 
+// Helper function to get inverse of a move (defined in main.cpp)
+Move getInverseMove(Move move);
+
 // Represents the 3x3x3 Rubik's cube state
 class RubiksCube {
 public:

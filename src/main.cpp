@@ -81,40 +81,6 @@ void handleMoveShortcut(ImGuiKey key, Move normalMove, Move primeMove, CubeRende
     }
 }
 
-// Helper function to get inverse of a move
-Move getInverseMove(Move move) {
-    switch (move) {
-        case Move::U:  return Move::UP;
-        case Move::UP: return Move::U;
-        case Move::D:  return Move::DP;
-        case Move::DP: return Move::D;
-        case Move::L:  return Move::LP;
-        case Move::LP: return Move::L;
-        case Move::R:  return Move::RP;
-        case Move::RP: return Move::R;
-        case Move::F:  return Move::FP;
-        case Move::FP: return Move::F;
-        case Move::B:  return Move::BP;
-        case Move::BP: return Move::B;
-        case Move::M:  return Move::MP;
-        case Move::MP: return Move::M;
-        case Move::E:  return Move::EP;
-        case Move::EP: return Move::E;
-        case Move::S:  return Move::SP;
-        case Move::SP: return Move::S;
-        case Move::U2: return Move::U2;
-        case Move::D2: return Move::D2;
-        case Move::L2: return Move::L2;
-        case Move::R2: return Move::R2;
-        case Move::F2: return Move::F2;
-        case Move::B2: return Move::B2;
-        case Move::M2: return Move::M2;
-        case Move::E2: return Move::E2;
-        case Move::S2: return Move::S2;
-        default: return move;
-    }
-}
-
 // Helper function to build move history string
 std::string buildMoveHistoryString(const std::vector<Move>& history) {
     std::string result;

@@ -7,9 +7,6 @@
 // Global flag to enable/disable cube dump (defined in main.cpp)
 extern bool g_enableDump;
 
-// Helper function to get inverse of a move (defined in main.cpp)
-Move getInverseMove(Move move);
-
 CubeRenderer::CubeRenderer()
     : cube_()
 {

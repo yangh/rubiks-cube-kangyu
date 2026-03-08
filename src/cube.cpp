@@ -51,6 +51,40 @@ std::string moveToString(Move move) {
     }
 }
 
+// Helper function to get inverse of a move
+Move getInverseMove(Move move) {
+    switch (move) {
+        case Move::U:  return Move::UP;
+        case Move::UP: return Move::U;
+        case Move::D:  return Move::DP;
+        case Move::DP: return Move::D;
+        case Move::L:  return Move::LP;
+        case Move::LP: return Move::L;
+        case Move::R:  return Move::RP;
+        case Move::RP: return Move::R;
+        case Move::F:  return Move::FP;
+        case Move::FP: return Move::F;
+        case Move::B:  return Move::BP;
+        case Move::BP: return Move::B;
+        case Move::M:  return Move::MP;
+        case Move::MP: return Move::M;
+        case Move::E:  return Move::EP;
+        case Move::EP: return Move::E;
+        case Move::S:  return Move::SP;
+        case Move::SP: return Move::S;
+        case Move::U2: return Move::U2;
+        case Move::D2: return Move::D2;
+        case Move::L2: return Move::L2;
+        case Move::R2: return Move::R2;
+        case Move::F2: return Move::F2;
+        case Move::B2: return Move::B2;
+        case Move::M2: return Move::M2;
+        case Move::E2: return Move::E2;
+        case Move::S2: return Move::S2;
+        default: return move;
+    }
+}
+
 std::string colorToString(Color color) {
     switch (color) {
         case Color::WHITE:  return "W";
@@ -241,16 +275,17 @@ void RubiksCube::reset() {
 }
 
 std::vector<Move> RubiksCube::scramble(int numMoves) {
-    // Array of all 12 basic moves (U, U', D, D', L, L', R, R', F, F', B, B')
+    // Array of all 15 basic moves (U, U', D, D', L, L', R, R', F, F', B, B', E, S, M)
     static const Move basicMoves[] = {
         Move::U, Move::UP,
         Move::D, Move::DP,
         Move::L, Move::LP,
         Move::R, Move::RP,
         Move::F, Move::FP,
-        Move::B, Move::BP
+        Move::B, Move::BP,
+        Move::E, Move::S, Move::M,
     };
-    static const int numBasicMoves = 12;
+    static const int numBasicMoves = sizeof(basicMoves)/sizeof(Move);
 
     std::vector<Move> scrambleMoves;
     scrambleMoves.reserve(numMoves);
@@ -284,60 +319,10 @@ void RubiksCube::undo() {
     redoHistory_.push_back(lastMove);
 
     // Execute the inverse move
-    Move inverseMove;
-    switch (lastMove) {
-        case Move::U:  inverseMove = Move::UP; break;
-        case Move::UP: inverseMove = Move::U; break;
-        case Move::D:  inverseMove = Move::DP; break;
-        case Move::DP: inverseMove = Move::D; break;
-        case Move::L:  inverseMove = Move::LP; break;
-        case Move::LP: inverseMove = Move::L; break;
-        case Move::R:  inverseMove = Move::RP; break;
-        case Move::RP: inverseMove = Move::R; break;
-        case Move::F:  inverseMove = Move::FP; break;
-        case Move::FP: inverseMove = Move::F; break;
-        case Move::B:  inverseMove = Move::BP; break;
-        case Move::BP: inverseMove = Move::B; break;
-        case Move::M:  inverseMove = Move::MP; break;
-        case Move::MP: inverseMove = Move::M; break;
-        case Move::E:  inverseMove = Move::EP; break;
-        case Move::EP: inverseMove = Move::E; break;
-        case Move::S:  inverseMove = Move::SP; break;
-        case Move::SP: inverseMove = Move::S; break;
-        case Move::U2: inverseMove = Move::U2; break;
-        case Move::D2: inverseMove = Move::D2; break;
-        case Move::L2: inverseMove = Move::L2; break;
-        case Move::R2: inverseMove = Move::R2; break;
-        case Move::F2: inverseMove = Move::F2; break;
-        case Move::B2: inverseMove = Move::B2; break;
-        case Move::M2: inverseMove = Move::M2; break;
-        case Move::E2: inverseMove = Move::E2; break;
-        case Move::S2: inverseMove = Move::S2; break;
-        default: return;
-    }
+    Move inverseMove = getInverseMove(lastMove);
 
     // Execute inverse move without adding to history
-    switch (inverseMove) {
-        case Move::U:  rotateUp(false); break;
-        case Move::UP: rotateUp(true); break;
-        case Move::D:  rotateDown(false); break;
-        case Move::DP: rotateDown(true); break;
-        case Move::L: rotateLeft(false); break;
-        case Move::LP: rotateLeft(true); break;
-        case Move::R: rotateRight(false); break;
-        case Move::RP: rotateRight(true); break;
-        case Move::F: rotateFront(false); break;
-        case Move::FP: rotateFront(true); break;
-        case Move::B: rotateBack(false); break;
-        case Move::BP: rotateBack(true); break;
-        case Move::M:  rotateMiddle(false); break;
-        case Move::MP: rotateMiddle(true); break;
-        case Move::E:  rotateEquator(false); break;
-        case Move::EP: rotateEquator(true); break;
-        case Move::S:  rotateStanding(false); break;
-        case Move::SP: rotateStanding(true); break;
-        default: break;
-    }
+    executeMove(inverseMove, false);
 }
 
 Move RubiksCube::getInverseMoveForUndo() const {
@@ -347,36 +332,8 @@ Move RubiksCube::getInverseMoveForUndo() const {
 
     Move lastMove = moveHistory_.back();
     // Return the inverse move
-    switch (lastMove) {
-        case Move::U: return Move::UP;
-        case Move::UP: return Move::U;
-        case Move::D: return Move::DP;
-        case Move::DP: return Move::D;
-        case Move::L: return Move::LP;
-        case Move::LP: return Move::L;
-        case Move::R: return Move::RP;
-        case Move::RP: return Move::R;
-        case Move::F: return Move::FP;
-        case Move::FP: return Move::F;
-        case Move::B: return Move::BP;
-        case Move::BP: return Move::B;
-        case Move::M: return Move::MP;
-        case Move::MP: return Move::M;
-        case Move::E: return Move::EP;
-        case Move::EP: return Move::E;
-        case Move::S: return Move::SP;
-        case Move::SP: return Move::S;
-        case Move::U2: return Move::U2;
-        case Move::D2: return Move::D2;
-        case Move::L2: return Move::L2;
-        case Move::R2: return Move::R2;
-        case Move::F2: return Move::F2;
-        case Move::B2: return Move::B2;
-        case Move::M2: return Move::M2;
-        case Move::E2: return Move::E2;
-        case Move::S2: return Move::S2;
-        default: return Move::U;
-    }
+
+    return getInverseMove(lastMove);
 }
 
 Move RubiksCube::getMoveForRedo() const {
@@ -399,27 +356,7 @@ void RubiksCube::redo() {
     moveHistory_.push_back(moveToRedo);
 
     // Execute the move
-    switch (moveToRedo) {
-        case Move::U:  rotateUp(false); break;
-        case Move::UP: rotateUp(true); break;
-        case Move::D:  rotateDown(false); break;
-        case Move::DP: rotateDown(true); break;
-        case Move::L: rotateLeft(false); break;
-        case Move::LP: rotateLeft(true); break;
-        case Move::R: rotateRight(false); break;
-        case Move::RP: rotateRight(true); break;
-        case Move::F: rotateFront(false); break;
-        case Move::FP: rotateFront(true); break;
-        case Move::B: rotateBack(false); break;
-        case Move::BP: rotateBack(true); break;
-        case Move::M:  rotateMiddle(false); break;
-        case Move::MP: rotateMiddle(true); break;
-        case Move::E:  rotateEquator(false); break;
-        case Move::EP: rotateEquator(true); break;
-        case Move::S:  rotateStanding(false); break;
-        case Move::SP: rotateStanding(true); break;
-        default: break;
-    }
+    executeMove(moveToRedo, false);
 }
 
 void RubiksCube::dump() const {
