@@ -905,6 +905,7 @@ bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex
         // U move: Up face (all 9) + Front/Left/Back/Right top row (0,1,2)
         case Move::U:
         case Move::UP:
+        case Move::U2:  // Double move uses same stickers
             if (faceIndex == 4) return true;  // Up face
             if (stickerIndex >= 0 && stickerIndex <= 2) {  // Top row
                 return faceIndex == 0 || faceIndex == 2 || faceIndex == 1 || faceIndex == 3;  // F, L, B, R
@@ -914,6 +915,7 @@ bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex
         // D move: Down face (all 9) + Front/Left/Back/Right bottom row (6,7,8)
         case Move::D:
         case Move::DP:
+        case Move::D2:  // Double move uses same stickers
             if (faceIndex == 5) return true;  // Down face
             if (stickerIndex >= 6 && stickerIndex <= 8) {  // Bottom row
                 return faceIndex == 0 || faceIndex == 2 || faceIndex == 1 || faceIndex == 3;  // F, L, B, R
@@ -923,6 +925,7 @@ bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex
         // L move: Left face (all 9) + Up/Front/Down/Back left column (0,3,6)
         case Move::L:
         case Move::LP:
+        case Move::L2:  // Double move uses same stickers
             if (faceIndex == 2) return true;  // Left face
             if (stickerIndex == 0 || stickerIndex == 3 || stickerIndex == 6) {  // Left column
                 return faceIndex == 4 || faceIndex == 0 || faceIndex == 5 || faceIndex == 1;  // U, F, D, B
@@ -932,6 +935,7 @@ bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex
         // R move: Right face (all 9) + Up/Front/Down/Back right column (2,5,8)
         case Move::R:
         case Move::RP:
+        case Move::R2:
             if (faceIndex == 3) return true;  // Right face
             if (stickerIndex == 2 || stickerIndex == 5 || stickerIndex == 8) {  // Right column
                 return faceIndex == 4 || faceIndex == 0 || faceIndex == 5 || faceIndex == 1;  // U, F, D, B
@@ -941,6 +945,7 @@ bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex
         // F move: Front face (all 9) + Up[6,7,8] + Left[2,5,8] + Down[0,1,2] + Right[0,3,6]
         case Move::F:
         case Move::FP:
+        case Move::F2:
             if (faceIndex == 0) return true;  // Front face
             if (faceIndex == 4 && stickerIndex >= 6 && stickerIndex <= 8) return true;  // Up bottom row
             if (faceIndex == 2 && (stickerIndex == 2 || stickerIndex == 5 || stickerIndex == 8)) return true;  // Left right col
@@ -951,6 +956,7 @@ bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex
         // B move: Back face (all 9) + Up[0,1,2] + Left[0,3,6] + Down[6,7,8] + Right[2,5,8]
         case Move::B:
         case Move::BP:
+        case Move::B2:
             if (faceIndex == 1) return true;  // Back face
             if (faceIndex == 4 && stickerIndex >= 0 && stickerIndex <= 2) return true;  // Up top row
             if (faceIndex == 2 && (stickerIndex == 0 || stickerIndex == 3 || stickerIndex == 6)) return true;  // Left left col
@@ -961,6 +967,7 @@ bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex
         // M move: Middle slice - Up[1,4,7] + Down[1,4,7] + Front[1,4,7] + Back[1,4,7]
         case Move::M:
         case Move::MP:
+        case Move::M2:
             if (stickerIndex == 1 || stickerIndex == 4 || stickerIndex == 7) {
                 return faceIndex == 4 || faceIndex == 5 || faceIndex == 0 || faceIndex == 1;  // U, D, F, B
             }
@@ -969,6 +976,7 @@ bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex
         // E move: Equator slice - Front[3,4,5] + Back[3,4,5] + Left[3,4,5] + Right[3,4,5]
         case Move::E:
         case Move::EP:
+        case Move::E2:
             if (stickerIndex >= 3 && stickerIndex <= 5) {
                 return faceIndex == 0 || faceIndex == 1 || faceIndex == 2 || faceIndex == 3;  // F, B, L, R
             }
@@ -977,6 +985,7 @@ bool CubeRenderer::isStickerAnimating(Move move, int faceIndex, int stickerIndex
         // S move: Standing slice - Up[3,4,5] + Down[3,4,5] + Left[1,4,7] + Right[1,4,7]
         case Move::S:
         case Move::SP:
+        case Move::S2:
             if (faceIndex == 4 || faceIndex == 5) {  // U or D
                 return stickerIndex >= 3 && stickerIndex <= 5;  // Middle row
             }
@@ -1004,54 +1013,63 @@ std::array<float, 3> CubeRenderer::rotateSticker(const std::array<float, 3>& pos
     switch (move) {
         // U moves rotate around Y axis (looking down)
         case Move::U:
+        case Move::U2:
             return {x * cosA - z * sinA, y, x * sinA + z * cosA};
         case Move::UP:
             return {x * cosA + z * sinA, y, -x * sinA + z * cosA};
 
         // D moves rotate around Y axis (looking up - opposite direction of U)
         case Move::D:
+        case Move::D2:
             return {x * cosA + z * sinA, y, -x * sinA + z * cosA};
         case Move::DP:
             return {x * cosA - z * sinA, y, x * sinA + z * cosA};
 
         // L moves rotate around X axis (looking from left)
         case Move::L:
+        case Move::L2:
             return {x, y * cosA - z * sinA, y * sinA + z * cosA};
         case Move::LP:
             return {x, y * cosA + z * sinA, -y * sinA + z * cosA};
 
         // R moves rotate around X axis (looking from right - opposite direction of L)
         case Move::R:
+        case Move::R2:
             return {x, y * cosA + z * sinA, -y * sinA + z * cosA};
         case Move::RP:
             return {x, y * cosA - z * sinA, y * sinA + z * cosA};
 
         // F moves rotate around Z axis (looking from front)
         case Move::F:
+        case Move::F2:
             return {x * cosA + y * sinA, -x * sinA + y * cosA, z};
         case Move::FP:
             return {x * cosA - y * sinA, x * sinA + y * cosA, z};
 
         // B moves rotate around Z axis (looking from back - opposite direction of F)
         case Move::B:
+        case Move::B2:
             return {x * cosA - y * sinA, x * sinA + y * cosA, z};
         case Move::BP:
             return {x * cosA + y * sinA, -x * sinA + y * cosA, z};
 
         // M moves rotate around X axis (same as L)
         case Move::M:
+        case Move::M2:
             return {x, y * cosA - z * sinA, y * sinA + z * cosA};
         case Move::MP:
             return {x, y * cosA + z * sinA, -y * sinA + z * cosA};
 
         // E moves rotate around Y axis (same as U, looking down)
         case Move::E:
+        case Move::E2:
             return {x * cosA - z * sinA, y, x * sinA + z * cosA};
         case Move::EP:
             return {x * cosA + z * sinA, y, -x * sinA + z * cosA};
 
         // S moves rotate around Z axis (same as F)
         case Move::S:
+        case Move::S2:
             return {x * cosA + y * sinA, -x * sinA + y * cosA, z};
         case Move::SP:
             return {x * cosA - y * sinA, x * sinA + y * cosA, z};
@@ -1259,46 +1277,55 @@ bool CubeRenderer::isCubeAnimating(int cubeIndex) const {
         // U move: All cubes at row 2 (top layer)
         case Move::U:
         case Move::UP:
+        case Move::U2:
             return (row == 2);
 
         // D move: All cubes at row 0 (bottom layer)
         case Move::D:
         case Move::DP:
+        case Move::D2:
             return (row == 0);
 
         // L move: All cubes at col 0 (left slice)
         case Move::L:
         case Move::LP:
+        case Move::L2:
             return (col == 0);
 
         // R move: All cubes at col 2 (right slice)
         case Move::R:
         case Move::RP:
+        case Move::R2:
             return (col == 2);
 
         // F move: Front face (layer 2) only
         case Move::F:
         case Move::FP:
+        case Move::F2:
             return (layer == 2);
 
         // B move: Back face (layer 0) only
         case Move::B:
         case Move::BP:
+        case Move::B2:
             return (layer == 0);
 
         // M move: middle column (col 1, between L and R)
         case Move::M:
         case Move::MP:
+        case Move::M2:
             return (col == 1);
 
         // E move: middle row (row 1)
         case Move::E:
         case Move::EP:
+        case Move::E2:
             return (row == 1);
 
         // S move: middle layer (layer 1, between F and B)
         case Move::S:
         case Move::SP:
+        case Move::S2:
             return (layer == 1);
 
         default:
@@ -1313,6 +1340,9 @@ void CubeRenderer::applyRotationTransform(float angle, Move move) {
         case Move::U:
             glRotatef(angle, 0.0f, -1.0f, 0.0f);
             break;
+        case Move::U2:
+            glRotatef(angle * 2, 0.0f, -1.0f, 0.0f);
+            break;
         case Move::UP:
             glRotatef(angle, 0.0f, 1.0f, 0.0f);
             break;
@@ -1320,6 +1350,9 @@ void CubeRenderer::applyRotationTransform(float angle, Move move) {
         // D moves rotate around Y axis (opposite of U)
         case Move::D:
             glRotatef(angle, 0.0f, 1.0f, 0.0f);
+            break;
+        case Move::D2:
+            glRotatef(angle * 2, 0.0f, 1.0f, 0.0f);
             break;
         case Move::DP:
             glRotatef(angle, 0.0f, -1.0f, 0.0f);
@@ -1329,6 +1362,9 @@ void CubeRenderer::applyRotationTransform(float angle, Move move) {
         case Move::L:
             glRotatef(angle, 1.0f, 0.0f, 0.0f);
             break;
+        case Move::L2:
+            glRotatef(angle * 2, 1.0f, 0.0f, 0.0f);
+            break;
         case Move::LP:
             glRotatef(angle, -1.0f, 0.0f, 0.0f);
             break;
@@ -1336,6 +1372,9 @@ void CubeRenderer::applyRotationTransform(float angle, Move move) {
         // R moves rotate around X axis (opposite of L)
         case Move::R:
             glRotatef(angle, -1.0f, 0.0f, 0.0f);
+            break;
+        case Move::R2:
+            glRotatef(angle * 2, -1.0f, 0.0f, 0.0f);
             break;
         case Move::RP:
             glRotatef(angle, 1.0f, 0.0f, 0.0f);
@@ -1345,6 +1384,9 @@ void CubeRenderer::applyRotationTransform(float angle, Move move) {
         case Move::F:
             glRotatef(angle, 0.0f, 0.0f, -1.0f);
             break;
+        case Move::F2:
+            glRotatef(angle * 2, 0.0f, 0.0f, -1.0f);
+            break;
         case Move::FP:
             glRotatef(angle, 0.0f, 0.0f, 1.0f);
             break;
@@ -1352,6 +1394,9 @@ void CubeRenderer::applyRotationTransform(float angle, Move move) {
         // B moves rotate around Z axis (opposite of F)
         case Move::B:
             glRotatef(angle, 0.0f, 0.0f, 1.0f);
+            break;
+        case Move::B2:
+            glRotatef(angle * 2, 0.0f, 0.0f, 1.0f);
             break;
         case Move::BP:
             glRotatef(angle, 0.0f, 0.0f, -1.0f);
@@ -1361,6 +1406,9 @@ void CubeRenderer::applyRotationTransform(float angle, Move move) {
         case Move::M:
             glRotatef(angle, 1.0f, 0.0f, 0.0f);
             break;
+        case Move::M2:
+            glRotatef(angle * 2, 1.0f, 0.0f, 0.0f);
+            break;
         case Move::MP:
             glRotatef(angle, -1.0f, 0.0f, 0.0f);
             break;
@@ -1369,6 +1417,9 @@ void CubeRenderer::applyRotationTransform(float angle, Move move) {
         case Move::E:
             glRotatef(-angle, 0.0f, -1.0f, 0.0f);
             break;
+        case Move::E2:
+            glRotatef(-angle * 2, 0.0f, -1.0f, 0.0f);
+            break;
         case Move::EP:
             glRotatef(-angle, 0.0f, 1.0f, 0.0f);
             break;
@@ -1376,6 +1427,9 @@ void CubeRenderer::applyRotationTransform(float angle, Move move) {
         // S moves rotate around Z axis (same as F)
         case Move::S:
             glRotatef(angle, 0.0f, 0.0f, -1.0f);
+            break;
+        case Move::S2:
+            glRotatef(angle * 2, 0.0f, 0.0f, -1.0f);
             break;
         case Move::SP:
             glRotatef(angle, 0.0f, 0.0f, 1.0f);
