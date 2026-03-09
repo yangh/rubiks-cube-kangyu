@@ -186,7 +186,7 @@ void RubiksCube::m(bool prime) {
         up_[1] = front_[1]; up_[4] = front_[4]; up_[7] = front_[7];
         front_[1] = down_[1]; front_[4] = down_[4]; front_[7] = down_[7];
         down_[1] = back_[7]; down_[4] = back_[4]; down_[7] = back_[1];
-        back_[7] = temp[1]; back_[4] = temp[4]; back_[1] = temp[7];
+        back_[7] = temp[0]; back_[4] = temp[1]; back_[1] = temp[2];
     } else {
         // M (clockwise from left): up <- back <- down <- front <- up
         // Note: Back indices are reversed (viewed from behind)
