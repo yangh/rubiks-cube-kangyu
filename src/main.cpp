@@ -297,6 +297,9 @@ int main(int argc, char* argv[]) {
         handleMoveShortcut(ImGuiKey_M, Move::M, Move::MP, renderer, io);
         handleMoveShortcut(ImGuiKey_E, Move::E, Move::EP, renderer, io);
         handleMoveShortcut(ImGuiKey_S, Move::S, Move::SP, renderer, io);
+        handleMoveShortcut(ImGuiKey_X, Move::X, Move::XP, renderer, io);
+        handleMoveShortcut(ImGuiKey_Y, Move::Y, Move::YP, renderer, io);
+        handleMoveShortcut(ImGuiKey_Z, Move::Z, Move::ZP, renderer, io);
 
         // Spacebar: reset view to default angles
         if (ImGui::IsKeyPressed(ImGuiKey_Space)) {

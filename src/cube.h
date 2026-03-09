@@ -45,6 +45,12 @@ enum class Move {
     EP, // Equator slice prime
     S,  // Standing slice (between F and B)
     SP, // Standing slice prime
+    X,  // X-axis rotation (right-left axis)
+    XP, // X-axis rotation prime
+    Y,  // Y-axis rotation (up-down axis)
+    YP, // Y-axis rotation prime
+    Z,  // Z-axis rotation (front-back axis)
+    ZP, // Z-axis rotation prime
     // Double moves (180° rotation)
     U2,  // Up face double
     D2,  // Down face double
@@ -54,7 +60,10 @@ enum class Move {
     B2,  // Back face double
     M2,  // Middle slice double
     E2,  // Equator slice double
-    S2   // Standing slice double
+    S2,  // Standing slice double
+    X2,  // X-axis double rotation
+    Y2,  // Y-axis double rotation
+    Z2   // Z-axis double rotation
 };
 
 // Convert color to RGB
@@ -165,6 +174,10 @@ private:
     void rotateMiddle(bool prime);   // M: between L and R
     void rotateEquator(bool prime); // E: between U and D
     void rotateStanding(bool prime); // S: between F and B
+    // Axis rotation functions
+    void rotateX(bool prime); // X-axis rotation (right-left)
+    void rotateY(bool prime); // Y-axis rotation (up-down)
+    void rotateZ(bool prime); // Z-axis rotation (front-back)
 
     // Rotate a face 90 degrees clockwise (or counter-clockwise if prime)
     void rotateFaceClockwise(std::array<Color, 9>& face, bool prime);

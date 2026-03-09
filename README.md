@@ -10,6 +10,7 @@ A 3D Rubik's cube simulator built with C++, ImGUI, and OpenGL with advanced feat
 - Interactive 2D unfolded cube visualization
 - Interactive 3D isometric view with mouse controls
 - Full set of Rubik's cube moves (U, D, L, R, F, B and their primes, plus slice moves M, E, S)
+- Complete axis rotations (X, Y, Z and their primes) for cube orientation
 - Real-time cube state tracking and solvable state detection
 - Undo/Redo system with move history management
 - Scramble function with random move generation
@@ -96,12 +97,15 @@ make -C build
 
 ### Keyboard Shortcuts
 - **U/D/L/R/F/B/M/E/S**: Execute corresponding move (clockwise)
+- **X/Y/Z**: Execute axis rotation (clockwise)
 - **Shift+Key**: Execute prime move (counter-clockwise)
 - **Space**: Reset 3D view to default angles
 - **ESC**: Reset cube to solved state
+- **Ctrl+Z**: Undo last move
+- **Ctrl+R**: Redo last undone move
 - **Ctrl+Q**: Quit application
 - **F11**: Toggle fullscreen mode
-- **Example**: 'U' = U move, 'Shift+U' = U' move
+- **Example**: 'U' = U move, 'Shift+U' = U' move, 'X' = X axis rotation
 
 ### Formula System
 1. Create formulas in the 'formula' directory (one file per category)
@@ -144,6 +148,19 @@ make -C build
 - **E'**: Equator slice counter-clockwise
 - **S**: Standing slice (between F and B) clockwise
 - **S'**: Standing slice counter-clockwise
+
+### Axis Rotations (Whole Cube)
+- **X**: Rotate entire cube around X-axis (right-left axis), equivalent to R M' L'
+- **X'**: Rotate entire cube counter-clockwise around X-axis
+- **Y**: Rotate entire cube around Y-axis (up-down axis), equivalent to U E' D'
+- **Y'**: Rotate entire cube counter-clockwise around Y-axis
+- **Z**: Rotate entire cube around Z-axis (front-back axis), equivalent to F S B'
+- **Z'**: Rotate entire cube counter-clockwise around Z-axis
+
+### Double Moves (180° Rotation)
+- **U2/D2/L2/R2/F2/B2**: 180° rotation of corresponding face
+- **M2/E2/S2**: 180° rotation of corresponding slice
+- **X2/Y2/Z2**: 180° rotation around corresponding axis
 
 ## Project Structure
 

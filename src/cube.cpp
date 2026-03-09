@@ -37,6 +37,12 @@ std::string moveToString(Move move) {
         case Move::EP: return "E'";
         case Move::S:  return "S";
         case Move::SP: return "S'";
+        case Move::X:  return "X";
+        case Move::XP: return "X'";
+        case Move::Y:  return "Y";
+        case Move::YP: return "Y'";
+        case Move::Z:  return "Z";
+        case Move::ZP: return "Z'";
         // Double moves (180° rotation)
         case Move::U2: return "U2";
         case Move::D2: return "D2";
@@ -47,6 +53,9 @@ std::string moveToString(Move move) {
         case Move::M2: return "M2";
         case Move::E2: return "E2";
         case Move::S2: return "S2";
+        case Move::X2: return "X2";
+        case Move::Y2: return "Y2";
+        case Move::Z2: return "Z2";
         default:       return "?";
     }
 }
@@ -72,6 +81,12 @@ Move getInverseMove(Move move) {
         case Move::EP: return Move::E;
         case Move::S:  return Move::SP;
         case Move::SP: return Move::S;
+        case Move::X:  return Move::XP;
+        case Move::XP: return Move::X;
+        case Move::Y:  return Move::YP;
+        case Move::YP: return Move::Y;
+        case Move::Z:  return Move::ZP;
+        case Move::ZP: return Move::Z;
         case Move::U2: return Move::U2;
         case Move::D2: return Move::D2;
         case Move::L2: return Move::L2;
@@ -81,6 +96,9 @@ Move getInverseMove(Move move) {
         case Move::M2: return Move::M2;
         case Move::E2: return Move::E2;
         case Move::S2: return Move::S2;
+        case Move::X2: return Move::X2;
+        case Move::Y2: return Move::Y2;
+        case Move::Z2: return Move::Z2;
         default: return move;
     }
 }
@@ -120,6 +138,9 @@ bool parseMoveString(const std::string& moveStr, Move& outMove) {
             case 'M': outMove = Move::MP; return true;
             case 'E': outMove = Move::EP; return true;
             case 'S': outMove = Move::SP; return true;
+            case 'X': outMove = Move::XP; return true;
+            case 'Y': outMove = Move::YP; return true;
+            case 'Z': outMove = Move::ZP; return true;
         }
     }
     // Handle double moves (X2 notation)
@@ -134,6 +155,9 @@ bool parseMoveString(const std::string& moveStr, Move& outMove) {
             case 'M': outMove = Move::M2; return true;
             case 'E': outMove = Move::E2; return true;
             case 'S': outMove = Move::S2; return true;
+            case 'X': outMove = Move::X2; return true;
+            case 'Y': outMove = Move::Y2; return true;
+            case 'Z': outMove = Move::Z2; return true;
         }
     }
     // Handle single letter moves
@@ -148,6 +172,9 @@ bool parseMoveString(const std::string& moveStr, Move& outMove) {
             case 'M': outMove = Move::M; return true;
             case 'E': outMove = Move::E; return true;
             case 'S': outMove = Move::S; return true;
+            case 'X': outMove = Move::X; return true;
+            case 'Y': outMove = Move::Y; return true;
+            case 'Z': outMove = Move::Z; return true;
         }
     }
 
@@ -226,6 +253,16 @@ void RubiksCube::executeMove(Move move, bool recordHistory) {
         case Move::M2: rotateMiddle(false); rotateMiddle(false); break;
         case Move::E2: rotateEquator(false); rotateEquator(false); break;
         case Move::S2: rotateStanding(false); rotateStanding(false); break;
+        // Axis rotations
+        case Move::X:  rotateX(false); break;
+        case Move::XP: rotateX(true); break;
+        case Move::Y:  rotateY(false); break;
+        case Move::YP: rotateY(true); break;
+        case Move::Z:  rotateZ(false); break;
+        case Move::ZP: rotateZ(true); break;
+        case Move::X2: rotateX(false); rotateX(false); break;
+        case Move::Y2: rotateY(false); rotateY(false); break;
+        case Move::Z2: rotateZ(false); rotateZ(false); break;
     }
 }
 
@@ -573,5 +610,50 @@ void RubiksCube::rotateFaceClockwise(std::array<Color, 9>& face, bool prime) {
         face[0] = temp[6]; face[1] = temp[3]; face[2] = temp[0];
         face[3] = temp[7]; face[4] = temp[4]; face[5] = temp[1];
         face[6] = temp[8]; face[7] = temp[5]; face[8] = temp[2];
+    }
+}
+
+void RubiksCube::rotateX(bool prime) {
+    // X-axis rotation (right-left axis):
+    // X = R M' L' (rotate whole cube clockwise around X-axis, from right view)
+    // X' = R' M L (counter-clockwise)
+    if (prime) {
+        rotateRight(true);   // R'
+        rotateMiddle(true);  // M (M goes same direction as L)
+        rotateLeft(false);   // L
+    } else {
+        rotateRight(false);  // R
+        rotateMiddle(false); // M' (M' goes same direction as R)
+        rotateLeft(true);    // L'
+    }
+}
+
+void RubiksCube::rotateY(bool prime) {
+    // Y-axis rotation (up-down axis):
+    // Y = U E' D' (rotate whole cube clockwise around Y-axis, from top view)
+    // Y' = U' E D (counter-clockwise)
+    if (prime) {
+        rotateUp(true);      // U'
+        rotateEquator(false);// E (E goes same direction as D)
+        rotateDown(false);   // D
+    } else {
+        rotateUp(false);     // U
+        rotateEquator(true); // E' (E' goes same direction as U)
+        rotateDown(true);    // D'
+    }
+}
+
+void RubiksCube::rotateZ(bool prime) {
+    // Z-axis rotation (front-back axis):
+    // Z = F S B' (rotate whole cube clockwise around Z-axis, from front view)
+    // Z' = F' S' B (counter-clockwise)
+    if (prime) {
+        rotateFront(true);    // F'
+        rotateStanding(true); // S' (S' goes same direction as F')
+        rotateBack(false);    // B
+    } else {
+        rotateFront(false);   // F
+        rotateStanding(false);// S (S goes same direction as F)
+        rotateBack(true);     // B'
     }
 }

@@ -119,3 +119,17 @@ target_include_directories(test_formula_ref
 
 # Add formula vs reference test
 add_test(NAME formula_ref_verify COMMAND test_formula_ref)
+
+# Create axis rotation test executable
+add_executable(test_axis_rotate
+    tests/test_axis_rotate.cpp
+    src/cube.cpp
+)
+
+target_include_directories(test_axis_rotate
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+# Add axis rotation test
+add_test(NAME axis_rotate COMMAND test_axis_rotate)
