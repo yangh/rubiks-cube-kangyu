@@ -106,7 +106,7 @@ void RubiksCube::l(bool prime) {
         // Clockwise: up <- back <- down <- front <- up
         std::array<Color, 3> temp = {up_[0], up_[3], up_[6]};
         up_[0] = back_[8]; up_[3] = back_[5]; up_[6] = back_[2];
-        back_[8] = down_[6]; back_[5] = down_[3]; back_[2] = down_[0];
+        back_[8] = down_[0]; back_[5] = down_[3]; back_[2] = down_[6];
         down_[0] = front_[0]; down_[3] = front_[3]; down_[6] = front_[6];
         front_[0] = temp[0]; front_[3] = temp[1]; front_[6] = temp[2];
     }
@@ -121,7 +121,7 @@ void RubiksCube::r(bool prime) {
         // Note: Back face indices are reversed because we view from behind
         std::array<Color, 3> temp = {up_[2], up_[5], up_[8]};
         up_[2] = back_[6]; up_[5] = back_[3]; up_[8] = back_[0];
-        back_[6] = down_[8]; back_[3] = down_[5]; back_[0] = down_[2];
+        back_[6] = down_[2]; back_[3] = down_[5]; back_[0] = down_[8];
         down_[2] = front_[2]; down_[5] = front_[5]; down_[8] = front_[8];
         front_[2] = temp[0]; front_[5] = temp[1]; front_[8] = temp[2];
     } else {
@@ -143,13 +143,13 @@ void RubiksCube::f(bool prime) {
         std::array<Color, 3> temp = {up_[6], up_[7], up_[8]};
         up_[6] = right_[0]; up_[7] = right_[3]; up_[8] = right_[6];
         right_[0] = down_[2]; right_[3] = down_[1]; right_[6] = down_[0];
-        down_[0] = left_[8]; down_[1] = left_[5]; down_[2] = left_[2];
-        left_[2] = temp[0]; left_[5] = temp[1]; left_[8] = temp[2];
+        down_[0] = left_[2]; down_[1] = left_[5]; down_[2] = left_[8];
+        left_[2] = temp[2]; left_[5] = temp[1]; left_[8] = temp[0];
     } else {
         // Clockwise: up <- left <- down <- right <- up
         std::array<Color, 3> temp = {up_[6], up_[7], up_[8]};
-        up_[6] = left_[2]; up_[7] = left_[5]; up_[8] = left_[8];
-        left_[2] = down_[2]; left_[5] = down_[1]; left_[8] = down_[0];
+        up_[6] = left_[8]; up_[7] = left_[5]; up_[8] = left_[2];
+        left_[2] = down_[0]; left_[5] = down_[1]; left_[8] = down_[2];
         down_[0] = right_[6]; down_[1] = right_[3]; down_[2] = right_[0];
         right_[0] = temp[0]; right_[3] = temp[1]; right_[6] = temp[2];
     }
@@ -162,17 +162,17 @@ void RubiksCube::b(bool prime) {
     if (prime) {
         // Clockwise: up <- left <- down <- right <- up
         std::array<Color, 3> temp = {up_[0], up_[1], up_[2]};
-        up_[0] = left_[0]; up_[1] = left_[3]; up_[2] = left_[6];
+        up_[0] = left_[6]; up_[1] = left_[3]; up_[2] = left_[0];
         left_[0] = down_[6]; left_[3] = down_[7]; left_[6] = down_[8];
-        down_[6] = right_[2]; down_[7] = right_[5]; down_[8] = right_[8];
+        down_[6] = right_[8]; down_[7] = right_[5]; down_[8] = right_[2];
         right_[2] = temp[0]; right_[5] = temp[1]; right_[8] = temp[2];
     } else {
         // Counter-clockwise: up <- right <- down <- left <- up
         std::array<Color, 3> temp = {up_[0], up_[1], up_[2]};
         up_[0] = right_[2]; up_[1] = right_[5]; up_[2] = right_[8];
-        right_[2] = down_[6]; right_[5] = down_[7]; right_[8] = down_[8];
+        right_[2] = down_[8]; right_[5] = down_[7]; right_[8] = down_[6];
         down_[6] = left_[0]; down_[7] = left_[3]; down_[8] = left_[6];
-        left_[0] = temp[0]; left_[3] = temp[1]; left_[6] = temp[2];
+        left_[0] = temp[2]; left_[3] = temp[1]; left_[6] = temp[0];
     }
 }
 
@@ -180,17 +180,19 @@ void RubiksCube::b(bool prime) {
 void RubiksCube::m(bool prime) {
     // M affects: Up[1,4,7], Down[1,4,7], Front[1,4,7], Back[1,4,7]
     if (prime) {
-        // M' (counter-clockwise from left): up -> front -> down -> back -> up
+        // M' (counter-clockwise from left): up <- front <- down <- back <- up
+        // Note: Back indices are reversed (viewed from behind)
         std::array<Color, 3> temp = {up_[1], up_[4], up_[7]};
         up_[1] = front_[1]; up_[4] = front_[4]; up_[7] = front_[7];
         front_[1] = down_[1]; front_[4] = down_[4]; front_[7] = down_[7];
-        down_[1] = back_[1]; down_[4] = back_[4]; down_[7] = back_[7];
-        back_[1] = temp[0]; back_[4] = temp[1]; back_[7] = temp[2];
+        down_[1] = back_[7]; down_[4] = back_[4]; down_[7] = back_[1];
+        back_[7] = temp[1]; back_[4] = temp[4]; back_[1] = temp[7];
     } else {
-        // M (clockwise from left): up -> back -> down -> front -> up
+        // M (clockwise from left): up <- back <- down <- front <- up
+        // Note: Back indices are reversed (viewed from behind)
         std::array<Color, 3> temp = {up_[1], up_[4], up_[7]};
-        up_[1] = back_[1]; up_[4] = back_[4]; up_[7] = back_[7];
-        back_[1] = down_[1]; back_[4] = down_[4]; back_[7] = down_[7];
+        up_[1] = back_[7]; up_[4] = back_[4]; up_[7] = back_[1];
+        back_[7] = down_[1]; back_[4] = down_[4]; back_[1] = down_[7];
         down_[1] = front_[1]; down_[4] = front_[4]; down_[7] = front_[7];
         front_[1] = temp[0]; front_[4] = temp[1]; front_[7] = temp[2];
     }
