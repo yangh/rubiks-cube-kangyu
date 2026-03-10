@@ -620,11 +620,11 @@ void RubiksCube::rotateX(bool prime) {
     // X' = R' M L (counter-clockwise)
     if (prime) {
         rotateRight(true);   // R'
-        rotateMiddle(true);  // M (M goes same direction as L)
+        rotateMiddle(false); // M' (M' goes same direction as R)
         rotateLeft(false);   // L
     } else {
         rotateRight(false);  // R
-        rotateMiddle(false); // M' (M' goes same direction as R)
+        rotateMiddle(true);  // M (M goes same direction as L)
         rotateLeft(true);    // L'
     }
 }
