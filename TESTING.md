@@ -4,27 +4,36 @@
 
 ## 测试概览
 
-项目包含两个测试程序：
+项目包含六个测试程序：
 
 | 测试程序 | 文件 | 用途 | 测试数量 |
 |---------|------|------|---------|
 | `test_cube` | `tests/test_cube.cpp` | 基础功能测试 | 117 |
 | `test_cube_2step` | `tests/test_cube_2step.cpp` | 2 步移动组合测试 | 288 |
+| `test_formula` | `tests/test_formula.cpp` | 公式解析和执行测试 | ~50 |
+| `test_formula_ref` | `tests/test_formula_ref.cpp` | 公式参考实现测试 | ~50 |
+| `test_ref_verify` | `tests/test_ref_verify.cpp` | 参考实现对比验证 | 552 |
+| `test_axis_rotate` | `tests/test_axis_rotate.cpp` | X/Y/Z 轴旋转测试 | 50 |
 
 ## 运行测试
 
-### 运行单个测试
+### 运行所有测试
 
 ```bash
-# 编译并运行所有测试
+# 编译
 cmake -S . -B build
 make -C build
 
-# 运行基础测试
-./build/test_cube
+# 运行所有测试
+cd build && ctest
 
-# 运行 2 步组合测试
+# 或单独运行
+./build/test_cube
 ./build/test_cube_2step
+./build/test_formula
+./build/test_formula_ref
+./build/test_ref_verify
+./build/test_axis_rotate
 ```
 
 ### 使用 CTest 运行
@@ -32,11 +41,14 @@ make -C build
 ```bash
 # 运行所有测试
 cd build
-ctest
+ctest --output-on-failure
 
 # 运行特定测试
 ctest -R cube_logic    # 基础测试
 ctest -R cube_2step    # 2 步组合测试
+ctest -R formula       # 公式测试
+ctest -R ref_verify    # 参考实现验证
+ctest -R axis_rotate   # 轴旋转测试
 ```
 
 ---
@@ -283,6 +295,8 @@ add_test(NAME your_test COMMAND your_test)
 
 - ✅ 所有 12 种基础移动（U/D/L/R/F/B 及其逆）
 - ✅ 所有 6 种切片移动（M/E/S 及其逆）
+- ✅ 所有 6 种轴旋转（X/Y/Z 及其逆）
+- ✅ 所有 6 种双次移动（U2/D2/L2/R2/F2/B2）
 - ✅ 移动逆组合
 - ✅ 移动四倍组合
 - ✅ 相邻面交互
@@ -291,3 +305,108 @@ add_test(NAME your_test COMMAND your_test)
 - ✅ 移动字符串转换
 - ✅ 重置功能
 - ✅ 状态检查
+
+---
+
+## test_ref_verify - 参考实现验证测试
+
+### 测试目的
+
+对比主实现与参考实现（`tests/ref/ref_cube.cpp`）的结果，确保两者完全一致。
+
+### 测试范围
+
+- **单次移动测试**：24 种（U/D/L/R/F/B/M/E/S/X/Y/Z 及其逆）
+- **2 步组合测试**：528 种（所有有效组合）
+- **4 次移动测试**：9 种（验证周期性）
+
+**总计**：552 个测试用例
+
+### 验证方法
+
+1. 创建主实现和参考实现的魔方实例
+2. 执行相同的移动序列
+3. 比较所有 6 个面的状态
+4. 如果任何贴纸不匹配，输出详细差异
+
+### 测试输出示例
+
+```
+=== Testing Single Moves ===
+[PASS] U
+[PASS] U'
+...
+[FAIL] X
+    Front face mismatch:
+      Our:  Y Y Y 
+            Y Y Y 
+            Y Y Y 
+
+      Ref:  Y W Y 
+            Y W Y 
+            Y W Y 
+```
+
+---
+
+## test_axis_rotate - 轴旋转测试
+
+### 测试目的
+
+验证 X/Y/Z 轴旋转的正确性。
+
+### X 轴旋转
+
+- **X** = R M' L'（从右侧看顺时针）
+- **X'** = R' M L（从右侧看逆时针）
+- **验证**：X X' 和 X × 4 应回到初始状态
+
+### Y 轴旋转
+
+- **Y** = U E' D'（从顶部看顺时针）
+- **Y'** = U' E D（从顶部看逆时针）
+- **验证**：Y Y' 和 Y × 4 应回到初始状态
+
+### Z 轴旋转
+
+- **Z** = F S B'（从前方看顺时针）
+- **Z'** = F' S' B（从前方看逆时针）
+- **验证**：Z Z' 和 Z × 4 应回到初始状态
+
+---
+
+## test_formula - 公式系统测试
+
+### 测试内容
+
+1. **公式解析**：验证字符串到移动序列的转换
+2. **公式执行**：验证公式正确执行
+3. **循环语法**：验证 `loop N` 语法
+4. **逆序执行**：验证反向执行公式
+
+### 示例公式
+
+```
+Sexy Move: R U R' U'
+Sune: R U R' U R U2 R'
+T-Perm: R U R' U' R' F R2 U' R' U' R U R' F'
+```
+
+---
+
+## 参考实现 (tests/ref/)
+
+### ref_cube.h / ref_cube.cpp
+
+独立于主实现的魔方类，用于交叉验证。
+
+**特点**：
+- 直接操作面数组，不使用主实现的辅助函数
+- 每个移动有独立的实现
+- 可作为"可信"参考
+
+### 使用场景
+
+1. 当怀疑主实现有 bug 时，对比参考实现结果
+2. 添加新移动时，先在参考实现中实现并验证
+3. CI/CD 中自动对比两个实现的输出
