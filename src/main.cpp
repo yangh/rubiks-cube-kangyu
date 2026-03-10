@@ -106,6 +106,19 @@ void resetCube(CubeRenderer& renderer) {
     renderer.resetView();
 }
 
+// Helper function to scramble cube
+void scrambleCube(CubeRenderer& renderer) {
+    // Disable animation for instant scramble
+    bool oldAnimation = renderer.enableAnimation;
+    renderer.enableAnimation = false;
+
+    // Generate and execute scramble
+    std::vector<Move> scrambleMoves = renderer.scramble(20);
+
+    // Restore animation setting
+    renderer.enableAnimation = oldAnimation;
+}
+
 void showAbout() {
     if (g_showAboutDialog) {
         ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Appearing);
@@ -314,6 +327,11 @@ int main(int argc, char* argv[]) {
             resetCube(renderer);
         }
 
+        // Ctrl+S: scrmble cube
+        if (ImGui::IsKeyPressed(ImGuiKey_S) && io.KeyCtrl) {
+            scrambleCube(renderer);
+        }
+
         // Ctrl+Q: quit application
         if (ImGui::IsKeyPressed(ImGuiKey_Q) && io.KeyCtrl) {
             glfwSetWindowShouldClose(window, 1);
@@ -453,15 +471,7 @@ int main(int argc, char* argv[]) {
             if (ImGui::BeginTabItem("Moves")) {
                 // Scramble and Reset buttons
                 if (ImGui::Button("Scramble", ImVec2(160, 0))) {
-                    // Disable animation for instant scramble
-                    bool oldAnimation = renderer.enableAnimation;
-                    renderer.enableAnimation = false;
-
-                    // Generate and execute scramble
-                    std::vector<Move> scrambleMoves = renderer.scramble(20);
-
-                    // Restore animation setting
-                    renderer.enableAnimation = oldAnimation;
+                    scrambleCube(renderer);
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Reset Cube", ImVec2(160, 0))) {
@@ -896,18 +906,21 @@ int main(int argc, char* argv[]) {
 
             // Shortcuts tab
             if (ImGui::BeginTabItem("Shortcuts")) {
+                ImVec4 color = ImVec4(0.7f, 0.7f, 0.7f, 1.0f);
+
                 ImGui::Spacing();
                 ImGui::Text("Keyboard Shortcuts:");
-                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  U/D/L/R/F/B/M/E/S - Move (clockwise)");
-                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Shift+Key - Prime move (counter-clockwise)");
-                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  X/Y/Z - Axis rotation (clockwise)");
-                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Shift+X/Y/Z - Axis rotation (counter-clockwise)");
-                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Space - Reset view to default angles");
-                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  ESC - Reset cube to solved state");
-                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Ctrl+Z - Undo last move");
-                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Ctrl+R - Redo last undone move");
-                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Ctrl+Q - Quit application");
-                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  F11 - Toggle fullscreen mode");
+                ImGui::TextColored(color, "  U/D/L/R/F/B/M/E/S - Move (clockwise)");
+                ImGui::TextColored(color, "  Shift+Key - Prime move (counter-clockwise)");
+                ImGui::TextColored(color, "  X/Y/Z - Axis rotation (clockwise)");
+                ImGui::TextColored(color, "  Shift+X/Y/Z - Axis rotation (counter-clockwise)");
+                ImGui::TextColored(color, "  Space - Reset view to default angles");
+                ImGui::TextColored(color, "  ESC - Reset cube to solved state");
+                ImGui::TextColored(color, "  Ctrl+S - Scramble cube");
+                ImGui::TextColored(color, "  Ctrl+Z - Undo last move");
+                ImGui::TextColored(color, "  Ctrl+R - Redo last undone move");
+                ImGui::TextColored(color, "  Ctrl+Q - Quit application");
+                ImGui::TextColored(color, "  F11 - Toggle fullscreen mode");
 
                 ImGui::EndTabItem();
             }
