@@ -1364,6 +1364,24 @@ bool CubeRenderer::isCubeAnimating(int cubeIndex) const {
         case Move::S2:
             return (layer == 1);
 
+        // X rotation: ALL cubes animate (entire cube rotation)
+        case Move::X:
+        case Move::XP:
+        case Move::X2:
+            return true;
+
+        // Y rotation: ALL cubes animate (entire cube rotation)
+        case Move::Y:
+        case Move::YP:
+        case Move::Y2:
+            return true;
+
+        // Z rotation: ALL cubes animate (entire cube rotation)
+        case Move::Z:
+        case Move::ZP:
+        case Move::Z2:
+            return true;
+
         default:
             return false;
     }
@@ -1468,6 +1486,39 @@ void CubeRenderer::applyRotationTransform(float angle, Move move) {
             glRotatef(angle * 2, 0.0f, 0.0f, -1.0f);
             break;
         case Move::SP:
+            glRotatef(angle, 0.0f, 0.0f, 1.0f);
+            break;
+
+        // X rotation - entire cube rotates around X axis (same direction as R)
+        case Move::X:
+            glRotatef(angle, -1.0f, 0.0f, 0.0f);
+            break;
+        case Move::X2:
+            glRotatef(angle * 2, -1.0f, 0.0f, 0.0f);
+            break;
+        case Move::XP:
+            glRotatef(angle, 1.0f, 0.0f, 0.0f);
+            break;
+
+        // Y rotation - entire cube rotates around Y axis (same direction as U)
+        case Move::Y:
+            glRotatef(angle, 0.0f, -1.0f, 0.0f);
+            break;
+        case Move::Y2:
+            glRotatef(angle * 2, 0.0f, -1.0f, 0.0f);
+            break;
+        case Move::YP:
+            glRotatef(angle, 0.0f, 1.0f, 0.0f);
+            break;
+
+        // Z rotation - entire cube rotates around Z axis (same direction as F)
+        case Move::Z:
+            glRotatef(angle, 0.0f, 0.0f, -1.0f);
+            break;
+        case Move::Z2:
+            glRotatef(angle * 2, 0.0f, 0.0f, -1.0f);
+            break;
+        case Move::ZP:
             glRotatef(angle, 0.0f, 0.0f, 1.0f);
             break;
 
