@@ -526,8 +526,9 @@ void RubiksCube::rotateLeft(bool prime) {
 
 // M (Middle): Rotate the middle slice between L and R
 void RubiksCube::rotateMiddle(bool prime) {
-    // Counter-clockwise
-    rotateColY(!prime, 1);
+    // M (clockwise from right view): up <- front <- down <- back
+    // M' (counter-clockwise from right view): up <- back <- down <- front
+    rotateColY(prime, 1);
 }
 
 void RubiksCube::rotateRight(bool prime) {

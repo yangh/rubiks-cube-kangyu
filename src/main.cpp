@@ -473,7 +473,7 @@ int main(int argc, char* argv[]) {
 
                 // Move buttons (3 rows: 6 buttons each)
 
-                // Row 1: R, L, M
+                // Row 1: R, L, M, X
                 if (ImGui::Button("R", ImVec2(40, 0))) renderer.executeMove(Move::R);
                 ImGui::SameLine();
                 if (ImGui::Button("R'", ImVec2(40, 0))) renderer.executeMove(Move::RP);
@@ -485,8 +485,12 @@ int main(int argc, char* argv[]) {
                 if (ImGui::Button("M", ImVec2(40, 0))) renderer.executeMove(Move::M);
                 ImGui::SameLine();
                 if (ImGui::Button("M'", ImVec2(40, 0))) renderer.executeMove(Move::MP);
+                ImGui::SameLine(0, 20);
+                if (ImGui::Button("X", ImVec2(40, 0))) renderer.executeMove(Move::X);
+                ImGui::SameLine();
+                if (ImGui::Button("X'", ImVec2(40, 0))) renderer.executeMove(Move::XP);
 
-                // Row 2: U, D, E
+                // Row 2: U, D, E, Y
                 if (ImGui::Button("U", ImVec2(40, 0))) renderer.executeMove(Move::U);
                 ImGui::SameLine();
                 if (ImGui::Button("U'", ImVec2(40, 0))) renderer.executeMove(Move::UP);
@@ -498,8 +502,12 @@ int main(int argc, char* argv[]) {
                 if (ImGui::Button("E", ImVec2(40, 0))) renderer.executeMove(Move::E);
                 ImGui::SameLine();
                 if (ImGui::Button("E'", ImVec2(40, 0))) renderer.executeMove(Move::EP);
+                ImGui::SameLine(0, 20);
+                if (ImGui::Button("Y", ImVec2(40, 0))) renderer.executeMove(Move::Y);
+                ImGui::SameLine();
+                if (ImGui::Button("Y'", ImVec2(40, 0))) renderer.executeMove(Move::YP);
 
-                // Row 3: F, B, S
+                // Row 3: F, B, S, Z
                 if (ImGui::Button("F", ImVec2(40, 0))) renderer.executeMove(Move::F);
                 ImGui::SameLine();
                 if (ImGui::Button("F'", ImVec2(40, 0))) renderer.executeMove(Move::FP);
@@ -511,17 +519,6 @@ int main(int argc, char* argv[]) {
                 if (ImGui::Button("S", ImVec2(40, 0))) renderer.executeMove(Move::S);
                 ImGui::SameLine();
                 if (ImGui::Button("S'", ImVec2(40, 0))) renderer.executeMove(Move::SP);
-
-                ImGui::Spacing();
-
-                // Row 4: X, Y, Z (axis rotations)
-                if (ImGui::Button("X", ImVec2(40, 0))) renderer.executeMove(Move::X);
-                ImGui::SameLine();
-                if (ImGui::Button("X'", ImVec2(40, 0))) renderer.executeMove(Move::XP);
-                ImGui::SameLine(0, 20);
-                if (ImGui::Button("Y", ImVec2(40, 0))) renderer.executeMove(Move::Y);
-                ImGui::SameLine();
-                if (ImGui::Button("Y'", ImVec2(40, 0))) renderer.executeMove(Move::YP);
                 ImGui::SameLine(0, 20);
                 if (ImGui::Button("Z", ImVec2(40, 0))) renderer.executeMove(Move::Z);
                 ImGui::SameLine();

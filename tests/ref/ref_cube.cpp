@@ -179,8 +179,8 @@ void RubiksCube::b(bool prime) {
 // M: Rotate middle slice (between L and R)
 void RubiksCube::m(bool prime) {
     // M affects: Up[1,4,7], Down[1,4,7], Front[1,4,7], Back[1,4,7]
-    if (prime) {
-        // M' (counter-clockwise from left): up <- front <- down <- back <- up
+    if (!prime) {
+        // M (clockwise from right view): up <- front <- down <- back <- up
         // Note: Back indices are reversed (viewed from behind)
         std::array<Color, 3> temp = {up_[1], up_[4], up_[7]};
         up_[1] = front_[1]; up_[4] = front_[4]; up_[7] = front_[7];
@@ -188,7 +188,7 @@ void RubiksCube::m(bool prime) {
         down_[1] = back_[7]; down_[4] = back_[4]; down_[7] = back_[1];
         back_[7] = temp[0]; back_[4] = temp[1]; back_[1] = temp[2];
     } else {
-        // M (clockwise from left): up <- back <- down <- front <- up
+        // M' (counter-clockwise from right view): up <- back <- down <- front <- up
         // Note: Back indices are reversed (viewed from behind)
         std::array<Color, 3> temp = {up_[1], up_[4], up_[7]};
         up_[1] = back_[7]; up_[4] = back_[4]; up_[7] = back_[1];
