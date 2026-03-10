@@ -528,7 +528,7 @@ void RubiksCube::rotateLeft(bool prime) {
 void RubiksCube::rotateMiddle(bool prime) {
     // M (clockwise from right view): up <- front <- down <- back
     // M' (counter-clockwise from right view): up <- back <- down <- front
-    rotateColY(prime, 1);
+    rotateColY(!prime, 1);
 }
 
 void RubiksCube::rotateRight(bool prime) {
@@ -585,13 +585,13 @@ void RubiksCube::rotateStanding(bool prime) {
         // S' (counter-clockwise from front): up -> left -> down -> right -> up
         std::array<Color, 9> temp = up_;
         up_[3] = right_[1]; up_[4] = right_[4]; up_[5] = right_[7];
-        right_[1] = down_[3]; right_[4] = down_[4]; right_[7] = down_[5];
+        right_[1] = down_[5]; right_[4] = down_[4]; right_[7] = down_[3];
         down_[3] = left_[1]; down_[4] = left_[4]; down_[5] = left_[7];
         left_[1] = temp[3]; left_[4] = temp[4]; left_[7] = temp[5];
     } else {
         // S (clockwise from front): up -> right -> down -> left -> up
         std::array<Color, 9> temp = up_;
-        up_[3] = left_[1]; up_[4] = left_[4]; up_[5] = left_[7];
+        up_[5] = left_[1]; up_[4] = left_[4]; up_[3] = left_[7];
         left_[1] = down_[3]; left_[4] = down_[4]; left_[7] = down_[5];
         down_[3] = right_[1]; down_[4] = right_[4]; down_[5] = right_[7];
         right_[1] = temp[3]; right_[4] = temp[4]; right_[7] = temp[5];
