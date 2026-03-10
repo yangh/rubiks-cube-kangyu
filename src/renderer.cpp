@@ -991,6 +991,24 @@ bool CubeRenderer::isStickerAnimating(Move move, Face faceIndex, int stickerInde
             }
             return false;
 
+        // X rotation: Whole cube around X-axis - ALL stickers animate
+        case Move::X:
+        case Move::XP:
+        case Move::X2:
+            return true;
+
+        // Y rotation: Whole cube around Y-axis - ALL stickers animate
+        case Move::Y:
+        case Move::YP:
+        case Move::Y2:
+            return true;
+
+        // Z rotation: Whole cube around Z-axis - ALL stickers animate
+        case Move::Z:
+        case Move::ZP:
+        case Move::Z2:
+            return true;
+
         default:
             return false;
     }
@@ -1069,6 +1087,27 @@ std::array<float, 3> CubeRenderer::rotateSticker(const std::array<float, 3>& pos
         case Move::S2:
             return {x * cosA + y * sinA, -x * sinA + y * cosA, z};
         case Move::SP:
+            return {x * cosA - y * sinA, x * sinA + y * cosA, z};
+
+        // X moves rotate around X axis (same as R, - entire cube rotation)
+        case Move::X:
+        case Move::X2:
+            return {x, y * cosA + z * sinA, -y * sinA + z * cosA};
+        case Move::XP:
+            return {x, y * cosA - z * sinA, y * sinA + z * cosA};
+
+        // Y moves rotate around Y axis (same as U, - entire cube rotation)
+        case Move::Y:
+        case Move::Y2:
+            return {x * cosA - z * sinA, y, x * sinA + z * cosA};
+        case Move::YP:
+            return {x * cosA + z * sinA, y, -x * sinA + z * cosA};
+
+        // Z moves rotate around Z axis (same as F, - entire cube rotation)
+        case Move::Z:
+        case Move::Z2:
+            return {x * cosA + y * sinA, -x * sinA + y * cosA, z};
+        case Move::ZP:
             return {x * cosA - y * sinA, x * sinA + y * cosA, z};
 
         default:
