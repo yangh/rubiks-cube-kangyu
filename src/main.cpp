@@ -137,6 +137,8 @@ void showHelp(const char* programName) {
     std::cout << "Keyboard Shortcuts:\n";
     std::cout << "  U/D/L/R/F/B/M/E/S - Execute corresponding move (clockwise)\n";
     std::cout << "  Shift+Key           - Execute prime move (counter-clockwise)\n";
+    std::cout << "  X/Y/Z               - Axis rotation (clockwise)\n";
+    std::cout << "  Shift+X/Y/Z         - Axis rotation (counter-clockwise)\n";
     std::cout << "  Space               - Reset view to default angles\n";
     std::cout << "  ESC                 - Reset cube to solved state\n";
     std::cout << "  Ctrl+Z              - Undo last move\n";
@@ -509,6 +511,21 @@ int main(int argc, char* argv[]) {
                 if (ImGui::Button("S", ImVec2(40, 0))) renderer.executeMove(Move::S);
                 ImGui::SameLine();
                 if (ImGui::Button("S'", ImVec2(40, 0))) renderer.executeMove(Move::SP);
+
+                ImGui::Spacing();
+
+                // Row 4: X, Y, Z (axis rotations)
+                if (ImGui::Button("X", ImVec2(40, 0))) renderer.executeMove(Move::X);
+                ImGui::SameLine();
+                if (ImGui::Button("X'", ImVec2(40, 0))) renderer.executeMove(Move::XP);
+                ImGui::SameLine(0, 20);
+                if (ImGui::Button("Y", ImVec2(40, 0))) renderer.executeMove(Move::Y);
+                ImGui::SameLine();
+                if (ImGui::Button("Y'", ImVec2(40, 0))) renderer.executeMove(Move::YP);
+                ImGui::SameLine(0, 20);
+                if (ImGui::Button("Z", ImVec2(40, 0))) renderer.executeMove(Move::Z);
+                ImGui::SameLine();
+                if (ImGui::Button("Z'", ImVec2(40, 0))) renderer.executeMove(Move::ZP);
 
                 ImGui::Spacing();
                 ImGui::Separator();
@@ -886,6 +903,8 @@ int main(int argc, char* argv[]) {
                 ImGui::Text("Keyboard Shortcuts:");
                 ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  U/D/L/R/F/B/M/E/S - Move (clockwise)");
                 ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Shift+Key - Prime move (counter-clockwise)");
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  X/Y/Z - Axis rotation (clockwise)");
+                ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Shift+X/Y/Z - Axis rotation (counter-clockwise)");
                 ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Space - Reset view to default angles");
                 ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  ESC - Reset cube to solved state");
                 ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f), "  Ctrl+Z - Undo last move");

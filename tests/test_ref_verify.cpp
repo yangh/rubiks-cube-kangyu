@@ -46,6 +46,12 @@ ref::Move toRefMove(Move move) {
         case Move::EP: return ref::Move::EP;
         case Move::S:  return ref::Move::S;
         case Move::SP: return ref::Move::SP;
+        case Move::X:  return ref::Move::X;
+        case Move::XP: return ref::Move::XP;
+        case Move::Y:  return ref::Move::Y;
+        case Move::YP: return ref::Move::YP;
+        case Move::Z:  return ref::Move::Z;
+        case Move::ZP: return ref::Move::ZP;
     }
     return ref::Move::U; // Should not reach here
 }
@@ -88,7 +94,8 @@ int testSingleMoves() {
         Move::U, Move::UP, Move::D, Move::DP,
         Move::L, Move::LP, Move::R, Move::RP,
         Move::F, Move::FP, Move::B, Move::BP,
-        Move::M, Move::MP, Move::E, Move::EP, Move::S, Move::SP
+        Move::M, Move::MP, Move::E, Move::EP, Move::S, Move::SP,
+        Move::X, Move::XP, Move::Y, Move::YP, Move::Z, Move::ZP
     };
 
     int passed = 0;
@@ -149,7 +156,8 @@ int testTwoStepCombos() {
         Move::U, Move::UP, Move::D, Move::DP,
         Move::L, Move::LP, Move::R, Move::RP,
         Move::F, Move::FP, Move::B, Move::BP,
-        Move::M, Move::MP, Move::E, Move::EP, Move::S, Move::SP
+        Move::M, Move::MP, Move::E, Move::EP, Move::S, Move::SP,
+        Move::X, Move::XP, Move::Y, Move::YP, Move::Z, Move::ZP
     };
 
     auto areInverses = [](Move m1, Move m2) -> bool {
@@ -171,6 +179,12 @@ int testTwoStepCombos() {
         if (m1 == Move::EP && m2 == Move::E) return true;
         if (m1 == Move::S && m2 == Move::SP) return true;
         if (m1 == Move::SP && m2 == Move::S) return true;
+        if (m1 == Move::X && m2 == Move::XP) return true;
+        if (m1 == Move::XP && m2 == Move::X) return true;
+        if (m1 == Move::Y && m2 == Move::YP) return true;
+        if (m1 == Move::YP && m2 == Move::Y) return true;
+        if (m1 == Move::Z && m2 == Move::ZP) return true;
+        if (m1 == Move::ZP && m2 == Move::Z) return true;
         return false;
     };
 

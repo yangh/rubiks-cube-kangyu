@@ -30,7 +30,10 @@ enum class Move : uint8_t {
     B = 10, BP = 11,
     M = 12, MP = 13,
     E = 14, EP = 15,
-    S = 16, SP = 17
+    S = 16, SP = 17,
+    X = 18, XP = 19,
+    Y = 20, YP = 21,
+    Z = 22, ZP = 23
 };
 
 // Face types for getting face colors
@@ -87,6 +90,9 @@ private:
     void m(bool prime);
     void e(bool prime);
     void s(bool prime);
+    void x(bool prime);
+    void y(bool prime);
+    void z(bool prime);
 };
 
 } // namespace ref

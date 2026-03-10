@@ -238,6 +238,54 @@ void RubiksCube::s(bool prime) {
     }
 }
 
+// X-axis rotation (right-left axis)
+// X = R M' L' (whole cube rotates clockwise around X-axis, from right view)
+void RubiksCube::x(bool prime) {
+    if (prime) {
+        // X' = R' M L
+        r(true);   // R'
+        m(true);   // M (M goes same direction as L)
+        l(false);  // L
+    } else {
+        // X = R M' L'
+        r(false);  // R
+        m(false);  // M' (M' goes same direction as R)
+        l(true);   // L'
+    }
+}
+
+// Y-axis rotation (up-down axis)
+// Y = U E' D' (whole cube rotates clockwise around Y-axis, from top view)
+void RubiksCube::y(bool prime) {
+    if (prime) {
+        // Y' = U' E D
+        u(true);   // U'
+        e(false);  // E (E goes same direction as D)
+        d(false);  // D
+    } else {
+        // Y = U E' D'
+        u(false);  // U
+        e(true);   // E' (E' goes same direction as U)
+        d(true);   // D'
+    }
+}
+
+// Z-axis rotation (front-back axis)
+// Z = F S B' (whole cube rotates clockwise around Z-axis, from front view)
+void RubiksCube::z(bool prime) {
+    if (prime) {
+        // Z' = F' S' B
+        f(true);   // F'
+        s(true);   // S' (S' goes same direction as F')
+        b(false);  // B
+    } else {
+        // Z = F S B'
+        f(false);  // F
+        s(false);  // S (S goes same direction as F)
+        b(true);   // B'
+    }
+}
+
 void RubiksCube::executeMove(Move move) {
     switch (move) {
         case Move::U:  u(false); break;
@@ -258,6 +306,12 @@ void RubiksCube::executeMove(Move move) {
         case Move::EP: e(true); break;
         case Move::S:  s(false); break;
         case Move::SP: s(true); break;
+        case Move::X:  x(false); break;
+        case Move::XP: x(true); break;
+        case Move::Y:  y(false); break;
+        case Move::YP: y(true); break;
+        case Move::Z:  z(false); break;
+        case Move::ZP: z(true); break;
     }
 }
 
