@@ -197,8 +197,8 @@ int main(int argc, char* argv[]) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
 
-    // Enable multisampling for anti-aliasing (4 samples)
-    glfwWindowHint(GLFW_SAMPLES, 4);
+    // Enable multisampling for anti-aliasing (8 samples)
+    glfwWindowHint(GLFW_SAMPLES, 8);
 
     // Create window - wider to accommodate T-shaped layout
     GLFWwindow* window = glfwCreateWindow(1400, 900, "Rubik's Cube Simulator", nullptr, nullptr);
@@ -210,6 +210,7 @@ int main(int argc, char* argv[]) {
 
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1);
+    glEnable(GL_MULTISAMPLE);
 
     // Initialize Dear ImGui
     IMGUI_CHECKVERSION();
