@@ -70,8 +70,6 @@ private:
     bool showAboutDialog_ = false;
     std::string lastScramble_ = "No scramble generated";
 
-    bool celebrationMode_ = false;
-
     float sidebarWidth_ = 320.0f;
     float netViewHeight_ = 250.0f;
 };

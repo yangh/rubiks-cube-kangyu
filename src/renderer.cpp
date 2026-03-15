@@ -101,9 +101,18 @@ void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
 void CubeRenderer::updateAnimation(float deltaTime) {
     animator_.update(deltaTime);
 
-    viewState_.lerpRotation(viewState_.rotationX, viewState_.targetRotationX, deltaTime);
-    viewState_.lerpRotation(viewState_.rotationY, viewState_.targetRotationY, deltaTime);
-    viewState_.lerpRotation(viewState_.rotationZ, viewState_.targetRotationZ, deltaTime);
+    if (viewState_.celebrationMode) {
+        viewState_.rotationX += deltaTime * 25.0f;
+        viewState_.rotationY += deltaTime * 30.0f;
+        viewState_.targetRotationX = viewState_.rotationX;
+        viewState_.targetRotationY = viewState_.rotationY;
+        if (viewState_.rotationX >= 360.0f) viewState_.rotationX -= 360.0f;
+        if (viewState_.rotationY >= 360.0f) viewState_.rotationY -= 360.0f;
+    } else {
+        viewState_.lerpRotation(viewState_.rotationX, viewState_.targetRotationX, deltaTime);
+        viewState_.lerpRotation(viewState_.rotationY, viewState_.targetRotationY, deltaTime);
+        viewState_.lerpRotation(viewState_.rotationZ, viewState_.targetRotationZ, deltaTime);
+    }
 }
 
 bool CubeRenderer::isStickerAnimating(Move move, Face faceIndex, int stickerIndex) const {
