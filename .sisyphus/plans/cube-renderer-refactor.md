@@ -976,6 +976,10 @@ Wave FINAL (After ALL tasks — verification):
 - **Commit message format**: `refactor(renderer): {description}`
 - Example: `refactor(renderer): extract CubeAnimator class from CubeRenderer`
 
+- **Atomic commits** after each task completion
+- **Commit message format**: `refactor(renderer): {description}`
+- Example: `refactor(renderer): extract CubeAnimator class from CubeRenderer`
+
 ---
 
 ## Success Criteria
