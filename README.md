@@ -1,6 +1,6 @@
 # Rubik's Cube Simulator
 
-A 3D Rubik's cube simulator built with C++, ImGUI, and OpenGL with advanced features including animations, formula execution, and undo/redo capabilities.
+A 3D Rubik's cube simulator built with C++, [Dear ImGui](https://github.com/ocornut/imgui), and OpenGL with advanced features including animations, formula execution, and undo/redo capabilities.
 
 ![Rubik's Cube Screenshot](data/rubiks-cube-kangyu-v1.2.png)
 
@@ -46,6 +46,7 @@ A 3D Rubik's cube simulator built with C++, ImGUI, and OpenGL with advanced feat
 - **C++ Compiler**: Supporting C++17 (GCC, Clang, or MSVC)
 - **GLFW3**: For window management
 - **OpenGL**: For 3D rendering
+- **[Dear ImGui](https://github.com/ocornut/imgui)**: Immediate mode GUI library
 
 ### Installing Dependencies
 
