@@ -451,7 +451,7 @@ Wave FINAL (After ALL tasks — verification):
   - Message: `refactor(renderer): extract ColorProvider class`
   - Files: `src/color_provider.h, src/color_provider.cpp, src/renderer.h, src/renderer.cpp, CMakeLists.txt`
 
-- [ ] 5. **提取 CubeAnimator 类**
+- [x] 5. **提取 CubeAnimator 类** ✅
 
   **What to do**:
   - 创建 `src/cube_animator.h` 和 `src/cube_animator.cpp`
@@ -556,7 +556,7 @@ Wave FINAL (After ALL tasks — verification):
   - Message: `refactor(renderer): extract CubeAnimator class`
   - Files: `src/cube_animator.h, src/cube_animator.cpp, src/renderer.h, src/renderer.cpp, CMakeLists.txt`
 
-- [ ] 6. **提取 Renderer2D 类**
+- [x] 6. **提取 Renderer2D 类** ✅
 
   **What to do**:
   - 创建 `src/renderer_2d.h` 和 `src/renderer_2d.cpp`
@@ -629,7 +629,7 @@ Wave FINAL (After ALL tasks — verification):
   - Message: `refactor(renderer): extract Renderer2D class`
   - Files: `src/renderer_2d.h, src/renderer_2d.cpp, src/renderer.h, src/renderer.cpp, CMakeLists.txt`
 
-- [ ] 7. **提取 Renderer3DOpenGL 类**
+- [x] 7. **提取 Renderer3DOpenGL 类** ✅
 
   **What to do**:
   - 创建 `src/renderer_3d_opengl.h` 和 `src/renderer_3d_opengl.cpp`
@@ -731,7 +731,7 @@ Wave FINAL (After ALL tasks — verification):
   - Message: `refactor(renderer): extract Renderer3DOpenGL class`
   - Files: `src/renderer_3d_opengl.h, src/renderer_3d_opengl.cpp, src/renderer.h, src/renderer.cpp, CMakeLists.txt`
 
-- [ ] 8. **重构 CubeRenderer 为门面类**
+- [x] 8. **重构 CubeRenderer 为门面类** ✅
 
   **What to do**:
   - 重写 `src/cube_renderer.h` 和 `src/cube_renderer.cpp`
@@ -853,7 +853,7 @@ Wave FINAL (After ALL tasks — verification):
   - Message: `refactor(renderer): refactor CubeRenderer as facade`
   - Files: `src/cube_renderer.h, src/cube_renderer.cpp`
 
-- [ ] 9. **更新 main.cpp 适配新架构**
+- [x] 9. **更新 main.cpp 适配新架构** ✅
 
   **What to do**:
   - 更新 `src/main.cpp` 以适配新的依赖注入模式：
