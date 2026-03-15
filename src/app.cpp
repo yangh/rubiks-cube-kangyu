@@ -108,6 +108,16 @@ int Application::run() {
         // Update animation
         this->renderer_->updateAnimation(deltaTime);
 
+        // Celebration mode: auto-rotate cube
+        if (celebrationMode_) {
+            this->renderer_->viewState_.rotationX += deltaTime * 25.0f;
+            this->renderer_->viewState_.rotationY += deltaTime * 30.0f;
+            this->renderer_->viewState_.targetRotationX = this->renderer_->viewState_.rotationX;
+            this->renderer_->viewState_.targetRotationY = this->renderer_->viewState_.rotationY;
+            if (this->renderer_->viewState_.rotationX >= 360.0f) this->renderer_->viewState_.rotationX -= 360.0f;
+            if (this->renderer_->viewState_.rotationY >= 360.0f) this->renderer_->viewState_.rotationY -= 360.0f;
+        }
+
         // Draw light blue background for 3D view
         ImVec2 bgMin = cursor;
         ImVec2 bgMax = ImVec2(cursor.x + size.x, cursor.y + size.y);
@@ -335,6 +345,16 @@ void Application::handleKeyboardShortcuts() {
     // F11: toggle fullscreen
     if (ImGui::IsKeyPressed(ImGuiKey_F11)) {
         toggleFullscreen();
+    }
+
+    // Ctrl+P: toggle celebration mode
+    if (ImGui::IsKeyPressed(ImGuiKey_P) && io.KeyCtrl) {
+        celebrationMode_ = !celebrationMode_;
+    }
+
+    // Space: exit celebration mode
+    if (celebrationMode_ && ImGui::IsKeyPressed(ImGuiKey_Space)) {
+        celebrationMode_ = false;
     }
 }
 
