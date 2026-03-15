@@ -13,12 +13,12 @@ void ColorProvider::setCustomColors(const ColorConfig& config) {
 }
 
 void ColorProvider::resetToDefaults() {
-    customFront = {0.0f, 1.0f, 0.0f};
-    customBack = {0.0f, 0.0f, 1.0f};
-    customLeft = {1.0f, 0.5f, 0.0f};
-    customRight = {1.0f, 0.0f, 0.0f};
-    customUp = {1.0f, 1.0f, 1.0f};
-    customDown = {1.0f, 1.0f, 0.0f};
+    customFront = DefaultColors::GREEN;
+    customBack = DefaultColors::BLUE;
+    customLeft = DefaultColors::ORANGE;
+    customRight = DefaultColors::RED;
+    customUp = DefaultColors::WHITE;
+    customDown = DefaultColors::YELLOW;
     useCustomColors = false;
 }
 

@@ -805,12 +805,12 @@ void Application::renderSettingsTab() {
         }
         ImGui::SameLine();
         if (ImGui::Button("Reset to Defaults", ImVec2(180, 0))) {
-            this->renderer_->colorProvider_.customFront = {0.0f, 1.0f, 0.0f};  // Green
-            this->renderer_->colorProvider_.customBack = {0.0f, 0.0f, 1.0f};   // Blue
-            this->renderer_->colorProvider_.customLeft = {1.0f, 0.5f, 0.0f};  // Orange
-            this->renderer_->colorProvider_.customRight = {1.0f, 0.0f, 0.0f}; // Red
-            this->renderer_->colorProvider_.customUp = {1.0f, 1.0f, 1.0f};    // White
-            this->renderer_->colorProvider_.customDown = {1.0f, 1.0f, 0.0f};  // Yellow
+            this->renderer_->colorProvider_.customFront = DefaultColors::GREEN;
+            this->renderer_->colorProvider_.customBack = DefaultColors::BLUE;
+            this->renderer_->colorProvider_.customLeft = DefaultColors::ORANGE;
+            this->renderer_->colorProvider_.customRight = DefaultColors::RED;
+            this->renderer_->colorProvider_.customUp = DefaultColors::WHITE;
+            this->renderer_->colorProvider_.customDown = DefaultColors::YELLOW;
             this->renderer_->colorProvider_.useCustomColors = false;
             // Remove config file to restore defaults on next startup
             std::string configPath = getConfigFilePath();

@@ -1,4 +1,5 @@
 #include "cube.h"
+#include "color_provider.h"
 #include <algorithm>
 #include <iostream>
 #include <random>
@@ -7,13 +8,13 @@
 
 std::array<float, 3> colorToRgb(Color color) {
     switch (color) {
-        case Color::WHITE:  return {1.0f, 1.0f, 1.0f};
-        case Color::YELLOW: return {1.0f, 1.0f, 0.0f};
-        case Color::RED:    return {1.0f, 0.0f, 0.0f};
-        case Color::ORANGE: return {1.0f, 0.5f, 0.0f};
-        case Color::GREEN:  return {0.0f, 1.0f, 0.0f};
-        case Color::BLUE:   return {0.0f, 0.0f, 1.0f};
-        default:            return {0.0f, 0.0f, 0.0f};
+        case Color::WHITE:  return DefaultColors::WHITE;
+        case Color::YELLOW: return DefaultColors::YELLOW;
+        case Color::RED:    return DefaultColors::RED;
+        case Color::ORANGE: return DefaultColors::ORANGE;
+        case Color::GREEN:  return DefaultColors::GREEN;
+        case Color::BLUE:   return DefaultColors::BLUE;
+        default:            return DefaultColors::BLACK;
     }
 }
 
