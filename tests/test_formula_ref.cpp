@@ -51,26 +51,55 @@ ref::Color toRefColor(Color color) {
 }
 
 // Convert our Move to ref Move
+bool isDoubleMove(Move move) {
+    switch (move) {
+        case Move::U2: case Move::D2: case Move::L2: case Move::R2:
+        case Move::F2: case Move::B2: case Move::M2: case Move::E2: case Move::S2:
+        case Move::X2: case Move::Y2: case Move::Z2:
+            return true;
+        default:
+            return false;
+    }
+}
+
 ref::Move toRefMove(Move move) {
     switch (move) {
         case Move::U:  return ref::Move::U;
         case Move::UP: return ref::Move::UP;
+        case Move::U2: return ref::Move::U;
         case Move::D:  return ref::Move::D;
         case Move::DP: return ref::Move::DP;
+        case Move::D2: return ref::Move::D;
         case Move::L:  return ref::Move::L;
         case Move::LP: return ref::Move::LP;
+        case Move::L2: return ref::Move::L;
         case Move::R:  return ref::Move::R;
         case Move::RP: return ref::Move::RP;
+        case Move::R2: return ref::Move::R;
         case Move::F:  return ref::Move::F;
         case Move::FP: return ref::Move::FP;
+        case Move::F2: return ref::Move::F;
         case Move::B:  return ref::Move::B;
         case Move::BP: return ref::Move::BP;
+        case Move::B2: return ref::Move::B;
         case Move::M:  return ref::Move::M;
         case Move::MP: return ref::Move::MP;
+        case Move::M2: return ref::Move::M;
         case Move::E:  return ref::Move::E;
         case Move::EP: return ref::Move::EP;
+        case Move::E2: return ref::Move::E;
         case Move::S:  return ref::Move::S;
         case Move::SP: return ref::Move::SP;
+        case Move::S2: return ref::Move::S;
+        case Move::X:  return ref::Move::X;
+        case Move::XP: return ref::Move::XP;
+        case Move::X2: return ref::Move::X;
+        case Move::Y:  return ref::Move::Y;
+        case Move::YP: return ref::Move::YP;
+        case Move::Y2: return ref::Move::Y;
+        case Move::Z:  return ref::Move::Z;
+        case Move::ZP: return ref::Move::ZP;
+        case Move::Z2: return ref::Move::Z;
     }
     return ref::Move::U; // Should not reach here
 }
@@ -144,7 +173,11 @@ void testFormulaVsRefCube(const std::string& formulaDir) {
             // Apply formula to both cubes
             for (Move move : item.moves) {
                 ourCube.executeMove(move);
-                refCube.executeMove(toRefMove(move));
+                ref::Move refMove = toRefMove(move);
+                refCube.executeMove(refMove);
+                if (isDoubleMove(move)) {
+                    refCube.executeMove(refMove);
+                }
             }
 
             // Test: Both cubes should have the same state
@@ -239,7 +272,11 @@ void testLoopFormulasVsRef(const std::string& formulaDir) {
                 for (int j = 0; j < numCubes; ++j) {
                     for (Move move : item.moves) {
                         ourCubes[i].executeMove(move);
-                        refCubes[i].executeMove(toRefMove(move));
+                        ref::Move refMove = toRefMove(move);
+                        refCubes[i].executeMove(refMove);
+                        if (isDoubleMove(move)) {
+                            refCubes[i].executeMove(refMove);
+                        }
                     }
                 }
             }
@@ -349,7 +386,11 @@ void testInverseMoves(const std::string& formulaDir) {
             // Apply formula to both cubes
             for (Move move : item.moves) {
                 ourCube.executeMove(move);
-                refCube.executeMove(toRefMove(move));
+                ref::Move refMove = toRefMove(move);
+                refCube.executeMove(refMove);
+                if (isDoubleMove(move)) {
+                    refCube.executeMove(refMove);
+                }
             }
 
             // Apply inverse moves in reverse order to both cubes
@@ -358,25 +399,38 @@ void testInverseMoves(const std::string& formulaDir) {
                 switch (*it) {
                     case Move::U:  inverseMove = Move::UP; break;
                     case Move::UP: inverseMove = Move::U; break;
+                    case Move::U2: inverseMove = Move::U2; break;
                     case Move::D:  inverseMove = Move::DP; break;
                     case Move::DP: inverseMove = Move::D; break;
+                    case Move::D2: inverseMove = Move::D2; break;
                     case Move::L:  inverseMove = Move::LP; break;
                     case Move::LP: inverseMove = Move::L; break;
+                    case Move::L2: inverseMove = Move::L2; break;
                     case Move::R:  inverseMove = Move::RP; break;
                     case Move::RP: inverseMove = Move::R; break;
+                    case Move::R2: inverseMove = Move::R2; break;
                     case Move::F:  inverseMove = Move::FP; break;
                     case Move::FP: inverseMove = Move::F; break;
+                    case Move::F2: inverseMove = Move::F2; break;
                     case Move::B:  inverseMove = Move::BP; break;
                     case Move::BP: inverseMove = Move::B; break;
+                    case Move::B2: inverseMove = Move::B2; break;
                     case Move::M:  inverseMove = Move::MP; break;
                     case Move::MP: inverseMove = Move::M; break;
+                    case Move::M2: inverseMove = Move::M2; break;
                     case Move::E:  inverseMove = Move::EP; break;
                     case Move::EP: inverseMove = Move::E; break;
+                    case Move::E2: inverseMove = Move::E2; break;
                     case Move::S:  inverseMove = Move::SP; break;
                     case Move::SP: inverseMove = Move::S; break;
+                    case Move::S2: inverseMove = Move::S2; break;
                 }
                 ourCube.executeMove(inverseMove);
-                refCube.executeMove(toRefMove(inverseMove));
+                ref::Move refMove = toRefMove(inverseMove);
+                refCube.executeMove(refMove);
+                if (isDoubleMove(inverseMove)) {
+                    refCube.executeMove(refMove);
+                }
             }
 
             // Test: Both cubes should return to solved state

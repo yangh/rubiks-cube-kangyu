@@ -161,18 +161,18 @@ void testFormulaInverseMoves() {
             // Test: Apply formula and then apply inverse moves in reverse
             RubiksCube testCube;
 
-            // Apply formula
-            for (Move move : item.moves) {
-                testCube.executeMove(move);
-            }
-
-            // Store the state after formula
+            // Store the solved state BEFORE applying formula
             auto frontBefore = testCube.getFront();
             auto backBefore = testCube.getBack();
             auto leftBefore = testCube.getLeft();
             auto rightBefore = testCube.getRight();
             auto upBefore = testCube.getUp();
             auto downBefore = testCube.getDown();
+
+            // Apply formula
+            for (Move move : item.moves) {
+                testCube.executeMove(move);
+            }
 
             // Apply inverse moves in reverse order
             for (auto it = item.moves.rbegin(); it != item.moves.rend(); ++it) {
@@ -196,6 +196,16 @@ void testFormulaInverseMoves() {
                     case Move::EP: inverseMove = Move::E; break;
                     case Move::S:  inverseMove = Move::SP; break;
                     case Move::SP: inverseMove = Move::S; break;
+                    // Double moves are self-inverse
+                    case Move::U2: inverseMove = Move::U2; break;
+                    case Move::D2: inverseMove = Move::D2; break;
+                    case Move::L2: inverseMove = Move::L2; break;
+                    case Move::R2: inverseMove = Move::R2; break;
+                    case Move::F2: inverseMove = Move::F2; break;
+                    case Move::B2: inverseMove = Move::B2; break;
+                    case Move::M2: inverseMove = Move::M2; break;
+                    case Move::E2: inverseMove = Move::E2; break;
+                    case Move::S2: inverseMove = Move::S2; break;
                 }
                 testCube.executeMove(inverseMove);
             }
