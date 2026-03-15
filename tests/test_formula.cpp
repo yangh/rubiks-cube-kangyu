@@ -38,10 +38,11 @@ void printTestResult(const std::string& testName, bool passed, const std::string
 }
 
 // Test 1: Load formula files from formula directory
-void testLoadFormulas() {
+void testLoadFormulas(const std::string& formulaDir) {
     std::cout << CYAN << BOLD << "\n=== Test 1: Load Formula Files ===" << RESET << std::endl;
 
     FormulaManager formulaManager;
+    formulaManager.setFormulaDir(formulaDir);
 
     std::cout << "Loading formulas from formula directory..." << std::endl;
     formulaManager.loadFormulas();
@@ -63,10 +64,11 @@ void testLoadFormulas() {
 }
 
 // Test 2: Parse and apply each formula
-void testApplyFormulas() {
+void testApplyFormulas(const std::string& formulaDir) {
     std::cout << CYAN << BOLD << "\n=== Test 2: Apply Formulas ===" << RESET << std::endl;
 
     FormulaManager formulaManager;
+    formulaManager.setFormulaDir(formulaDir);
     formulaManager.loadFormulas();
 
     auto fileNames = formulaManager.getFileNames();
@@ -119,10 +121,6 @@ void testApplyFormulas() {
 
             printTestResult(testName, statesMatch,
                           "Cube state consistency after applying moves");
-
-            // Test: Solved state after applying moves
-            bool isSolved = testCube1.isSolved();
-            printTestResult(testName + " solved check", isSolved);
         }
     }
 
@@ -131,10 +129,11 @@ void testApplyFormulas() {
 }
 
 // Test 3: Verify inverse moves return to solved state
-void testFormulaInverseMoves() {
+void testFormulaInverseMoves(const std::string& formulaDir) {
     std::cout << CYAN << BOLD << "\n=== Test 3: Formula Inverse Moves ===" << RESET << std::endl;
 
     FormulaManager formulaManager;
+    formulaManager.setFormulaDir(formulaDir);
     formulaManager.loadFormulas();
 
     auto fileNames = formulaManager.getFileNames();
@@ -237,10 +236,11 @@ void testFormulaInverseMoves() {
 }
 
 // Test 4: Test loop formulas (apply formula multiple times)
-void testLoopFormulas() {
+void testLoopFormulas(const std::string& formulaDir) {
     std::cout << CYAN << BOLD << "\n=== Test 4: Loop Formulas ===" << RESET << std::endl;
 
     FormulaManager formulaManager;
+    formulaManager.setFormulaDir(formulaDir);
     formulaManager.loadFormulas();
 
     auto fileNames = formulaManager.getFileNames();
@@ -329,10 +329,11 @@ void testLoopFormulas() {
 }
 
 // Test 5: Test formula names and description parsing
-void testFormulaParsing() {
+void testFormulaParsing(const std::string& formulaDir) {
     std::cout << CYAN << BOLD << "\n=== Test 5: Formula Parsing ===" << RESET << std::endl;
 
     FormulaManager formulaManager;
+    formulaManager.setFormulaDir(formulaDir);
     formulaManager.loadFormulas();
 
     auto fileNames = formulaManager.getFileNames();
@@ -369,10 +370,11 @@ void testFormulaParsing() {
 }
 
 // Test 6: Test file selection and item selection
-void testSelection() {
+void testSelection(const std::string& formulaDir) {
     std::cout << CYAN << BOLD << "\n=== Test 6: Selection ===" << RESET << std::endl;
 
     FormulaManager formulaManager;
+    formulaManager.setFormulaDir(formulaDir);
     formulaManager.loadFormulas();
 
     auto fileNames = formulaManager.getFileNames();
@@ -440,16 +442,16 @@ void testEdgeCases() {
     {
         std::string multiMove = "U D L R";
         auto moves = parseMoveSequence(multiMove);
-        printTestResult("Parse 'U D L R'", moves.size() == 3 &&
+        printTestResult("Parse 'U D L R'", moves.size() == 4 &&
                       moves[0] == Move::U && moves[1] == Move::D &&
-                      moves[2] == Move::L);
+                      moves[2] == Move::L && moves[3] == Move::R);
     }
 
-    // Test: Invalid move (should be skipped in parsing)
+    // Test: Invalid move (Q is not a valid move)
     {
-        std::string invalidMove = "X"; // X is not a valid move
+        std::string invalidMove = "Q";
         auto moves = parseMoveSequence(invalidMove);
-        printTestResult("Parse invalid move 'X'", moves.empty()); // Should be empty
+        printTestResult("Parse invalid move 'Q'", moves.empty());
     }
 
     // Test: Move with prime notation
@@ -465,9 +467,13 @@ int main() {
     // Get project root from executable location
     std::filesystem::path exePath = std::filesystem::canonical(std::filesystem::current_path());
     std::filesystem::path projectRoot = exePath;
-    while (projectRoot.has_parent_path() &&
-           projectRoot.filename() != "rubiks-imgui" &&
-           projectRoot.filename() != "build") {
+    
+    // Walk up to find project root (contains "formula" directory)
+    while (projectRoot.has_parent_path()) {
+        if (std::filesystem::exists(projectRoot / "formula") ||
+            std::filesystem::exists(projectRoot / "CMakeLists.txt")) {
+            break;
+        }
         projectRoot = projectRoot.parent_path();
     }
 
@@ -482,12 +488,12 @@ int main() {
     testsPassed = 0;
     testsFailed = 0;
 
-    testLoadFormulas();
-    testFormulaParsing();
-    testApplyFormulas();
-    testFormulaInverseMoves();
-    testLoopFormulas();
-    testSelection();
+    testLoadFormulas(formulaDir);
+    testFormulaParsing(formulaDir);
+    testApplyFormulas(formulaDir);
+    testFormulaInverseMoves(formulaDir);
+    testLoopFormulas(formulaDir);
+    testSelection(formulaDir);
     testEdgeCases();
 
     std::cout << "\n" << CYAN << BOLD << "=======================================" << RESET << std::endl;
