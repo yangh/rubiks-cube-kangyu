@@ -174,11 +174,10 @@ void Renderer3DOpenGL::drawCircleCanvas() {
     glDisable(GL_BLEND);
 }
 
-void Renderer3DOpenGL::drawSticker(float centerX, float centerY, float centerZ, 
-                                     float size, const float rgb[3],
-                                     float nx, float ny, float nz) {
+void Renderer3DOpenGL::drawRoundedFace(float centerX, float centerY, float centerZ,
+                                          float size, const float rgb[3],
+                                          float nx, float ny, float nz, float cornerRadius) {
     float halfSize = size / 2.0f;
-    float radius = size * 0.10f;
     int cornerSegments = 16;
     
     auto addVertex = [&](float dx, float dy) {
@@ -197,12 +196,12 @@ void Renderer3DOpenGL::drawSticker(float centerX, float centerY, float centerZ,
     glBegin(GL_TRIANGLE_FAN);
     addVertex(0.0f, 0.0f);
     
-    float inner = halfSize - radius;
+    float inner = halfSize - cornerRadius;
     auto addCorner = [&](float cx, float cy, float startAngle) {
         for (int i = 0; i <= cornerSegments; i++) {
             float angle = startAngle + (M_PI / 2.0f) * i / cornerSegments;
-            float dx = cx + radius * cosf(angle);
-            float dy = cy + radius * sinf(angle);
+            float dx = cx + cornerRadius * cosf(angle);
+            float dy = cy + cornerRadius * sinf(angle);
             addVertex(dx, dy);
         }
     };
@@ -216,62 +215,24 @@ void Renderer3DOpenGL::drawSticker(float centerX, float centerY, float centerZ,
     glDisable(GL_POLYGON_SMOOTH);
 }
 
+void Renderer3DOpenGL::drawSticker(float centerX, float centerY, float centerZ, 
+                                     float size, const float rgb[3],
+                                     float nx, float ny, float nz) {
+    float cornerRadius = size * 0.10f;
+    drawRoundedFace(centerX, centerY, centerZ, size, rgb, nx, ny, nz, cornerRadius);
+}
+
 void Renderer3DOpenGL::drawCube(int cubeIndex, bool usePreAnimationState) {
     float black[3] = {0.0f, 0.0f, 0.0f};
+    float faceSize = 1.0f;
+    float faceRadius = faceSize * 0.10f;
 
-    glBegin(GL_QUADS);
-    glNormal3f(0.0f, 0.0f, 1.0f);
-    glColor3fv(black);
-    glVertex3f(-0.5f, 0.5f, 0.5f);
-    glVertex3f(0.5f, 0.5f, 0.5f);
-    glVertex3f(0.5f, -0.5f, 0.5f);
-    glVertex3f(-0.5f, -0.5f, 0.5f);
-    glEnd();
-
-    glBegin(GL_QUADS);
-    glNormal3f(0.0f, 0.0f, -1.0f);
-    glColor3fv(black);
-    glVertex3f(0.5f, 0.5f, -0.5f);
-    glVertex3f(-0.5f, 0.5f, -0.5f);
-    glVertex3f(-0.5f, -0.5f, -0.5f);
-    glVertex3f(0.5f, -0.5f, -0.5f);
-    glEnd();
-
-    glBegin(GL_QUADS);
-    glNormal3f(0.0f, 1.0f, 0.0f);
-    glColor3fv(black);
-    glVertex3f(-0.5f, 0.5f, -0.5f);
-    glVertex3f(0.5f, 0.5f, -0.5f);
-    glVertex3f(0.5f, 0.5f, 0.5f);
-    glVertex3f(-0.5f, 0.5f, 0.5f);
-    glEnd();
-
-    glBegin(GL_QUADS);
-    glNormal3f(0.0f, -1.0f, 0.0f);
-    glColor3fv(black);
-    glVertex3f(-0.5f, -0.5f, 0.5f);
-    glVertex3f(0.5f, -0.5f, 0.5f);
-    glVertex3f(0.5f, -0.5f, -0.5f);
-    glVertex3f(-0.5f, -0.5f, -0.5f);
-    glEnd();
-
-    glBegin(GL_QUADS);
-    glNormal3f(1.0f, 0.0f, 0.0f);
-    glColor3fv(black);
-    glVertex3f(0.5f, 0.5f, 0.5f);
-    glVertex3f(0.5f, -0.5f, 0.5f);
-    glVertex3f(0.5f, -0.5f, -0.5f);
-    glVertex3f(0.5f, 0.5f, -0.5f);
-    glEnd();
-
-    glBegin(GL_QUADS);
-    glNormal3f(-1.0f, 0.0f, 0.0f);
-    glColor3fv(black);
-    glVertex3f(-0.5f, 0.5f, 0.5f);
-    glVertex3f(-0.5f, 0.5f, -0.5f);
-    glVertex3f(-0.5f, -0.5f, -0.5f);
-    glVertex3f(-0.5f, -0.5f, 0.5f);
-    glEnd();
+    drawRoundedFace(0.0f, 0.0f, 0.5f, faceSize, black, 0.0f, 0.0f, 1.0f, faceRadius);
+    drawRoundedFace(0.0f, 0.0f, -0.5f, faceSize, black, 0.0f, 0.0f, -1.0f, faceRadius);
+    drawRoundedFace(0.0f, 0.5f, 0.0f, faceSize, black, 0.0f, 1.0f, 0.0f, faceRadius);
+    drawRoundedFace(0.0f, -0.5f, 0.0f, faceSize, black, 0.0f, -1.0f, 0.0f, faceRadius);
+    drawRoundedFace(0.5f, 0.0f, 0.0f, faceSize, black, 1.0f, 0.0f, 0.0f, faceRadius);
+    drawRoundedFace(-0.5f, 0.0f, 0.0f, faceSize, black, -1.0f, 0.0f, 0.0f, faceRadius);
 
     drawStickers(cubeIndex, usePreAnimationState);
 }
