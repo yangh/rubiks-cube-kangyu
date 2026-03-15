@@ -17,6 +17,8 @@ add_executable(rubiks-cube
     src/main.cpp
     src/cube.cpp
     src/renderer.cpp
+    src/color_provider.cpp
+    src/view_state.cpp
     src/shader.cpp
     src/model.cpp
     src/formula.cpp

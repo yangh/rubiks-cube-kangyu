@@ -16,13 +16,7 @@ CubeRenderer::CubeRenderer()
 }
 
 void CubeRenderer::setCustomColors(const ColorConfig& config) {
-    customFront = config.getFrontColor();
-    customBack = config.getBackColor();
-    customLeft = config.getLeftColor();
-    customRight = config.getRightColor();
-    customUp = config.getUpColor();
-    customDown = config.getDownColor();
-    useCustomColors = !config.isUsingDefaults();
+    colorProvider_.setCustomColors(config);
 }
 
 void CubeRenderer::executeMove(Move move) {
@@ -99,14 +93,7 @@ std::vector<Move> CubeRenderer::scramble(int numMoves) {
 }
 
 void CubeRenderer::resetView() {
-    rotationX = 30.0f;
-    rotationY = -30.0f;
-    rotationZ = 0.0f;
-    targetRotationX = 30.0f;
-    targetRotationY = -30.0f;
-    targetRotationZ = 0.0f;
-    scale = 3.1f;
-    scale2D = 0.8f;
+    viewState_.reset();
 }
 
 bool CubeRenderer::isSolved() const {
@@ -176,65 +163,6 @@ void CubeRenderer::draw2D(ImDrawList* drawList, ImVec2 offset, float scale) {
             stickerSize, gap, false, Color::YELLOW);
 }
 
-void CubeRenderer::draw3D(ImDrawList* drawList, ImVec2 offset, float scale) {
-    if (!cubeModel) {
-        // Fallback to old rendering if OpenGL 3D not initialized
-        return;
-    }
-
-    // Get window dimensions from ImGui
-    ImGuiIO& io = ImGui::GetIO();
-    int windowWidth = io.DisplaySize.x;
-    int windowHeight = io.DisplaySize.y;
-
-    // Calculate the 3D view window position and size
-    ImVec2 windowPos = ImGui::GetWindowPos();
-    ImVec2 windowSize = ImGui::GetWindowSize();
-
-    // Set viewport to match the 3D view window content area
-    glViewport(windowPos.x, windowHeight - windowPos.y - windowSize.y, windowSize.x, windowSize.y);
-
-    // Clear depth buffer for this viewport
-    glClear(GL_DEPTH_BUFFER_BIT);
-
-    // Set up projection matrix (perspective)
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    float aspect = windowSize.x / windowSize.y;
-    float fov = 45.0f;
-    float near = 0.1f;
-    float far = 100.0f;
-    float top = tanf(fov * M_PI / 360.0f) * near;
-    float bottom = -top;
-    float right = top * aspect;
-    float left = -right;
-    glFrustum(left, right, bottom, top, near, far);
-
-    // Set up model-view matrix
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    // Apply camera translation (move back from the cube)
-    glTranslatef(0.0f, 0.0f, -3.0f);
-
-    // Apply rotation from user controls
-    glRotatef(rotationX, 1.0f, 0.0f, 0.0f);
-    glRotatef(rotationY, 0.0f, 1.0f, 0.0f);
-    glRotatef(rotationZ, 0.0f, 0.0f, 1.0f);
-
-    // Scale down the cube slightly
-    glScalef(0.9f, 0.9f, 0.9f);
-
-    // Set object color (white cube)
-    glColor3f(1.0f, 1.0f, 1.0f);
-
-    // Draw the cube model
-    cubeModel->Draw();
-
-    // Reset viewport to full window
-    glViewport(0, 0, windowWidth, windowHeight);
-}
-
 void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
     if (!cubeModel) {
         return;
@@ -291,9 +219,9 @@ void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
     glPopMatrix();
 
     // Apply rotation from user controls (only for the cube)
-    glRotatef(rotationX, 1.0f, 0.0f, 0.0f);
-    glRotatef(rotationY, 0.0f, 1.0f, 0.0f);
-    glRotatef(rotationZ, 0.0f, 0.0f, 1.0f);
+    glRotatef(viewState_.rotationX, 1.0f, 0.0f, 0.0f);
+    glRotatef(viewState_.rotationY, 0.0f, 1.0f, 0.0f);
+    glRotatef(viewState_.rotationZ, 0.0f, 0.0f, 1.0f);
 
     // Scale down the cube slightly
     glScalef(0.9f, 0.9f, 0.9f);
@@ -348,30 +276,6 @@ void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
     glViewport(0, 0, windowWidth, windowHeight);
 }
 
-ImVec2 CubeRenderer::project(float x, float y, float z, ImVec2 center, float scale) {
-    // Isometric-style projection
-    float angleX = rotationX * M_PI / 180.0f;
-    float angleY = rotationY * M_PI / 180.0f;
-    float angleZ = rotationZ * M_PI / 180.0f;
-
-    // Rotate around X axis
-    float y1 = y * cosf(angleX) - z * sinf(angleX);
-    float z1 = y * sinf(angleX) + z * cosf(angleX);
-
-    // Rotate around Y axis
-    float x2 = x * cosf(angleY) + z1 * sinf(angleY);
-    float z2 = -x * sinf(angleY) + z1 * cosf(angleY);
-
-    // Rotate around Z axis (in the XY plane)
-    float x3 = x2 * cosf(angleZ) - y1 * sinf(angleZ);
-    float y3 = x2 * sinf(angleZ) + y1 * cosf(angleZ);
-
-    return ImVec2(
-        center.x + x3 * scale,
-        center.y + y3 * scale
-    );
-}
-
 void CubeRenderer::drawFace(ImDrawList* drawList, const std::array<Color, 9>& face,
                           ImVec2 offset, float size, float gap, bool flipVertical, Color faceType) {
     float totalSize = size * 3.0f + gap * 2.0f;
@@ -404,7 +308,7 @@ void CubeRenderer::drawFace(ImDrawList* drawList, const std::array<Color, 9>& fa
                 index = row * 3 + col;
             }
 
-            ImU32 color = getFaceColor(face[index]);
+            ImU32 color = colorProvider_.getFaceColor(face[index]);
             float x = startX + static_cast<float>(col) * (size + gap);
             float y = startY + static_cast<float>(row) * (size + gap);
 
@@ -420,256 +324,6 @@ void CubeRenderer::drawFace(ImDrawList* drawList, const std::array<Color, 9>& fa
             drawList->AddQuad(s1, s2, s3, s4, black, 2.0f);
         }
     }
-}
-
-void CubeRenderer::draw3DFace(ImDrawList* drawList, const std::array<Color, 9>& face,
-                            const ImVec2 (&faceVerts)[4], ImVec2 center, float size) {
-    // Project vertices to screen space
-    ImVec2 projected[4];
-    for (int i = 0; i < 4; ++i) {
-        float x = 0, y = 0, z = 0;
-
-        // Map face vertices to 3D positions
-        if (face == cube_.getFront()) { z = 1.0f; x = faceVerts[i].x; y = faceVerts[i].y; }
-        else if (face == cube_.getBack()) { z = -1.0f; x = faceVerts[i].x; y = faceVerts[i].y; }
-        else if (face == cube_.getLeft()) { x = -1.0f; y = faceVerts[i].x; z = faceVerts[i].y; }
-        else if (face == cube_.getRight()) { x = 1.0f; y = faceVerts[i].x; z = faceVerts[i].y; }
-        else if (face == cube_.getUp()) { y = 1.0f; x = faceVerts[i].x; z = faceVerts[i].y; }
-        else if (face == cube_.getDown()) { y = -1.0f; x = faceVerts[i].x; z = faceVerts[i].y; }
-
-        projected[i] = project(x * 1.1f, y * 1.1f, z * 1.1f, center, size);
-    }
-
-    // Draw black background for face
-    drawList->AddQuadFilled(projected[0], projected[1], projected[2], projected[3],
-                          IM_COL32(20, 20, 20, 255));
-
-    // Draw 3x3 stickers on the face
-    // Each sticker is at a position in the face's local coordinate system
-    for (int row = 0; row < 3; ++row) {
-        for (int col = 0; col < 3; ++col) {
-            // Back face needs col mirroring to match 2D view
-            int index = (face == cube_.getBack()) ? (row * 3 + (2 - col)) : (row * 3 + col);
-            float u = (col - 1.0f) / 3.0f * 2.0f;  // -0.67, 0, 0.67
-            float v = (row - 1.0f) / 3.0f * 2.0f;  // -0.67, 0, 0.67
-
-            // Get face color
-            ImU32 stickerColor = getFaceColor(face[index]);
-
-            // Calculate sticker center position in 3D space
-            // u = x offset (left to right), v = y offset (top to bottom) in face-local space
-            float x = 0, y = 0, z = 0;
-
-            if (face == cube_.getFront()) {
-                // Front face (z=+1): col -> x, row -> -y
-                x = u; y = -v; z = 1.0f;
-            } else if (face == cube_.getBack()) {
-                // Back face (z=-1): col -> -x, row -> -y (mirrored when viewing from front)
-                x = -u; y = -v; z = -1.0f;
-            } else if (face == cube_.getLeft()) {
-                // Left face (x=-1): col -> z, row -> -y
-                // col 0 (left in 2D) should be at negative z (back), col 2 at positive z (front)
-                x = -1.0f; y = -v; z = u;
-            } else if (face == cube_.getRight()) {
-                // Right face (x=+1): col -> -z, row -> -y
-                // col 0 (left in 2D) should be at positive z (front), col 2 at negative z (back)
-                x = 1.0f; y = -v; z = -u;
-            } else if (face == cube_.getUp()) {
-                // Up face (y=+1): col -> x, row -> z
-                // row 0 (top in 2D) should be at positive z (back), row 2 at negative z (front)
-                x = u; y = 1.0f; z = v;
-            } else if (face == cube_.getDown()) {
-                // Down face (y=-1): col -> x, row -> -z
-                // row 0 (top in 2D) should be at negative z (front), row 2 at positive z (back)
-                x = u; y = -1.0f; z = -v;
-            }
-
-            // Calculate sticker corners relative to sticker center
-            float stickerSize = 0.6f;
-            float halfSize = stickerSize / 2.0f;
-
-            // Sticker corners in face-local coordinates (dx, dy offset from center)
-            // dx = horizontal offset (left/right), dy = vertical offset (up/down)
-            float cornersLocal[4][2] = {
-                {-halfSize, halfSize},  // top-left: dx negative, dy positive
-                {halfSize, halfSize},   // top-right: dx positive, dy positive
-                {halfSize, -halfSize},  // bottom-right: dx positive, dy negative
-                {-halfSize, -halfSize}  // bottom-left: dx negative, dy negative
-            };
-
-            // Project all 4 corners to screen space
-            ImVec2 corners[4];
-            for (int c = 0; c < 4; ++c) {
-                float dx = cornersLocal[c][0];  // horizontal offset
-                float dy = cornersLocal[c][1];  // vertical offset
-                float cx = 0, cy = 0, cz = 0;
-
-                // Map local offsets to 3D space based on face orientation
-                if (face == cube_.getFront()) {
-                    cx = x + dx; cy = y + dy; cz = 1.0f;
-                } else if (face == cube_.getBack()) {
-                    cx = x - dx; cy = y + dy; cz = -1.0f;
-                } else if (face == cube_.getLeft()) {
-                    cx = -1.0f; cy = y + dy; cz = z + dx;
-                } else if (face == cube_.getRight()) {
-                    cx = 1.0f; cy = y + dy; cz = z - dx;
-                } else if (face == cube_.getUp()) {
-                    cx = x + dx; cy = 1.0f; cz = z + dy;
-                } else if (face == cube_.getDown()) {
-                    cx = x + dx; cy = -1.0f; cz = z - dy;
-                }
-
-                corners[c] = project(cx * 1.1f, cy * 1.1f, cz * 1.1f, center, size);
-            }
-
-            // Draw sticker
-            drawList->AddQuadFilled(corners[0], corners[1], corners[2], corners[3], stickerColor);
-            // Draw black border around sticker to reduce aliasing
-            ImU32 black = IM_COL32(0, 0, 0, 255);
-            drawList->AddQuad(corners[0], corners[1], corners[2], corners[3], black, 1.5f);
-        }
-    }
-}
-
-void CubeRenderer::drawAnimated3DFace(ImDrawList* drawList, const std::array<Color, 9>& face,
-                                      const ImVec2 (&faceVerts)[4], ImVec2 center, float size,
-                                      Face faceIndex) {
-    // Quadratic ease-in-out: 3t^2 - 2t^3
-    float easeProgress = animationProgress_ * animationProgress_ * (3.0f - 2.0f * animationProgress_);
-    float currentAngle = rotationAngle_ * easeProgress;  // Always use positive 90 degrees, rotateSticker handles direction
-
-    // Draw black background for face
-    ImVec2 projected[4];
-    for (int i = 0; i < 4; ++i) {
-        float x = 0, y = 0, z = 0;
-
-        // Map face vertices to 3D positions
-        if (faceIndex == Face::FRONT) { z = 1.0f; x = faceVerts[i].x; y = faceVerts[i].y; }
-        else if (faceIndex == Face::BACK) { z = -1.0f; x = faceVerts[i].x; y = faceVerts[i].y; }
-        else if (faceIndex == Face::LEFT) { x = -1.0f; y = faceVerts[i].x; z = faceVerts[i].y; }
-        else if (faceIndex == Face::RIGHT) { x = 1.0f; y = faceVerts[i].x; z = faceVerts[i].y; }
-        else if (faceIndex == Face::UP) { y = 1.0f; x = faceVerts[i].x; z = faceVerts[i].y; }
-        else if (faceIndex == Face::DOWN) { y = -1.0f; x = faceVerts[i].x; z = faceVerts[i].y; }
-
-        projected[i] = project(x * 1.1f, y * 1.1f, z * 1.1f, center, size);
-    }
-
-    drawList->AddQuadFilled(projected[0], projected[1], projected[2], projected[3],
-                          IM_COL32(20, 20, 20, 255));
-
-    // Draw 3x3 stickers on the face
-    for (int row = 0; row < 3; ++row) {
-        for (int col = 0; col < 3; ++col) {
-            // Back face needs col mirroring to match 2D view
-            int stickerIndex = (faceIndex == Face::BACK) ? (row * 3 + (2 - col)) : (row * 3 + col);
-            float u = (col - 1.0f) / 3.0f * 2.0f;  // -0.67, 0, 0.67
-            float v = (row - 1.0f) / 3.0f * 2.0f;  // -0.67, 0, 0.67
-
-            // Get face color
-            ImU32 stickerColor = getFaceColor(face[stickerIndex]);
-
-            // Calculate sticker center position in 3D space
-            float x = 0, y = 0, z = 0;
-
-            if (faceIndex == Face::FRONT) { x = u; y = -v; z = 1.0f; }
-            else if (faceIndex == Face::BACK) { x = -u; y = -v; z = -1.0f; }
-            else if (faceIndex == Face::LEFT) { x = -1.0f; y = -v; z = u; }
-            else if (faceIndex == Face::RIGHT) { x = 1.0f; y = -v; z = -u; }
-            else if (faceIndex == Face::UP) { x = u; y = 1.0f; z = v; }
-            else if (faceIndex == Face::DOWN) { x = u; y = -1.0f; z = -v; }
-
-            // Calculate sticker corners relative to sticker center
-            float stickerSize = 0.6f;
-            float halfSize = stickerSize / 2.0f;
-
-            // Sticker corners in face-local coordinates (dx, dy offset from center)
-            float cornersLocal[4][2] = {
-                {-halfSize, halfSize},
-                {halfSize, halfSize},
-                {halfSize, -halfSize},
-                {-halfSize, -halfSize}
-            };
-
-            // Project all 4 corners to screen space
-            ImVec2 corners[4];
-            for (int c = 0; c < 4; ++c) {
-                float dx = cornersLocal[c][0];
-                float dy = cornersLocal[c][1];
-                float cx = 0, cy = 0, cz = 0;
-
-                // Map local offsets to 3D space based on face orientation
-                if (faceIndex == Face::FRONT) { cx = x + dx; cy = y + dy; cz = 1.0f; }
-                else if (faceIndex == Face::BACK) { cx = x - dx; cy = y + dy; cz = -1.0f; }
-                else if (faceIndex == Face::LEFT) { cx = -1.0f; cy = y + dy; cz = z + dx; }
-                else if (faceIndex == Face::RIGHT) { cx = 1.0f; cy = y + dy; cz = z - dx; }
-                else if (faceIndex == Face::UP) { cx = x + dx; cy = 1.0f; cz = z + dy; }
-                else if (faceIndex == Face::DOWN) { cx = x + dx; cy = -1.0f; cz = z - dy; }
-
-                // Apply animation rotation if this sticker is part of the rotating slice
-                if (isStickerAnimating(currentMove_, faceIndex, stickerIndex)) {
-                    std::array<float, 3> rotated = rotateSticker({cx, cy, cz}, currentMove_, currentAngle);
-                    cx = rotated[0];
-                    cy = rotated[1];
-                    cz = rotated[2];
-                }
-
-                corners[c] = project(cx * 1.1f, cy * 1.1f, cz * 1.1f, center, size);
-            }
-
-            // Draw sticker
-            drawList->AddQuadFilled(corners[0], corners[1], corners[2], corners[3], stickerColor);
-            ImU32 black = IM_COL32(0, 0, 0, 255);
-            drawList->AddQuad(corners[0], corners[1], corners[2], corners[3], black, 1.5f);
-        }
-    }
-}
-
-ImU32 CubeRenderer::getFaceColor(Color color) {
-    std::array<float, 3> rgb;
-
-    // Use custom colors if enabled, otherwise use default colors
-    if (useCustomColors) {
-        switch (color) {
-            case Color::GREEN:  rgb = customFront; break;   // Front face
-            case Color::BLUE:   rgb = customBack; break;    // Back face
-            case Color::ORANGE: rgb = customLeft; break;    // Left face
-            case Color::RED:    rgb = customRight; break;   // Right face
-            case Color::WHITE:  rgb = customUp; break;      // Up face
-            case Color::YELLOW: rgb = customDown; break;    // Down face
-            default:            rgb = colorToRgb(color); break;
-        }
-    } else {
-        rgb = colorToRgb(color);
-    }
-
-    return IM_COL32(
-        static_cast<int>(rgb[0] * 255),
-        static_cast<int>(rgb[1] * 255),
-        static_cast<int>(rgb[2] * 255),
-        255
-    );
-}
-
-// Get face color as RGB array for OpenGL rendering
-std::array<float, 3> CubeRenderer::getFaceColorRgb(Color color) {
-    std::array<float, 3> rgb;
-
-    // Use custom colors if enabled, otherwise use default colors
-    if (useCustomColors) {
-        switch (color) {
-            case Color::GREEN:  rgb = customFront; break;   // Front face
-            case Color::BLUE:   rgb = customBack; break;    // Back face
-            case Color::ORANGE: rgb = customLeft; break;    // Left face
-            case Color::RED:    rgb = customRight; break;   // Right face
-            case Color::WHITE:  rgb = customUp; break;      // Up face
-            case Color::YELLOW: rgb = customDown; break;    // Down face
-            default:            rgb = colorToRgb(color); break;
-        }
-    } else {
-        rgb = colorToRgb(color);
-    }
-
-    return rgb;
 }
 
 // Helper function to rotate a 3D point
@@ -689,104 +343,6 @@ std::array<float, 3> rotatePoint(const std::array<float, 3>& pos, float ax, floa
     float z2 = -x * sinf(ay) + z1 * cosf(ay);
 
     return {x2, y2, z2};
-}
-
-// Step 1: Draw a simple test cube with different colors for each face
-void CubeRenderer::drawTestCube(ImDrawList* drawList, ImVec2 center, float size) {
-    // Cube size in 3D space
-    float halfSize = 0.4f;  // Cube extends from -0.4 to +0.4
-
-    // Define all 6 faces with their 4 corners each
-    // Format: {{x1,y1,z1}, {x2,y2,z2}, {x3,y3,z3}, {x4,y4,z4}}, color
-    struct Face {
-        float vertices[4][3];
-        ImU32 color;
-    };
-
-    Face faces[6] = {
-        // +X face (right) - RED - x = +halfSize
-        {{{halfSize, halfSize, halfSize}, {halfSize, halfSize, -halfSize},
-          {halfSize, -halfSize, -halfSize}, {halfSize, -halfSize, halfSize}},
-         IM_COL32(255, 0, 0, 255)},
-
-        // -X face (left) - GREEN - x = -halfSize
-        {{{-halfSize, halfSize, -halfSize}, {-halfSize, halfSize, halfSize},
-          {-halfSize, -halfSize, halfSize}, {-halfSize, -halfSize, -halfSize}},
-         IM_COL32(0, 255, 0, 255)},
-
-        // +Y face (top) - BLUE - y = +halfSize
-        {{{-halfSize, halfSize, halfSize}, {halfSize, halfSize, halfSize},
-          {halfSize, halfSize, -halfSize}, {-halfSize, halfSize, -halfSize}},
-         IM_COL32(0, 100, 255, 255)},
-
-        // -Y face (bottom) - YELLOW - y = -halfSize
-        {{{-halfSize, -halfSize, -halfSize}, {halfSize, -halfSize, -halfSize},
-          {halfSize, -halfSize, halfSize}, {-halfSize, -halfSize, halfSize}},
-         IM_COL32(255, 255, 0, 255)},
-
-        // +Z face (front) - MAGENTA - z = +halfSize
-        {{{-halfSize, halfSize, halfSize}, {-halfSize, -halfSize, halfSize},
-          {halfSize, -halfSize, halfSize}, {halfSize, halfSize, halfSize}},
-         IM_COL32(255, 0, 255, 255)},
-
-        // -Z face (back) - CYAN - z = -halfSize
-        {{{halfSize, halfSize, -halfSize}, {halfSize, -halfSize, -halfSize},
-          {-halfSize, -halfSize, -halfSize}, {-halfSize, halfSize, -halfSize}},
-         IM_COL32(0, 255, 255, 255)}
-    };
-
-    // Calculate rotation angles for depth sorting
-    float angleX = rotationX * M_PI / 180.0f;
-    float angleY = rotationY * M_PI / 180.0f;
-
-    // Helper to rotate a point
-    auto rotatePoint = [](float x, float y, float z, float ax, float ay) -> std::array<float, 3> {
-        float y1 = y * cosf(ax) - z * sinf(ax);
-        float z1 = y * sinf(ax) + z * cosf(ax);
-        float x2 = x * cosf(ay) + z1 * sinf(ay);
-        float z2 = -x * sinf(ay) + z1 * cosf(ay);
-        return {x2, y1, z2};
-    };
-
-    // Helper to get depth of a face center
-    auto getFaceDepth = [&](const Face& face) -> float {
-        float cx = 0, cy = 0, cz = 0;
-        for (int v = 0; v < 4; ++v) {
-            cx += face.vertices[v][0];
-            cy += face.vertices[v][1];
-            cz += face.vertices[v][2];
-        }
-        auto rotated = rotatePoint(cx/4, cy/4, cz/4, angleX, angleY);
-        return rotated[2];  // Depth is z after rotation
-    };
-
-    // Sort faces by depth (far to near)
-    int indices[6] = {0, 1, 2, 3, 4, 5};
-    for (int i = 0; i < 6; ++i) {
-        for (int j = i + 1; j < 6; ++j) {
-            float depthI = getFaceDepth(faces[indices[i]]);
-            float depthJ = getFaceDepth(faces[indices[j]]);
-            if (depthI < depthJ) {  // Smaller z = farther
-                std::swap(indices[i], indices[j]);
-            }
-        }
-    }
-
-    // Draw faces in sorted order
-    for (int i = 0; i < 6; ++i) {
-        int idx = indices[i];
-        const Face& face = faces[idx];
-
-        // Project all 4 vertices
-        ImVec2 projected[4];
-        for (int v = 0; v < 4; ++v) {
-            projected[v] = project(face.vertices[v][0], face.vertices[v][1],
-                                   face.vertices[v][2], center, size);
-        }
-
-        // Draw the face
-        drawList->AddQuadFilled(projected[0], projected[1], projected[2], projected[3], face.color);
-    }
 }
 
 // Draw an elliptical canvas beneath the cube
@@ -856,9 +412,9 @@ void CubeRenderer::updateAnimation(float deltaTime) {
     }
 
     // Handle view rotation smoothing (always active)
-    lerpRotation(rotationX, targetRotationX, deltaTime);
-    lerpRotation(rotationY, targetRotationY, deltaTime);
-    lerpRotation(rotationZ, targetRotationZ, deltaTime);
+    viewState_.lerpRotation(viewState_.rotationX, viewState_.targetRotationX, deltaTime);
+    viewState_.lerpRotation(viewState_.rotationY, viewState_.targetRotationY, deltaTime);
+    viewState_.lerpRotation(viewState_.rotationZ, viewState_.targetRotationZ, deltaTime);
 }
 
 void CubeRenderer::startNextAnimation() {
@@ -1142,7 +698,7 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
         // Vertex order: TL(0,0), TR(0,2), BR(2,2), BL(2,0)
         // Row is inverted to match U/D move behavior
         int idx = (2 - row) * 3 + col;
-        auto rgb = getFaceColorRgb(face[idx]);
+        auto rgb = colorProvider_.getFaceColorRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
         glVertex3f(-0.5f, 0.5f, 0.5f);  // vertex 0: top-left
         glVertex3f(0.5f, 0.5f, 0.5f);   // vertex 1: top-right
@@ -1169,7 +725,7 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
         // Grid: 0 1 2 / 3 4 5 / 6 7 8 (from 2D view perspective)
         // 3D view: col 0 (left visually) = grid col 2, col 2 (right visually) = grid col 0
         int idx = (2 - row) * 3 + (2 - col);  // Mirror col for back face
-        auto rgb = getFaceColorRgb(face[idx]);
+        auto rgb = colorProvider_.getFaceColorRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
         glVertex3f(0.5f, 0.5f, -0.5f);  // vertex 0: top-right
         glVertex3f(-0.5f, 0.5f, -0.5f); // vertex 1: top-left
@@ -1192,7 +748,7 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
         const auto& face = cube_.getUp();
         // Up face grid: layer=0 is top (back), layer=2 is bottom (front)
         int idx = layer * 3 + col;
-        auto rgb = getFaceColorRgb(face[idx]);
+        auto rgb = colorProvider_.getFaceColorRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
         glVertex3f(-0.5f, 0.5f, -0.5f); // vertex 0: top-back-left
         glVertex3f(0.5f, 0.5f, -0.5f);  // vertex 1: top-back-right
@@ -1216,7 +772,7 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
         // Down face grid: layer=2 is top (front), layer=0 is bottom (back)
         // When viewed from below (y=-1), left-right is mirrored in visual space
         int idx = (2 - layer) * 3 + col;  // Mirror layer for down face to match 2D view
-        auto rgb = getFaceColorRgb(face[idx]);
+        auto rgb = colorProvider_.getFaceColorRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
         glVertex3f(-0.5f, -0.5f, 0.5f);  // vertex 0: bottom-front-left
         glVertex3f(0.5f, -0.5f, 0.5f);   // vertex 1: bottom-front-right
@@ -1240,7 +796,7 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
         // Right face grid: row=2 is top, layer=2 is front
         // Layer is inverted to match F/B move behavior
         int idx = (2 - row) * 3 + (2 - layer);
-        auto rgb = getFaceColorRgb(face[idx]);
+        auto rgb = colorProvider_.getFaceColorRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
         glVertex3f(0.5f, 0.5f, 0.5f);   // vertex 0: right-top-front
         glVertex3f(0.5f, -0.5f, 0.5f);  // vertex 1: right-bottom-front
@@ -1264,7 +820,7 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
         // Left face grid: row=2 is top, layer=0 is back
         // idx = (2 - row) * 3 + layer maps layer 0->0, 1->1, 2->2 to fix left-right mirroring
         int idx = (2 - row) * 3 + layer;
-        auto rgb = getFaceColorRgb(face[idx]);
+        auto rgb = colorProvider_.getFaceColorRgb(face[idx]);
         glColor3f(rgb[0], rgb[1], rgb[2]);
         glVertex3f(-0.5f, 0.5f, 0.5f);  // vertex 0: left-top-front
         glVertex3f(-0.5f, 0.5f, -0.5f); // vertex 1: left-top-back
@@ -1278,24 +834,6 @@ void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
         glVertex3f(-0.5f, -0.5f, -0.5f);
         glVertex3f(-0.5f, -0.5f, 0.5f);
         glEnd();
-    }
-}
-
-// Smooth interpolation for view rotation considering 360 degree wraparound
-void CubeRenderer::lerpRotation(float& current, float target, float deltaTime) {
-    float diff = target - current;
-
-    // Handle angle wraparound (e.g., going from 350° to 10° should be +20°, not -340°)
-    while (diff > 180.0f) diff -= 360.0f;
-    while (diff < -180.0f) diff += 360.0f;
-
-    // Linear interpolation with speed factor
-    float speed = viewRotationSpeed * deltaTime;
-    current += diff * speed;
-
-    // Snap to target if very close
-    if (fabsf(diff) < 0.1f) {
-        current = target;
     }
 }
 

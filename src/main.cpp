@@ -49,12 +49,12 @@ void resetStepByStepMode() {
 // Helper function to save current renderer configuration
 void saveRendererConfig(CubeRenderer& renderer) {
     ColorConfig config;
-    config.setFront(renderer.customFront);
-    config.setBack(renderer.customBack);
-    config.setLeft(renderer.customLeft);
-    config.setRight(renderer.customRight);
-    config.setUp(renderer.customUp);
-    config.setDown(renderer.customDown);
+    config.setFront(renderer.colorProvider_.customFront);
+    config.setBack(renderer.colorProvider_.customBack);
+    config.setLeft(renderer.colorProvider_.customLeft);
+    config.setRight(renderer.colorProvider_.customRight);
+    config.setUp(renderer.colorProvider_.customUp);
+    config.setDown(renderer.colorProvider_.customDown);
     config.setEnableAnimation(renderer.enableAnimation);
     config.setAnimationSpeed(renderer.animationSpeed);
     config.setUsingDefaults(false);
@@ -64,7 +64,7 @@ void saveRendererConfig(CubeRenderer& renderer) {
 // Helper function to create color picker with auto-save
 void addColorPicker(const char* id, const char* label, std::array<float, 3>& color, CubeRenderer& renderer) {
     if (ImGui::ColorEdit3(id, color.data())) {
-        renderer.useCustomColors = true;
+        renderer.colorProvider_.useCustomColors = true;
         saveRendererConfig(renderer);
     }
     ImGui::SameLine();
@@ -404,16 +404,16 @@ int main(int argc, char* argv[]) {
         if (ImGui::IsWindowHovered()) {
             // Left mouse button: rotate around X and Y axes
             if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
-                renderer.targetRotationY += io.MouseDelta.x * 0.2f;
-                renderer.targetRotationX += io.MouseDelta.y * 0.2f;
+                renderer.viewState_.targetRotationY += io.MouseDelta.x * 0.2f;
+                renderer.viewState_.targetRotationX += io.MouseDelta.y * 0.2f;
             }
             // Right mouse button: rotate around Z axis
             if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
-                renderer.targetRotationZ += io.MouseDelta.x * 0.3f;
+                renderer.viewState_.targetRotationZ += io.MouseDelta.x * 0.3f;
             }
             // Mouse wheel: also rotate around Z axis
             if (io.MouseWheel != 0.0f) {
-                renderer.targetRotationZ += io.MouseWheel * 15.0f;
+                renderer.viewState_.targetRotationZ += io.MouseWheel * 15.0f;
             }
         }
 
@@ -425,9 +425,6 @@ int main(int argc, char* argv[]) {
         ImVec2 bgMax = ImVec2(cursor.x + size.x, cursor.y + size.y);
         ImU32 lightBlue = IM_COL32(217, 235, 255, 64);  // Light blue RGB (0.85, 0.92, 1.0)
         drawList->AddRectFilled(bgMin, bgMax, lightBlue);
-
-        // Draw 3D cube
-        renderer.draw3D(drawList, center, renderer.scale);
 
         // Add dummy space
         ImGui::Dummy(size);
@@ -447,13 +444,13 @@ int main(int argc, char* argv[]) {
 
         // Handle mouse wheel for 2D view zoom
         if (ImGui::IsWindowHovered() && io.MouseWheel != 0.0f) {
-            renderer.scale2D += io.MouseWheel * 0.2f;
+            renderer.viewState_.scale2D += io.MouseWheel * 0.2f;
             // Clamp scale2D between 0.3f and 3.0f
-            renderer.scale2D = fmaxf(0.3f, fminf(3.0f, renderer.scale2D));
+            renderer.viewState_.scale2D = fmaxf(0.3f, fminf(3.0f, renderer.viewState_.scale2D));
         }
 
         // Draw 2D unfolded cube
-        renderer.draw2D(drawList, center, renderer.scale2D);
+        renderer.draw2D(drawList, center, renderer.viewState_.scale2D);
 
         ImGui::Dummy(size);
         ImGui::End();
@@ -850,16 +847,16 @@ int main(int argc, char* argv[]) {
 
                 // 2D view controls
                 ImGui::Text("2D View Controls:");
-                ImGui::SliderFloat("2D Scale", &renderer.scale2D, 0.3f, 3.0f, "%.2f");
+                ImGui::SliderFloat("2D Scale", &renderer.viewState_.scale2D, 0.3f, 3.0f, "%.2f");
 
                 ImGui::Spacing();
 
                 // 3D view controls
                 ImGui::Text("3D View Controls:");
-                ImGui::SliderFloat("Rotation X", &renderer.rotationX, -180.0f, 180.0f);
-                ImGui::SliderFloat("Rotation Y", &renderer.rotationY, -180.0f, 180.0f);
-                ImGui::SliderFloat("Rotation Z", &renderer.rotationZ, -180.0f, 180.0f);
-                ImGui::SliderFloat("3D Scale", &renderer.scale, 2.0f, 7.0f, "%.2f");
+                ImGui::SliderFloat("Rotation X", &renderer.viewState_.rotationX, -180.0f, 180.0f);
+                ImGui::SliderFloat("Rotation Y", &renderer.viewState_.rotationY, -180.0f, 180.0f);
+                ImGui::SliderFloat("Rotation Z", &renderer.viewState_.rotationZ, -180.0f, 180.0f);
+                ImGui::SliderFloat("3D Scale", &renderer.viewState_.scale3D, 2.0f, 7.0f, "%.2f");
 
                 ImGui::Spacing();
                 ImGui::Separator();
@@ -868,12 +865,12 @@ int main(int argc, char* argv[]) {
                 ImGui::Text("Custom Colors:");
 
                 // Color pickers for each face
-                addColorPicker("##FrontColor", "Front (Green):", renderer.customFront, renderer);
-                addColorPicker("##BackColor", "Back (Blue):", renderer.customBack, renderer);
-                addColorPicker("##LeftColor", "Left (Orange):", renderer.customLeft, renderer);
-                addColorPicker("##RightColor", "Right (Red):", renderer.customRight, renderer);
-                addColorPicker("##UpColor", "Up (White):", renderer.customUp, renderer);
-                addColorPicker("##DownColor", "Down (Yellow):", renderer.customDown, renderer);
+                addColorPicker("##FrontColor", "Front (Green):", renderer.colorProvider_.customFront, renderer);
+                addColorPicker("##BackColor", "Back (Blue):", renderer.colorProvider_.customBack, renderer);
+                addColorPicker("##LeftColor", "Left (Orange):", renderer.colorProvider_.customLeft, renderer);
+                addColorPicker("##RightColor", "Right (Red):", renderer.colorProvider_.customRight, renderer);
+                addColorPicker("##UpColor", "Up (White):", renderer.colorProvider_.customUp, renderer);
+                addColorPicker("##DownColor", "Down (Yellow):", renderer.colorProvider_.customDown, renderer);
 
                 ImGui::Spacing();
 
@@ -884,13 +881,13 @@ int main(int argc, char* argv[]) {
                 }
                 ImGui::SameLine();
                 if (ImGui::Button("Reset to Defaults", ImVec2(180, 0))) {
-                    renderer.customFront = {0.0f, 1.0f, 0.0f};  // Green
-                    renderer.customBack = {0.0f, 0.0f, 1.0f};   // Blue
-                    renderer.customLeft = {1.0f, 0.5f, 0.0f};  // Orange
-                    renderer.customRight = {1.0f, 0.0f, 0.0f}; // Red
-                    renderer.customUp = {1.0f, 1.0f, 1.0f};    // White
-                    renderer.customDown = {1.0f, 1.0f, 0.0f};  // Yellow
-                    renderer.useCustomColors = false;
+                    renderer.colorProvider_.customFront = {0.0f, 1.0f, 0.0f};  // Green
+                    renderer.colorProvider_.customBack = {0.0f, 0.0f, 1.0f};   // Blue
+                    renderer.colorProvider_.customLeft = {1.0f, 0.5f, 0.0f};  // Orange
+                    renderer.colorProvider_.customRight = {1.0f, 0.0f, 0.0f}; // Red
+                    renderer.colorProvider_.customUp = {1.0f, 1.0f, 1.0f};    // White
+                    renderer.colorProvider_.customDown = {1.0f, 1.0f, 0.0f};  // Yellow
+                    renderer.colorProvider_.useCustomColors = false;
                     // Remove config file to restore defaults on next startup
                     std::string configPath = getConfigFilePath();
                     if (!configPath.empty()) {
