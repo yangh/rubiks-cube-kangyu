@@ -951,3 +951,18 @@ void Application::drawDisabledButton(const char* label, ImVec2 size) {
     ImGui::PopStyleVar();
     ImGui::PopItemFlag();
 }
+
+void Application::addMoveButton(const char* label, Move move, ImVec2 size) {
+    if (ImGui::Button(label, size)) {
+        this->renderer_->executeMove(move);
+    }
+}
+
+void Application::addMoveButtonPair(const char* label, Move normalMove, Move primeMove, ImVec2 size) {
+    std::string normalLabel = std::string(label);
+    std::string primeLabel = std::string(label) + "'";
+    
+    addMoveButton(normalLabel.c_str(), normalMove, size);
+    ImGui::SameLine();
+    addMoveButton(primeLabel.c_str(), primeMove, size);
+}

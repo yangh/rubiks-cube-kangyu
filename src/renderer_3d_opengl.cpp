@@ -2,6 +2,7 @@
 #include "view_state.h"
 #include "color_provider.h"
 #include "cube_animator.h"
+#include "move_utils.h"
 #include <cmath>
 #include <iostream>
 
@@ -293,128 +294,6 @@ void Renderer3DOpenGL::drawStickers(int cubeIndex, bool usePreAnimationState) {
 }
 
 void Renderer3DOpenGL::applyRotationTransform(float angle, Move move) {
-    switch (move) {
-        case Move::U:
-            glRotatef(angle, 0.0f, -1.0f, 0.0f);
-            break;
-        case Move::U2:
-            glRotatef(angle, 0.0f, -1.0f, 0.0f);
-            break;
-        case Move::UP:
-            glRotatef(angle, 0.0f, 1.0f, 0.0f);
-            break;
-
-        case Move::D:
-            glRotatef(angle, 0.0f, 1.0f, 0.0f);
-            break;
-        case Move::D2:
-            glRotatef(angle, 0.0f, 1.0f, 0.0f);
-            break;
-        case Move::DP:
-            glRotatef(angle, 0.0f, -1.0f, 0.0f);
-            break;
-
-        case Move::L:
-            glRotatef(angle, 1.0f, 0.0f, 0.0f);
-            break;
-        case Move::L2:
-            glRotatef(angle, 1.0f, 0.0f, 0.0f);
-            break;
-        case Move::LP:
-            glRotatef(angle, -1.0f, 0.0f, 0.0f);
-            break;
-
-        case Move::R:
-            glRotatef(angle, -1.0f, 0.0f, 0.0f);
-            break;
-        case Move::R2:
-            glRotatef(angle, -1.0f, 0.0f, 0.0f);
-            break;
-        case Move::RP:
-            glRotatef(angle, 1.0f, 0.0f, 0.0f);
-            break;
-
-        case Move::F:
-            glRotatef(angle, 0.0f, 0.0f, -1.0f);
-            break;
-        case Move::F2:
-            glRotatef(angle, 0.0f, 0.0f, -1.0f);
-            break;
-        case Move::FP:
-            glRotatef(angle, 0.0f, 0.0f, 1.0f);
-            break;
-
-        case Move::B:
-            glRotatef(angle, 0.0f, 0.0f, 1.0f);
-            break;
-        case Move::B2:
-            glRotatef(angle, 0.0f, 0.0f, 1.0f);
-            break;
-        case Move::BP:
-            glRotatef(angle, 0.0f, 0.0f, -1.0f);
-            break;
-
-        case Move::M:
-            glRotatef(angle, 1.0f, 0.0f, 0.0f);
-            break;
-        case Move::M2:
-            glRotatef(angle, 1.0f, 0.0f, 0.0f);
-            break;
-        case Move::MP:
-            glRotatef(angle, -1.0f, 0.0f, 0.0f);
-            break;
-
-        case Move::E:
-            glRotatef(-angle, 0.0f, -1.0f, 0.0f);
-            break;
-        case Move::E2:
-            glRotatef(-angle, 0.0f, -1.0f, 0.0f);
-            break;
-        case Move::EP:
-            glRotatef(-angle, 0.0f, 1.0f, 0.0f);
-            break;
-
-        case Move::S:
-            glRotatef(angle, 0.0f, 0.0f, -1.0f);
-            break;
-        case Move::S2:
-            glRotatef(angle, 0.0f, 0.0f, -1.0f);
-            break;
-        case Move::SP:
-            glRotatef(angle, 0.0f, 0.0f, 1.0f);
-            break;
-
-        case Move::X:
-            glRotatef(angle, -1.0f, 0.0f, 0.0f);
-            break;
-        case Move::X2:
-            glRotatef(angle, -1.0f, 0.0f, 0.0f);
-            break;
-        case Move::XP:
-            glRotatef(angle, 1.0f, 0.0f, 0.0f);
-            break;
-
-        case Move::Y:
-            glRotatef(angle, 0.0f, -1.0f, 0.0f);
-            break;
-        case Move::Y2:
-            glRotatef(angle, 0.0f, -1.0f, 0.0f);
-            break;
-        case Move::YP:
-            glRotatef(angle, 0.0f, 1.0f, 0.0f);
-            break;
-
-        case Move::Z:
-            glRotatef(angle, 0.0f, 0.0f, -1.0f);
-            break;
-        case Move::Z2:
-            glRotatef(angle, 0.0f, 0.0f, -1.0f);
-            break;
-        case Move::ZP:
-            glRotatef(angle, 0.0f, 0.0f, 1.0f);
-            break;
-
-        default:
-            break;
-    }
+    RotationAxis axis = getRotationAxis(move);
+    glRotatef(angle, axis.x, axis.y, axis.z);
 }

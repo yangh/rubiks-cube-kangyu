@@ -1,9 +1,29 @@
 #include "renderer.h"
 #include "config.h"
+#include "move_utils.h"
 #include <cmath>
 #include <iostream>
 
 extern bool g_enableDump;
+
+static std::array<float, 3> rotateAroundAxis(const std::array<float, 3>& pos, 
+                                              const RotationAxis& axis, float angle) {
+    float rad = angle * M_PI / 180.0f;
+    float c = cosf(rad);
+    float s = sinf(rad);
+    float x = pos[0], y = pos[1], z = pos[2];
+    
+    if (axis.x != 0) {
+        float sign = axis.x > 0 ? 1.0f : -1.0f;
+        return {x, y * c - sign * z * s, sign * y * s + z * c};
+    } else if (axis.y != 0) {
+        float sign = axis.y > 0 ? 1.0f : -1.0f;
+        return {x * c + sign * z * s, y, -sign * x * s + z * c};
+    } else {
+        float sign = axis.z > 0 ? 1.0f : -1.0f;
+        return {x * c - sign * y * s, sign * x * s + y * c, z};
+    }
+}
 
 CubeRenderer::CubeRenderer(RubiksCube& cube)
     : cube_(cube), animator_()
@@ -221,88 +241,6 @@ bool CubeRenderer::isStickerAnimating(Move move, Face faceIndex, int stickerInde
 }
 
 std::array<float, 3> CubeRenderer::rotateSticker(const std::array<float, 3>& pos, Move move, float angle) const {
-    float rad = angle * M_PI / 180.0f;
-    float cosA = cosf(rad);
-    float sinA = sinf(rad);
-
-    float x = pos[0];
-    float y = pos[1];
-    float z = pos[2];
-
-    switch (move) {
-        case Move::U:
-        case Move::U2:
-            return {x * cosA - z * sinA, y, x * sinA + z * cosA};
-        case Move::UP:
-            return {x * cosA + z * sinA, y, -x * sinA + z * cosA};
-
-        case Move::D:
-        case Move::D2:
-            return {x * cosA + z * sinA, y, -x * sinA + z * cosA};
-        case Move::DP:
-            return {x * cosA - z * sinA, y, x * sinA + z * cosA};
-
-        case Move::L:
-        case Move::L2:
-            return {x, y * cosA - z * sinA, y * sinA + z * cosA};
-        case Move::LP:
-            return {x, y * cosA + z * sinA, -y * sinA + z * cosA};
-
-        case Move::R:
-        case Move::R2:
-            return {x, y * cosA + z * sinA, -y * sinA + z * cosA};
-        case Move::RP:
-            return {x, y * cosA - z * sinA, y * sinA + z * cosA};
-
-        case Move::F:
-        case Move::F2:
-            return {x * cosA + y * sinA, -x * sinA + y * cosA, z};
-        case Move::FP:
-            return {x * cosA - y * sinA, x * sinA + y * cosA, z};
-
-        case Move::B:
-        case Move::B2:
-            return {x * cosA - y * sinA, x * sinA + y * cosA, z};
-        case Move::BP:
-            return {x * cosA + y * sinA, -x * sinA + y * cosA, z};
-
-        case Move::M:
-        case Move::M2:
-            return {x, y * cosA - z * sinA, y * sinA + z * cosA};
-        case Move::MP:
-            return {x, y * cosA + z * sinA, -y * sinA + z * cosA};
-
-        case Move::E:
-        case Move::E2:
-            return {x * cosA - z * sinA, y, x * sinA + z * cosA};
-        case Move::EP:
-            return {x * cosA + z * sinA, y, -x * sinA + z * cosA};
-
-        case Move::S:
-        case Move::S2:
-            return {x * cosA + y * sinA, -x * sinA + y * cosA, z};
-        case Move::SP:
-            return {x * cosA - y * sinA, x * sinA + y * cosA, z};
-
-        case Move::X:
-        case Move::X2:
-            return {x, y * cosA + z * sinA, -y * sinA + z * cosA};
-        case Move::XP:
-            return {x, y * cosA - z * sinA, y * sinA + z * cosA};
-
-        case Move::Y:
-        case Move::Y2:
-            return {x * cosA - z * sinA, y, x * sinA + z * cosA};
-        case Move::YP:
-            return {x * cosA + z * sinA, y, -x * sinA + z * cosA};
-
-        case Move::Z:
-        case Move::Z2:
-            return {x * cosA + y * sinA, -x * sinA + y * cosA, z};
-        case Move::ZP:
-            return {x * cosA - y * sinA, x * sinA + y * cosA, z};
-
-        default:
-            return pos;
-    }
+    RotationAxis axis = getRotationAxis(move);
+    return rotateAroundAxis(pos, axis, angle);
 }

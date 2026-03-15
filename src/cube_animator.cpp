@@ -1,4 +1,5 @@
 #include "cube_animator.h"
+#include "move_utils.h"
 #include <cmath>
 #include <iostream>
 
@@ -22,9 +23,6 @@ static float applyEasing(EasingType type, float t) {
             return 1.0f - (1.0f - t) * (1.0f - t) * (1.0f - t);
 
         case EasingType::EaseOutBack: {
-            // 1.70158f for 10% overshot;
-            // 1.00000f for  5% overshot;
-            // 0.50000f for  2% overshot;
             const float c1 = 1.0f;
             const float c3 = c1 + 1.0f;
             return 1.0f + c3 * powf(t - 1.0f, 3.0f) + c1 * powf(t - 1.0f, 2.0f);
@@ -48,7 +46,7 @@ void CubeAnimator::queueMove(Move move, bool recordHistory) {
     }
     
     if (g_enableDump) {
-        std::cout << "\n=== Queued " << moveToString(move) << " ===" << std::endl;
+        std::cout << "\n=== Queued " << moveToStringFast(move) << " ===" << std::endl;
     }
 }
 
@@ -66,7 +64,7 @@ void CubeAnimator::update(float deltaTime) {
             }
             
             if (g_enableDump) {
-                std::cout << "\n=== Completed " << moveToString(currentMove_) << " ===" << std::endl;
+                std::cout << "\n=== Completed " << moveToStringFast(currentMove_) << " ===" << std::endl;
             }
             
             startNextAnimation();
@@ -84,79 +82,15 @@ void CubeAnimator::reset() {
 
 bool CubeAnimator::isCubeInAnimatingSlice(int cubeIndex) const {
     if (!isAnimating_) return false;
-    
-    int layer = cubeIndex / 9;
-    int posInLayer = cubeIndex % 9;
-    int row = posInLayer / 3;
-    int col = posInLayer % 3;
-    
-    switch (currentMove_) {
-        case Move::U:
-        case Move::UP:
-        case Move::U2:
-            return (row == 2);
-            
-        case Move::D:
-        case Move::DP:
-        case Move::D2:
-            return (row == 0);
-            
-        case Move::L:
-        case Move::LP:
-        case Move::L2:
-            return (col == 0);
-            
-        case Move::R:
-        case Move::RP:
-        case Move::R2:
-            return (col == 2);
-            
-        case Move::F:
-        case Move::FP:
-        case Move::F2:
-            return (layer == 2);
-            
-        case Move::B:
-        case Move::BP:
-        case Move::B2:
-            return (layer == 0);
-            
-        case Move::M:
-        case Move::MP:
-        case Move::M2:
-            return (col == 1);
-            
-        case Move::E:
-        case Move::EP:
-        case Move::E2:
-            return (row == 1);
-            
-        case Move::S:
-        case Move::SP:
-        case Move::S2:
-            return (layer == 1);
-            
-        case Move::X:
-        case Move::XP:
-        case Move::X2:
-        case Move::Y:
-        case Move::YP:
-        case Move::Y2:
-        case Move::Z:
-        case Move::ZP:
-        case Move::Z2:
-            return true;
-            
-        default:
-            return false;
-    }
+    return MoveLookup::isInSlice(cubeIndex, getAnimationSlice(currentMove_));
 }
 
 float CubeAnimator::getCurrentAngle() const {
     if (!isAnimating_) return 0.0f;
     
     float easeProgress = applyEasing(easingType, animationProgress_);
-    return rotationAngle_ * easeProgress;
+    float baseAngle = isDoubleMove(currentMove_) ? 180.0f : 90.0f;
+    return baseAngle * easeProgress;
 }
 
 void CubeAnimator::setMoveCompleteCallback(MoveCallback callback) {
@@ -177,7 +111,7 @@ void CubeAnimator::startNextAnimation() {
                 moveCompleteCallback_(move, recordCurrentMoveHistory_);
             }
             if (g_enableDump) {
-                std::cout << "\n=== Completed " << moveToString(move) << " ===" << std::endl;
+                std::cout << "\n=== Completed " << moveToStringFast(move) << " ===" << std::endl;
             }
         }
         isAnimating_ = false;
@@ -191,20 +125,12 @@ void CubeAnimator::startNextAnimation() {
     if (cubeGetter_) {
         preAnimationCube_ = cubeGetter_();
     }
-    rotationAngle_ = isDoubleMove(currentMove_) ? 180.0f : 90.0f;
     
     if (g_enableDump) {
-        std::cout << "\n=== Starting " << moveToString(currentMove_) << " ===" << std::endl;
+        std::cout << "\n=== Starting " << moveToStringFast(currentMove_) << " ===" << std::endl;
     }
 }
 
 bool CubeAnimator::isDoubleMove(Move move) const {
-    switch (move) {
-        case Move::U2: case Move::D2: case Move::L2: case Move::R2:
-        case Move::F2: case Move::B2: case Move::M2: case Move::E2: case Move::S2:
-        case Move::X2: case Move::Y2: case Move::Z2:
-            return true;
-        default:
-            return false;
-    }
+    return ::isDoubleMove(move);
 }

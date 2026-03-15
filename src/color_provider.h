@@ -32,15 +32,12 @@ class ColorProvider {
 public:
     ColorProvider();
     
-    // Set custom colors from config
     void setCustomColors(const ColorConfig& config);
     void resetToDefaults();
     
-    // Get colors
     ImU32 getFaceColor(Color color) const;
     std::array<float, 3> getFaceColorRgb(Color color) const;
     
-    // Public state (for UI direct access)
     std::array<float, 3> customFront = DefaultColors::GREEN;
     std::array<float, 3> customBack = DefaultColors::BLUE;
     std::array<float, 3> customLeft = DefaultColors::ORANGE;
@@ -48,6 +45,9 @@ public:
     std::array<float, 3> customUp = DefaultColors::WHITE;
     std::array<float, 3> customDown = DefaultColors::YELLOW;
     bool useCustomColors = false;
+
+private:
+    std::array<float, 3> getRgbForColor(Color color) const;
 };
 
 #endif // COLOR_PROVIDER_H

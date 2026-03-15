@@ -22,23 +22,24 @@ void ColorProvider::resetToDefaults() {
     useCustomColors = false;
 }
 
-ImU32 ColorProvider::getFaceColor(Color color) const {
-    std::array<float, 3> rgb;
-
-    if (useCustomColors) {
-        switch (color) {
-            case Color::GREEN:  rgb = customFront; break;
-            case Color::BLUE:   rgb = customBack; break;
-            case Color::ORANGE: rgb = customLeft; break;
-            case Color::RED:    rgb = customRight; break;
-            case Color::WHITE:  rgb = customUp; break;
-            case Color::YELLOW: rgb = customDown; break;
-            default:            rgb = colorToRgb(color); break;
-        }
-    } else {
-        rgb = colorToRgb(color);
+std::array<float, 3> ColorProvider::getRgbForColor(Color color) const {
+    if (!useCustomColors) {
+        return colorToRgb(color);
     }
+    
+    switch (color) {
+        case Color::GREEN:  return customFront;
+        case Color::BLUE:   return customBack;
+        case Color::ORANGE: return customLeft;
+        case Color::RED:    return customRight;
+        case Color::WHITE:  return customUp;
+        case Color::YELLOW: return customDown;
+        default:            return colorToRgb(color);
+    }
+}
 
+ImU32 ColorProvider::getFaceColor(Color color) const {
+    std::array<float, 3> rgb = getRgbForColor(color);
     return IM_COL32(
         static_cast<int>(rgb[0] * 255),
         static_cast<int>(rgb[1] * 255),
@@ -48,21 +49,5 @@ ImU32 ColorProvider::getFaceColor(Color color) const {
 }
 
 std::array<float, 3> ColorProvider::getFaceColorRgb(Color color) const {
-    std::array<float, 3> rgb;
-
-    if (useCustomColors) {
-        switch (color) {
-            case Color::GREEN:  rgb = customFront; break;
-            case Color::BLUE:   rgb = customBack; break;
-            case Color::ORANGE: rgb = customLeft; break;
-            case Color::RED:    rgb = customRight; break;
-            case Color::WHITE:  rgb = customUp; break;
-            case Color::YELLOW: rgb = customDown; break;
-            default:            rgb = colorToRgb(color); break;
-        }
-    } else {
-        rgb = colorToRgb(color);
-    }
-
-    return rgb;
+    return getRgbForColor(color);
 }
