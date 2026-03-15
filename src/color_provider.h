@@ -20,8 +20,8 @@ public:
     
     // Public state (for UI direct access)
     std::array<float, 3> customFront = {0.0f, 1.0f, 0.0f};
-    std::array<float, 3> customBack = {0.0f, 0.0f, 1.0f};
-    std::array<float, 3> customLeft = {1.0f, 0.5f, 0.0f};
+    std::array<float, 3> customBack = {0.0f, 0.4f, 1.0f};
+    std::array<float, 3> customLeft = {1.0f, 0.55f, 0.0f};
     std::array<float, 3> customRight = {1.0f, 0.0f, 0.0f};
     std::array<float, 3> customUp = {1.0f, 1.0f, 1.0f};
     std::array<float, 3> customDown = {1.0f, 1.0f, 0.0f};

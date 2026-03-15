@@ -225,7 +225,7 @@ void Renderer3DOpenGL::drawCube(int cubeIndex, bool usePreAnimationState) {
     int col = posInLayer % 3;
 
     float black[3] = {0.0f, 0.0f, 0.0f};
-    float stickerSize = 0.8f;
+    float stickerSize = 0.9f;
     float stickerOffset = 0.001f;
 
     glBegin(GL_QUADS);
