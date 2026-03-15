@@ -174,6 +174,48 @@ void Renderer3DOpenGL::drawCircleCanvas() {
     glDisable(GL_BLEND);
 }
 
+void Renderer3DOpenGL::drawSticker(float centerX, float centerY, float centerZ, 
+                                     float size, const float rgb[3],
+                                     float nx, float ny, float nz) {
+    float halfSize = size / 2.0f;
+    float radius = size * 0.10f;
+    int cornerSegments = 16;
+    
+    auto addVertex = [&](float dx, float dy) {
+        if (nz != 0) {
+            glVertex3f(centerX + dx, centerY + dy, centerZ);
+        } else if (nx != 0) {
+            glVertex3f(centerX, centerY + dy, centerZ + dx);
+        } else {
+            glVertex3f(centerX + dx, centerY, centerZ + dy);
+        }
+    };
+    
+    glColor3f(rgb[0], rgb[1], rgb[2]);
+    glEnable(GL_POLYGON_SMOOTH);
+    glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+    glBegin(GL_TRIANGLE_FAN);
+    addVertex(0.0f, 0.0f);
+    
+    float inner = halfSize - radius;
+    auto addCorner = [&](float cx, float cy, float startAngle) {
+        for (int i = 0; i <= cornerSegments; i++) {
+            float angle = startAngle + (M_PI / 2.0f) * i / cornerSegments;
+            float dx = cx + radius * cosf(angle);
+            float dy = cy + radius * sinf(angle);
+            addVertex(dx, dy);
+        }
+    };
+    
+    addCorner(inner, -inner, -M_PI / 2.0f);
+    addCorner(inner, inner, 0.0f);
+    addCorner(-inner, inner, M_PI / 2.0f);
+    addCorner(-inner, -inner, M_PI);
+    addCorner(inner, -inner, -M_PI / 2.0f);
+    glEnd();
+    glDisable(GL_POLYGON_SMOOTH);
+}
+
 void Renderer3DOpenGL::drawCube(int cubeIndex, bool usePreAnimationState) {
     const RubiksCube& cube = usePreAnimationState ? animator_->getPreAnimationCube() : *cube_;
 
@@ -183,131 +225,103 @@ void Renderer3DOpenGL::drawCube(int cubeIndex, bool usePreAnimationState) {
     int col = posInLayer % 3;
 
     float black[3] = {0.0f, 0.0f, 0.0f};
+    float stickerSize = 0.8f;
+    float stickerOffset = 0.001f;
 
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 0.0f, 1.0f);
+    glColor3fv(black);
+    glVertex3f(-0.5f, 0.5f, 0.5f);
+    glVertex3f(0.5f, 0.5f, 0.5f);
+    glVertex3f(0.5f, -0.5f, 0.5f);
+    glVertex3f(-0.5f, -0.5f, 0.5f);
+    glEnd();
+    
     if (layer == 2) {
         const auto& face = cube.getFront();
         int idx = (2 - row) * 3 + col;
         auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
-        glColor3f(rgb[0], rgb[1], rgb[2]);
-        glVertex3f(-0.5f, 0.5f, 0.5f);
-        glVertex3f(0.5f, 0.5f, 0.5f);
-        glVertex3f(0.5f, -0.5f, 0.5f);
-        glVertex3f(-0.5f, -0.5f, 0.5f);
-        glEnd();
-    } else {
-        glColor3fv(black);
-        glVertex3f(-0.5f, 0.5f, 0.5f);
-        glVertex3f(0.5f, 0.5f, 0.5f);
-        glVertex3f(0.5f, -0.5f, 0.5f);
-        glVertex3f(-0.5f, -0.5f, 0.5f);
-        glEnd();
+        drawSticker(0.0f, 0.0f, 0.5f + stickerOffset, stickerSize, rgb.data(), 0.0f, 0.0f, 1.0f);
     }
 
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 0.0f, -1.0f);
+    glColor3fv(black);
+    glVertex3f(0.5f, 0.5f, -0.5f);
+    glVertex3f(-0.5f, 0.5f, -0.5f);
+    glVertex3f(-0.5f, -0.5f, -0.5f);
+    glVertex3f(0.5f, -0.5f, -0.5f);
+    glEnd();
+    
     if (layer == 0) {
         const auto& face = cube_->getBack();
         int idx = (2 - row) * 3 + (2 - col);
         auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
-        glColor3f(rgb[0], rgb[1], rgb[2]);
-        glVertex3f(0.5f, 0.5f, -0.5f);
-        glVertex3f(-0.5f, 0.5f, -0.5f);
-        glVertex3f(-0.5f, -0.5f, -0.5f);
-        glVertex3f(0.5f, -0.5f, -0.5f);
-        glEnd();
-    } else {
-        glColor3fv(black);
-        glVertex3f(0.5f, 0.5f, -0.5f);
-        glVertex3f(-0.5f, 0.5f, -0.5f);
-        glVertex3f(-0.5f, -0.5f, -0.5f);
-        glVertex3f(0.5f, -0.5f, -0.5f);
-        glEnd();
+        drawSticker(0.0f, 0.0f, -0.5f - stickerOffset, stickerSize, rgb.data(), 0.0f, 0.0f, -1.0f);
     }
 
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 1.0f, 0.0f);
+    glColor3fv(black);
+    glVertex3f(-0.5f, 0.5f, -0.5f);
+    glVertex3f(0.5f, 0.5f, -0.5f);
+    glVertex3f(0.5f, 0.5f, 0.5f);
+    glVertex3f(-0.5f, 0.5f, 0.5f);
+    glEnd();
+    
     if (row == 2) {
         const auto& face = cube_->getUp();
         int idx = layer * 3 + col;
         auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
-        glColor3f(rgb[0], rgb[1], rgb[2]);
-        glVertex3f(-0.5f, 0.5f, -0.5f);
-        glVertex3f(0.5f, 0.5f, -0.5f);
-        glVertex3f(0.5f, 0.5f, 0.5f);
-        glVertex3f(-0.5f, 0.5f, 0.5f);
-        glEnd();
-    } else {
-        glColor3fv(black);
-        glVertex3f(-0.5f, 0.5f, -0.5f);
-        glVertex3f(0.5f, 0.5f, -0.5f);
-        glVertex3f(0.5f, 0.5f, 0.5f);
-        glVertex3f(-0.5f, 0.5f, 0.5f);
-        glEnd();
+        drawSticker(0.0f, 0.5f + stickerOffset, 0.0f, stickerSize, rgb.data(), 0.0f, 1.0f, 0.0f);
     }
 
     glBegin(GL_QUADS);
     glNormal3f(0.0f, -1.0f, 0.0f);
+    glColor3fv(black);
+    glVertex3f(-0.5f, -0.5f, 0.5f);
+    glVertex3f(0.5f, -0.5f, 0.5f);
+    glVertex3f(0.5f, -0.5f, -0.5f);
+    glVertex3f(-0.5f, -0.5f, -0.5f);
+    glEnd();
+    
     if (row == 0) {
         const auto& face = cube_->getDown();
         int idx = (2 - layer) * 3 + col;
         auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
-        glColor3f(rgb[0], rgb[1], rgb[2]);
-        glVertex3f(-0.5f, -0.5f, 0.5f);
-        glVertex3f(0.5f, -0.5f, 0.5f);
-        glVertex3f(0.5f, -0.5f, -0.5f);
-        glVertex3f(-0.5f, -0.5f, -0.5f);
-        glEnd();
-    } else {
-        glColor3fv(black);
-        glVertex3f(-0.5f, -0.5f, 0.5f);
-        glVertex3f(0.5f, -0.5f, 0.5f);
-        glVertex3f(0.5f, -0.5f, -0.5f);
-        glVertex3f(-0.5f, -0.5f, -0.5f);
-        glEnd();
+        drawSticker(0.0f, -0.5f - stickerOffset, 0.0f, stickerSize, rgb.data(), 0.0f, -1.0f, 0.0f);
     }
 
     glBegin(GL_QUADS);
     glNormal3f(1.0f, 0.0f, 0.0f);
+    glColor3fv(black);
+    glVertex3f(0.5f, 0.5f, 0.5f);
+    glVertex3f(0.5f, -0.5f, 0.5f);
+    glVertex3f(0.5f, -0.5f, -0.5f);
+    glVertex3f(0.5f, 0.5f, -0.5f);
+    glEnd();
+    
     if (col == 2) {
         const auto& face = cube_->getRight();
         int idx = (2 - row) * 3 + (2 - layer);
         auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
-        glColor3f(rgb[0], rgb[1], rgb[2]);
-        glVertex3f(0.5f, 0.5f, 0.5f);
-        glVertex3f(0.5f, -0.5f, 0.5f);
-        glVertex3f(0.5f, -0.5f, -0.5f);
-        glVertex3f(0.5f, 0.5f, -0.5f);
-        glEnd();
-    } else {
-        glColor3fv(black);
-        glVertex3f(0.5f, 0.5f, 0.5f);
-        glVertex3f(0.5f, -0.5f, 0.5f);
-        glVertex3f(0.5f, -0.5f, -0.5f);
-        glVertex3f(0.5f, 0.5f, -0.5f);
-        glEnd();
+        drawSticker(0.5f + stickerOffset, 0.0f, 0.0f, stickerSize, rgb.data(), 1.0f, 0.0f, 0.0f);
     }
 
     glBegin(GL_QUADS);
     glNormal3f(-1.0f, 0.0f, 0.0f);
+    glColor3fv(black);
+    glVertex3f(-0.5f, 0.5f, 0.5f);
+    glVertex3f(-0.5f, 0.5f, -0.5f);
+    glVertex3f(-0.5f, -0.5f, -0.5f);
+    glVertex3f(-0.5f, -0.5f, 0.5f);
+    glEnd();
+    
     if (col == 0) {
         const auto& face = cube_->getLeft();
         int idx = (2 - row) * 3 + layer;
         auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
-        glColor3f(rgb[0], rgb[1], rgb[2]);
-        glVertex3f(-0.5f, 0.5f, 0.5f);
-        glVertex3f(-0.5f, 0.5f, -0.5f);
-        glVertex3f(-0.5f, -0.5f, -0.5f);
-        glVertex3f(-0.5f, -0.5f, 0.5f);
-        glEnd();
-    } else {
-        glColor3fv(black);
-        glVertex3f(-0.5f, 0.5f, 0.5f);
-        glVertex3f(-0.5f, 0.5f, -0.5f);
-        glVertex3f(-0.5f, -0.5f, -0.5f);
-        glVertex3f(-0.5f, -0.5f, 0.5f);
-        glEnd();
+        drawSticker(-0.5f - stickerOffset, 0.0f, 0.0f, stickerSize, rgb.data(), -1.0f, 0.0f, 0.0f);
     }
 }
 
