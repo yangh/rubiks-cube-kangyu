@@ -2,16 +2,17 @@
 #define RENDERER_H
 
 #include "cube.h"
+#include "cube_animator.h"
 #include "config.h"
 #include "view_state.h"
 #include "color_provider.h"
+#include "renderer_2d.h"
+#include "renderer_3d_opengl.h"
 #include <imgui.h>
-#include <queue>
-#include "model.h"
 
 class CubeRenderer {
 public:
-    CubeRenderer();
+    explicit CubeRenderer(RubiksCube& cube);
     ~CubeRenderer() = default;
 
     // Render 2D unfolded cube net view
@@ -30,8 +31,8 @@ public:
     void undo();  // Undo the last move
     void redo();  // Redo the last undone move
     std::vector<Move> scramble(int numMoves = 20);  // Scramble the cube
-    bool isAnimating() const { return isAnimating_; }
-    float animationProgress() const { return animationProgress_; }
+    bool isAnimating() const { return animator_.isAnimating(); }
+    float animationProgress() const { return animator_.progress(); }
     void resetView();  // Reset 3D view parameters to defaults
     bool isSolved() const;
     void dump() const;  // Dump cube state to console
@@ -40,47 +41,17 @@ public:
     bool canRedo() const { return cube_.canRedo(); }
 
     ViewState viewState_;
-    float animationSpeed = 1.0f;  // Animation speed multiplier (1.0 = normal)
-    bool enableAnimation = true;  // Enable/disable animation
+    CubeAnimator animator_;
 
     ColorProvider colorProvider_;
+    Renderer2D renderer2D_;
+    Renderer3DOpenGL renderer3D_;
 
 private:
-    // OpenGL 3D rendering
-    Model* cubeModel;
-    bool initGL3D();
+    RubiksCube& cube_;
 
-    // Helper function to draw a single cube
-    void drawCube(int cubeIndex, bool usePreAnimationState = false);
-
-    // Draw a circular canvas beneath the cube
-    void drawCircleCanvas();
-
-    RubiksCube cube_;
-
-    // Animation state
-    bool isAnimating_ = false;
-    float animationProgress_ = 0.0f;  // 0.0 to 1.0
-    Move currentMove_ = Move::U;
-    RubiksCube preAnimationCube_;  // Cube state before animation
-    std::queue<Move> moveQueue_;
-    bool recordCurrentMoveHistory_ = true;  // Whether current animation should record history
-    float rotationAngle_ = 90.0f;  // Animation angle: 90° for single moves, 180° for double moves
-
-    // Draw a 2D face (unfolded cube net view)
-    // flipVertical: flip the face vertically (for Back face in unfolded view)
-    void drawFace(ImDrawList* drawList, const std::array<Color, 9>& face,
-                 ImVec2 offset, float size, float gap, bool flipVertical = false, Color faceType = Color::WHITE);
-
-    // Animation helpers
-    void startNextAnimation();
     bool isStickerAnimating(Move move, Face faceIndex, int stickerIndex) const;
     std::array<float, 3> rotateSticker(const std::array<float, 3>& pos, Move move, float angle) const;
-    bool isDoubleMove(Move move) const;
-
-    // 3D cube rotation animation helpers
-    bool isCubeAnimating(int cubeIndex) const;  // Check if a small cube is in the rotating slice
-    void applyRotationTransform(float angle, Move move);  // Apply rotation transformation to current cube
 };
 
 #endif // RENDERER_H

@@ -16,7 +16,10 @@ add_subdirectory(third_party)
 add_executable(rubiks-cube
     src/main.cpp
     src/cube.cpp
+    src/cube_animator.cpp
     src/renderer.cpp
+    src/renderer_2d.cpp
+    src/renderer_3d_opengl.cpp
     src/color_provider.cpp
     src/view_state.cpp
     src/shader.cpp

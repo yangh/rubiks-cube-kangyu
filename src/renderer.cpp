@@ -1,18 +1,27 @@
 #include "renderer.h"
 #include "config.h"
 #include <cmath>
-#include <algorithm>
 #include <iostream>
 
-// Global flag to enable/disable cube dump (defined in main.cpp)
 extern bool g_enableDump;
 
-CubeRenderer::CubeRenderer()
-    : cube_()
+CubeRenderer::CubeRenderer(RubiksCube& cube)
+    : cube_(cube), animator_()
 {
-    if (initGL3D()) {
-        std::cout << "OpenGL 3D rendering initialized successfully" << std::endl;
-    }
+    animator_.setMoveCompleteCallback([this](Move move, bool recordHistory) {
+        cube_.executeMove(move, recordHistory);
+        if (g_enableDump) {
+            cube_.dump();
+        }
+    });
+    animator_.setCubeGetter([this]() -> const RubiksCube& {
+        return cube_;
+    });
+    
+    renderer3D_.setViewState(&viewState_);
+    renderer3D_.setColorProvider(&colorProvider_);
+    renderer3D_.setAnimator(&animator_);
+    renderer3D_.setCube(&cube_);
 }
 
 void CubeRenderer::setCustomColors(const ColorConfig& config) {
@@ -24,12 +33,7 @@ void CubeRenderer::executeMove(Move move) {
 }
 
 void CubeRenderer::executeMove(Move move, bool recordHistory) {
-    moveQueue_.push(move);
-    recordCurrentMoveHistory_ = recordHistory;  // Store whether to record history for this animation
-
-    if (!isAnimating_ && moveQueue_.size() == 1) {
-        startNextAnimation();
-    }
+    animator_.queueMove(move, recordHistory);
 
     if (g_enableDump) {
         std::cout << "\n=== Queued " << moveToString(move) << " ===" << std::endl;
@@ -38,57 +42,39 @@ void CubeRenderer::executeMove(Move move, bool recordHistory) {
 
 void CubeRenderer::reset() {
     cube_.reset();
-    isAnimating_ = false;
-    animationProgress_ = 0.0f;
-    while (!moveQueue_.empty()) {
-        moveQueue_.pop();
-    }
+    animator_.reset();
 }
 
 void CubeRenderer::undo() {
     if (cube_.getMoveHistory().empty()) {
-        return; // No moves to undo
+        return;
     }
 
-    // Get the last move from history
     Move lastMove = cube_.getMoveHistory().back();
     Move inverseMove = getInverseMove(lastMove);
 
-    // Execute the inverse move with animation
     executeMove(inverseMove, false);
 
-    // Manually manage history: remove original move, add original to redo history
     cube_.popMoveHistory();
-    cube_.pushToRedoHistory(lastMove);  // Store original move, not inverse
+    cube_.pushToRedoHistory(lastMove);
 }
 
 void CubeRenderer::redo() {
     if (cube_.getRedoHistory().empty()) {
-        return; // No moves to redo
+        return;
     }
 
-    // Get the move from redo history (this is the original move to redo)
     Move moveToRedo = cube_.getRedoHistory().back();
 
-    // Execute it with animation (execute the original move, not inverse)
     executeMove(moveToRedo, false);
 
-    // Manually manage history: remove from redo, add back to move history
     cube_.popRedoHistory();
     cube_.pushToMoveHistory(moveToRedo);
 }
 
 std::vector<Move> CubeRenderer::scramble(int numMoves) {
-    // Generate scramble moves from the cube
     std::vector<Move> scrambleMoves = cube_.scramble(numMoves);
-
-    // Clear the move queue and animation state
-    isAnimating_ = false;
-    animationProgress_ = 0.0f;
-    while (!moveQueue_.empty()) {
-        moveQueue_.pop();
-    }
-
+    animator_.reset();
     return scrambleMoves;
 }
 
@@ -104,463 +90,117 @@ void CubeRenderer::dump() const {
     cube_.dump();
 }
 
-bool CubeRenderer::initGL3D() {
-    // Enable depth testing
-    glEnable(GL_DEPTH_TEST);
-
-    // Disable lighting to show colors directly
-    glDisable(GL_LIGHTING);
-    glDisable(GL_LIGHT0);
-    glDisable(GL_COLOR_MATERIAL);
-
-    // Enable smooth shading
-    glShadeModel(GL_SMOOTH);
-
-    // Load cube model
-    cubeModel = new Model("src/models/cube.obj");
-
-    if (cubeModel && !cubeModel->meshes.empty()) {
-        std::cout << "Model loaded: " << cubeModel->meshes.size() << " mesh(es), "
-                  << cubeModel->meshes[0].vertices.size() << " vertices" << std::endl;
-    } else {
-        std::cout << "ERROR: Failed to load model" << std::endl;
-    }
-
-    return (cubeModel != nullptr);
-}
-
 void CubeRenderer::draw2D(ImDrawList* drawList, ImVec2 offset, float scale) {
-    // Draw cube net (2D unfolded view)
-    float stickerSize = 30.0f * scale;
-    float gap = 3.0f * scale;
-    float faceSize = stickerSize * 3.0f + gap * 2.0f;
-
-    // Standard cross-shaped layout: Up above Front, Left beside Front
-    // Face spacing
-    float spacing = faceSize + gap;
-    offset.x -= spacing * 0.5;
-    //offset.y += spacing * 0.5;
-
-    // Draw in order: Up, Left, Front, Right, Back, Down
-    drawFace(drawList, cube_.getUp(),
-            ImVec2(offset.x, offset.y - spacing),
-            stickerSize, gap, false, Color::WHITE);
-
-    drawFace(drawList, cube_.getLeft(),
-            ImVec2(offset.x - spacing, offset.y),
-            stickerSize, gap, false, Color::ORANGE);
-    drawFace(drawList, cube_.getFront(),
-            ImVec2(offset.x, offset.y),
-            stickerSize, gap, false, Color::GREEN);
-    drawFace(drawList, cube_.getRight(),
-            ImVec2(offset.x + spacing, offset.y),
-            stickerSize, gap, false, Color::RED);
-    drawFace(drawList, cube_.getBack(),
-            ImVec2(offset.x + spacing * 2, offset.y),
-            stickerSize, gap, false, Color::BLUE);
-    drawFace(drawList, cube_.getDown(),
-            ImVec2(offset.x, offset.y + spacing),
-            stickerSize, gap, false, Color::YELLOW);
+    renderer2D_.draw(drawList, offset, scale, cube_, colorProvider_);
 }
 
 void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
-    if (!cubeModel) {
-        return;
-    }
-
-    // 3D view window position and size (must match main.cpp)
-    // Sidebar width is 40% of window width, minimum 350px (same as main.cpp)
-    float sidebarWidth = fmaxf(350.0f, windowWidth * 0.4f);
-    int viewX = 10;
-    int viewY = 10;
-    int viewWidth = windowWidth - (int)sidebarWidth - 20;
-    int viewHeight = windowHeight - 20;
-
-    // Set viewport to match the 3D view window
-    glViewport(viewX, windowHeight - viewY - viewHeight, viewWidth, viewHeight);
-
-    // Clear depth buffer for this viewport only
-    glEnable(GL_SCISSOR_TEST);
-    glScissor(viewX, windowHeight - viewY - viewHeight, viewWidth, viewHeight);
-    glClear(GL_DEPTH_BUFFER_BIT);
-    glDisable(GL_SCISSOR_TEST);
-
-    // Set up projection matrix (perspective)
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    float aspect = (float)viewWidth / viewHeight;
-    float fov = 45.0f;
-    float near = 0.1f;
-    float far = 100.0f;
-    float top = tanf(fov * M_PI / 360.0f) * near;
-    float bottom = -top;
-    float right = top * aspect;
-    float left = -right;
-    glFrustum(left, right, bottom, top, near, far);
-
-    // Set up model-view matrix
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-
-    // Apply camera translation (move back from the cube)
-    glTranslatef(0.0f, 0.0f, -3.0f);
-
-    // Disable lighting - render colors directly
-    glDisable(GL_LIGHTING);
-    glDisable(GL_LIGHT0);
-    glDisable(GL_COLOR_MATERIAL);
-
-    // Draw the circular canvas beneath the cube (steady, no rotation)
-    glPushMatrix();
-    // Reset rotation to keep circle steady, keep translation for position
-    glLoadIdentity();
-    glTranslatef(0.0f, 0.0f, -3.0f);
-    drawCircleCanvas();
-    glPopMatrix();
-
-    // Apply rotation from user controls (only for the cube)
-    glRotatef(viewState_.rotationX, 1.0f, 0.0f, 0.0f);
-    glRotatef(viewState_.rotationY, 0.0f, 1.0f, 0.0f);
-    glRotatef(viewState_.rotationZ, 0.0f, 0.0f, 1.0f);
-
-    // Scale down the cube slightly
-    glScalef(0.9f, 0.9f, 0.9f);
-
-    // Disable face culling to show all faces
-    glDisable(GL_CULL_FACE);
-
-    // Scale down the cube
-    glScalef(0.3f, 0.3f, 0.3f);
-
-    // Draw 27 cubes in a 3x3x3 cube with gaps
-    float gap = 0.03f;  // Gap between cubes
-    int cubeIndex = 0;
-
-    // Calculate animation angle for rotating cubes
-    float animAngle = 0.0f;
-    if (isAnimating_) {
-        // Quadratic ease-in-out: 3t^2 - 2t^3
-        float easeProgress = animationProgress_ * animationProgress_ * (3.0f - 2.0f * animationProgress_);
-        animAngle = rotationAngle_ * easeProgress;
-    }
-
-    for (int layer = 0; layer < 3; layer++) {
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                bool cubeShouldAnimate = isAnimating_ && isCubeAnimating(cubeIndex);
-
-                float xOffset = (col - 1.0f) * (1.0f + gap);
-                float yOffset = (row - 1.0f) * (1.0f + gap);
-                float zOffset = (layer - 1.0f) * (1.0f + gap);
-
-                glPushMatrix();
-
-                // Apply rotation transformation only to cubes in the rotating slice
-                if (cubeShouldAnimate) {
-                    applyRotationTransform(animAngle, currentMove_);
-                }
-
-                glTranslatef(xOffset, yOffset, zOffset);
-                drawCube(cubeIndex, cubeShouldAnimate);
-                glPopMatrix();
-
-                cubeIndex++;
-            }
-        }
-    }
-
-    // Disable lighting (restore to default)
-    glDisable(GL_LIGHTING);
-
-    // Reset viewport to full window
-    glViewport(0, 0, windowWidth, windowHeight);
+    renderer3D_.render(windowWidth, windowHeight);
 }
 
-void CubeRenderer::drawFace(ImDrawList* drawList, const std::array<Color, 9>& face,
-                          ImVec2 offset, float size, float gap, bool flipVertical, Color faceType) {
-    float totalSize = size * 3.0f + gap * 2.0f;
-    float startX = offset.x - totalSize / 2.0f + size / 2.0f;
-    float startY = offset.y - totalSize / 2.0f + size / 2.0f;
-
-    // Draw black background for face
-    ImVec2 p1(offset.x - totalSize / 2.0f, offset.y + totalSize / 2.0f);
-    ImVec2 p2(offset.x + totalSize / 2.0f, offset.y + totalSize / 2.0f);
-    ImVec2 p3(offset.x + totalSize / 2.0f, offset.y - totalSize / 2.0f);
-    ImVec2 p4(offset.x - totalSize / 2.0f, offset.y - totalSize / 2.0f);
-    drawList->AddQuadFilled(p1, p2, p3, p4, IM_COL32(25, 25, 25, 255));
-
-    // Draw 3x3 grid of stickers
-    for (int row = 0; row < 3; ++row) {
-        for (int col = 0; col < 3; ++col) {
-            // Map visual position to face index, with optional vertical flip
-            // Normal: row 0 -> indices 0,1,2 (top)
-            // Flipped: row 0 -> indices 6,7,8 (bottom)
-            // For Back face (viewed from behind), use correct mapping without flip
-            int index;
-            if (faceType == Color::BLUE) {
-                // Back face: use standard mapping (no flip needed)
-                // Back face is already in the correct orientation in cube data
-                index = row * 3 + col;
-            } else if (flipVertical) {
-                // Other faces with flipVertical: only flip vertically
-                index = (2 - row) * 3 + col;
-            } else {
-                index = row * 3 + col;
-            }
-
-            ImU32 color = colorProvider_.getFaceColor(face[index]);
-            float x = startX + static_cast<float>(col) * (size + gap);
-            float y = startY + static_cast<float>(row) * (size + gap);
-
-            // Draw sticker
-            ImVec2 s1(x - size / 2.0f, y + size / 2.0f);
-            ImVec2 s2(x + size / 2.0f, y + size / 2.0f);
-            ImVec2 s3(x + size / 2.0f, y - size / 2.0f);
-            ImVec2 s4(x - size / 2.0f, y - size / 2.0f);
-            drawList->AddQuadFilled(s1, s2, s3, s4, color);
-
-            // Draw black border
-            ImU32 black = IM_COL32(0, 0, 0, 255);
-            drawList->AddQuad(s1, s2, s3, s4, black, 2.0f);
-        }
-    }
-}
-
-// Helper function to rotate a 3D point
-std::array<float, 3> rotatePoint(const std::array<float, 3>& pos, float ax, float ay, float az) {
-    float x = pos[0], y = pos[1], z = pos[2];
-
-    // Rotate around Z axis
-    float x1 = x * cosf(az) - y * sinf(az);
-    float y1 = x * sinf(az) + y * cosf(az);
-
-    // Rotate around X axis
-    float y2 = y1 * cosf(ax) - z * sinf(ax);
-    float z1 = y1 * sinf(ax) + z * cosf(ax);
-
-    // Rotate around Y axis
-    float x2 = x1 * cosf(ay) + z1 * sinf(ay);
-    float z2 = -x * sinf(ay) + z1 * cosf(ay);
-
-    return {x2, y2, z2};
-}
-
-// Draw an elliptical canvas beneath the cube
-void CubeRenderer::drawCircleCanvas() {
-    // Ellipse parameters - 2x larger size
-    float radiusX = 1.34f;      // Width (X)
-    float radiusZ = 1.08f;      // Depth (Z) - perspective compressed
-    float yOffset = -1.0f;       // Position at bottom of 3D view window
-    int segments = 64;           // Number of segments for smooth ellipse
-    float r = 0.3f;              // Gray color (subtle)
-    float g = 0.35f;             // Blue-gray tint
-    float b = 0.45f;             // Light blue-gray
-    float a = 0.2f;              // More transparent
-
-    // Enable blending for transparency
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    // Draw filled ellipse (oval shape)
-    glBegin(GL_TRIANGLE_FAN);
-    glColor4f(r, g, b, a);
-    glVertex3f(0.0f, yOffset, 0.0f);  // Center point
-
-    for (int i = 0; i <= segments; i++) {
-        float angle = 2.0f * M_PI * i / segments;
-        float x = radiusX * cosf(angle);
-        float z = radiusZ * sinf(angle);
-        glVertex3f(x, yOffset, z);
-    }
-    glEnd();
-
-    // Draw ellipse outline (wireframe)
-    glLineWidth(1.5f);
-    glBegin(GL_LINE_LOOP);
-    glColor4f(r * 0.8f, g * 0.8f, b * 0.8f, a * 0.8f);  // Slightly darker outline
-    for (int i = 0; i < segments; i++) {
-        float angle = 2.0f * M_PI * i / segments;
-        float x = radiusX * cosf(angle);
-        float z = radiusZ * sinf(angle);
-        glVertex3f(x, yOffset, z);
-    }
-    glEnd();
-
-    // Disable blending
-    glDisable(GL_BLEND);
-}
-
-// Animation implementation
 void CubeRenderer::updateAnimation(float deltaTime) {
-    // Handle move animation (face rotation)
-    if (isAnimating_) {
-        const float ANIMATION_DURATION = 0.2f / animationSpeed;  // 200ms divided by speed
-        animationProgress_ += deltaTime / ANIMATION_DURATION;
+    animator_.update(deltaTime);
 
-        if (animationProgress_ >= 1.0f) {
-            animationProgress_ = 1.0f;
-            cube_.executeMove(currentMove_, recordCurrentMoveHistory_);  // Apply actual move with history control
-            isAnimating_ = false;
-
-            if (g_enableDump) {
-                std::cout << "\n=== Completed " << moveToString(currentMove_) << " ===" << std::endl;
-                cube_.dump();
-            }
-
-            startNextAnimation();  // Start next queued move
-        }
-    }
-
-    // Handle view rotation smoothing (always active)
     viewState_.lerpRotation(viewState_.rotationX, viewState_.targetRotationX, deltaTime);
     viewState_.lerpRotation(viewState_.rotationY, viewState_.targetRotationY, deltaTime);
     viewState_.lerpRotation(viewState_.rotationZ, viewState_.targetRotationZ, deltaTime);
 }
 
-void CubeRenderer::startNextAnimation() {
-    if (moveQueue_.empty()) {
-        isAnimating_ = false;
-        return;
-    }
-
-    // If animation is disabled, execute moves immediately
-    if (!enableAnimation) {
-        while (!moveQueue_.empty()) {
-            Move move = moveQueue_.front();
-            moveQueue_.pop();
-            cube_.executeMove(move, recordCurrentMoveHistory_);
-            if (g_enableDump) {
-                std::cout << "\n=== Completed " << moveToString(move) << " ===" << std::endl;
-                cube_.dump();
-            }
-        }
-        isAnimating_ = false;
-        return;
-    }
-
-    isAnimating_ = true;
-    animationProgress_ = 0.0f;
-    currentMove_ = moveQueue_.front();
-    moveQueue_.pop();
-    preAnimationCube_ = cube_;  // Save current state
-    rotationAngle_ = isDoubleMove(currentMove_) ? 180.0f : 90.0f;
-
-    if (g_enableDump) {
-        std::cout << "\n=== Starting " << moveToString(currentMove_) << " ===" << std::endl;
-    }
-}
-
-// Check if a specific sticker is part of the rotating slice for the current move
 bool CubeRenderer::isStickerAnimating(Move move, Face faceIndex, int stickerIndex) const {
-    // faceIndex: Face::FRONT, Face::BACK, Face::LEFT, Face::RIGHT, Face::UP, Face::DOWN
-    // stickerIndex: 0-8 (row*3 + col)
-
     switch (move) {
-        // U move: Up face (all 9) + Front/Left/Back/Right top row (0,1,2)
         case Move::U:
         case Move::UP:
-        case Move::U2:  // Double move uses same stickers
-            if (faceIndex == Face::UP) return true;  // Up face
-            if (stickerIndex >= 0 && stickerIndex <= 2) {  // Top row
-                return faceIndex == Face::FRONT || faceIndex == Face::LEFT || faceIndex == Face::BACK || faceIndex == Face::RIGHT;  // F, L, B, R
+        case Move::U2:
+            if (faceIndex == Face::UP) return true;
+            if (stickerIndex >= 0 && stickerIndex <= 2) {
+                return faceIndex == Face::FRONT || faceIndex == Face::LEFT || faceIndex == Face::BACK || faceIndex == Face::RIGHT;
             }
             return false;
 
-        // D move: Down face (all 9) + Front/Left/Back/Right bottom row (6,7,8)
         case Move::D:
         case Move::DP:
-        case Move::D2:  // Double move uses same stickers
-            if (faceIndex == Face::DOWN) return true;  // Down face
-            if (stickerIndex >= 6 && stickerIndex <= 8) {  // Bottom row
-                return faceIndex == Face::FRONT || faceIndex == Face::LEFT || faceIndex == Face::BACK || faceIndex == Face::RIGHT;  // F, L, B, R
+        case Move::D2:
+            if (faceIndex == Face::DOWN) return true;
+            if (stickerIndex >= 6 && stickerIndex <= 8) {
+                return faceIndex == Face::FRONT || faceIndex == Face::LEFT || faceIndex == Face::BACK || faceIndex == Face::RIGHT;
             }
             return false;
 
-        // L move: Left face (all 9) + Up/Front/Down/Back left column (0,3,6)
         case Move::L:
         case Move::LP:
-        case Move::L2:  // Double move uses same stickers
-            if (faceIndex == Face::LEFT) return true;  // Left face
-            if (stickerIndex == 0 || stickerIndex == 3 || stickerIndex == 6) {  // Left column
-                return faceIndex == Face::UP || faceIndex == Face::FRONT || faceIndex == Face::DOWN || faceIndex == Face::BACK;  // U, F, D, B
+        case Move::L2:
+            if (faceIndex == Face::LEFT) return true;
+            if (stickerIndex == 0 || stickerIndex == 3 || stickerIndex == 6) {
+                return faceIndex == Face::UP || faceIndex == Face::FRONT || faceIndex == Face::DOWN || faceIndex == Face::BACK;
             }
             return false;
 
-        // R move: Right face (all 9) + Up/Front/Down/Back right column (2,5,8)
         case Move::R:
         case Move::RP:
         case Move::R2:
-            if (faceIndex == Face::RIGHT) return true;  // Right face
-            if (stickerIndex == 2 || stickerIndex == 5 || stickerIndex == 8) {  // Right column
-                return faceIndex == Face::UP || faceIndex == Face::FRONT || faceIndex == Face::DOWN || faceIndex == Face::BACK;  // U, F, D, B
+            if (faceIndex == Face::RIGHT) return true;
+            if (stickerIndex == 2 || stickerIndex == 5 || stickerIndex == 8) {
+                return faceIndex == Face::UP || faceIndex == Face::FRONT || faceIndex == Face::DOWN || faceIndex == Face::BACK;
             }
             return false;
 
-        // F move: Front face (all 9) + Up[6,7,8] + Left[2,5,8] + Down[0,1,2] + Right[0,3,6]
         case Move::F:
         case Move::FP:
         case Move::F2:
-            if (faceIndex == Face::FRONT) return true;  // Front face
-            if (faceIndex == Face::UP && stickerIndex >= 6 && stickerIndex <= 8) return true;  // Up bottom row
-            if (faceIndex == Face::LEFT && (stickerIndex == 2 || stickerIndex == 5 || stickerIndex == 8)) return true;  // Left right col
-            if (faceIndex == Face::DOWN && stickerIndex >= 0 && stickerIndex <= 2) return true;  // Down top row
-            if (faceIndex == Face::RIGHT && (stickerIndex == 0 || stickerIndex == 3 || stickerIndex == 6)) return true;  // Right left col
+            if (faceIndex == Face::FRONT) return true;
+            if (faceIndex == Face::UP && stickerIndex >= 6 && stickerIndex <= 8) return true;
+            if (faceIndex == Face::LEFT && (stickerIndex == 2 || stickerIndex == 5 || stickerIndex == 8)) return true;
+            if (faceIndex == Face::DOWN && stickerIndex >= 0 && stickerIndex <= 2) return true;
+            if (faceIndex == Face::RIGHT && (stickerIndex == 0 || stickerIndex == 3 || stickerIndex == 6)) return true;
             return false;
 
-        // B move: Back face (all 9) + Up[0,1,2] + Left[0,3,6] + Down[6,7,8] + Right[2,5,8]
         case Move::B:
         case Move::BP:
         case Move::B2:
-            if (faceIndex == Face::BACK) return true;  // Back face
-            if (faceIndex == Face::UP && stickerIndex >= 0 && stickerIndex <= 2) return true;  // Up top row
-            if (faceIndex == Face::LEFT && (stickerIndex == 0 || stickerIndex == 3 || stickerIndex == 6)) return true;  // Left left col
-            if (faceIndex == Face::DOWN && stickerIndex >= 6 && stickerIndex <= 8) return true;  // Down bottom row
-            if (faceIndex == Face::RIGHT && (stickerIndex == 2 || stickerIndex == 5 || stickerIndex == 8)) return true;  // Right right col
+            if (faceIndex == Face::BACK) return true;
+            if (faceIndex == Face::UP && stickerIndex >= 0 && stickerIndex <= 2) return true;
+            if (faceIndex == Face::LEFT && (stickerIndex == 0 || stickerIndex == 3 || stickerIndex == 6)) return true;
+            if (faceIndex == Face::DOWN && stickerIndex >= 6 && stickerIndex <= 8) return true;
+            if (faceIndex == Face::RIGHT && (stickerIndex == 2 || stickerIndex == 5 || stickerIndex == 8)) return true;
             return false;
 
-        // M move: Middle slice - Up[1,4,7] + Down[1,4,7] + Front[1,4,7] + Back[1,4,7]
         case Move::M:
         case Move::MP:
         case Move::M2:
             if (stickerIndex == 1 || stickerIndex == 4 || stickerIndex == 7) {
-                return faceIndex == Face::UP || faceIndex == Face::DOWN || faceIndex == Face::FRONT || faceIndex == Face::BACK;  // U, D, F, B
+                return faceIndex == Face::UP || faceIndex == Face::DOWN || faceIndex == Face::FRONT || faceIndex == Face::BACK;
             }
             return false;
 
-        // E move: Equator slice - Front[3,4,5] + Back[3,4,5] + Left[3,4,5] + Right[3,4,5]
         case Move::E:
         case Move::EP:
         case Move::E2:
             if (stickerIndex >= 3 && stickerIndex <= 5) {
-                return faceIndex == Face::FRONT || faceIndex == Face::BACK || faceIndex == Face::LEFT || faceIndex == Face::RIGHT;  // F, B, L, R
+                return faceIndex == Face::FRONT || faceIndex == Face::BACK || faceIndex == Face::LEFT || faceIndex == Face::RIGHT;
             }
             return false;
 
-        // S move: Standing slice - Up[3,4,5] + Down[3,4,5] + Left[1,4,7] + Right[1,4,7]
         case Move::S:
         case Move::SP:
         case Move::S2:
-            if (faceIndex == Face::UP || faceIndex == Face::DOWN) {  // U or D
-                return stickerIndex >= 3 && stickerIndex <= 5;  // Middle row
+            if (faceIndex == Face::UP || faceIndex == Face::DOWN) {
+                return stickerIndex >= 3 && stickerIndex <= 5;
             }
-            if (faceIndex == Face::LEFT || faceIndex == Face::RIGHT) {  // L or R
-                return stickerIndex == 1 || stickerIndex == 4 || stickerIndex == 7;  // Middle column
+            if (faceIndex == Face::LEFT || faceIndex == Face::RIGHT) {
+                return stickerIndex == 1 || stickerIndex == 4 || stickerIndex == 7;
             }
             return false;
 
-        // X rotation: Whole cube around X-axis - ALL stickers animate
         case Move::X:
         case Move::XP:
         case Move::X2:
             return true;
 
-        // Y rotation: Whole cube around Y-axis - ALL stickers animate
         case Move::Y:
         case Move::YP:
         case Move::Y2:
             return true;
 
-        // Z rotation: Whole cube around Z-axis - ALL stickers animate
         case Move::Z:
         case Move::ZP:
         case Move::Z2:
@@ -571,9 +211,7 @@ bool CubeRenderer::isStickerAnimating(Move move, Face faceIndex, int stickerInde
     }
 }
 
-// Apply rotation transformation to a 3D position based on the current move
 std::array<float, 3> CubeRenderer::rotateSticker(const std::array<float, 3>& pos, Move move, float angle) const {
-    // Convert angle to radians
     float rad = angle * M_PI / 180.0f;
     float cosA = cosf(rad);
     float sinA = sinf(rad);
@@ -583,84 +221,72 @@ std::array<float, 3> CubeRenderer::rotateSticker(const std::array<float, 3>& pos
     float z = pos[2];
 
     switch (move) {
-        // U moves rotate around Y axis (looking down)
         case Move::U:
         case Move::U2:
             return {x * cosA - z * sinA, y, x * sinA + z * cosA};
         case Move::UP:
             return {x * cosA + z * sinA, y, -x * sinA + z * cosA};
 
-        // D moves rotate around Y axis (looking up - opposite direction of U)
         case Move::D:
         case Move::D2:
             return {x * cosA + z * sinA, y, -x * sinA + z * cosA};
         case Move::DP:
             return {x * cosA - z * sinA, y, x * sinA + z * cosA};
 
-        // L moves rotate around X axis (looking from left)
         case Move::L:
         case Move::L2:
             return {x, y * cosA - z * sinA, y * sinA + z * cosA};
         case Move::LP:
             return {x, y * cosA + z * sinA, -y * sinA + z * cosA};
 
-        // R moves rotate around X axis (looking from right - opposite direction of L)
         case Move::R:
         case Move::R2:
             return {x, y * cosA + z * sinA, -y * sinA + z * cosA};
         case Move::RP:
             return {x, y * cosA - z * sinA, y * sinA + z * cosA};
 
-        // F moves rotate around Z axis (looking from front)
         case Move::F:
         case Move::F2:
             return {x * cosA + y * sinA, -x * sinA + y * cosA, z};
         case Move::FP:
             return {x * cosA - y * sinA, x * sinA + y * cosA, z};
 
-        // B moves rotate around Z axis (looking from back - opposite direction of F)
         case Move::B:
         case Move::B2:
             return {x * cosA - y * sinA, x * sinA + y * cosA, z};
         case Move::BP:
             return {x * cosA + y * sinA, -x * sinA + y * cosA, z};
 
-        // M moves rotate around X axis (same as L)
         case Move::M:
         case Move::M2:
             return {x, y * cosA - z * sinA, y * sinA + z * cosA};
         case Move::MP:
             return {x, y * cosA + z * sinA, -y * sinA + z * cosA};
 
-        // E moves rotate around Y axis (same as U, looking down)
         case Move::E:
         case Move::E2:
             return {x * cosA - z * sinA, y, x * sinA + z * cosA};
         case Move::EP:
             return {x * cosA + z * sinA, y, -x * sinA + z * cosA};
 
-        // S moves rotate around Z axis (same as F)
         case Move::S:
         case Move::S2:
             return {x * cosA + y * sinA, -x * sinA + y * cosA, z};
         case Move::SP:
             return {x * cosA - y * sinA, x * sinA + y * cosA, z};
 
-        // X moves rotate around X axis (same as R, - entire cube rotation)
         case Move::X:
         case Move::X2:
             return {x, y * cosA + z * sinA, -y * sinA + z * cosA};
         case Move::XP:
             return {x, y * cosA - z * sinA, y * sinA + z * cosA};
 
-        // Y moves rotate around Y axis (same as U, - entire cube rotation)
         case Move::Y:
         case Move::Y2:
             return {x * cosA - z * sinA, y, x * sinA + z * cosA};
         case Move::YP:
             return {x * cosA + z * sinA, y, -x * sinA + z * cosA};
 
-        // Z moves rotate around Z axis (same as F, - entire cube rotation)
         case Move::Z:
         case Move::Z2:
             return {x * cosA + y * sinA, -x * sinA + y * cosA, z};
@@ -669,410 +295,5 @@ std::array<float, 3> CubeRenderer::rotateSticker(const std::array<float, 3>& pos
 
         default:
             return pos;
-    }
-}
-// Helper function to draw a single cube with 6 different face colors
-void CubeRenderer::drawCube(int cubeIndex, bool usePreAnimationState) {
-    // Select which cube state to use
-    const RubiksCube& cube = usePreAnimationState ? preAnimationCube_ : cube_;
-
-    // Calculate position in 3x3x3 grid
-    int layer = cubeIndex / 9;   // 0=front/middle, 1=middle, 2=back
-    int posInLayer = cubeIndex % 9;
-    int row = posInLayer / 3;   // 0=bottom, 1=middle, 2=top
-    int col = posInLayer % 3;   // 0=left, 1=middle, 2=right
-
-    // Coordinate mapping:
-    // layer 0 -> z=-1 (Back), layer 2 -> z=+1 (Front)
-    // row 0 -> y=-1 (Down), row 2 -> y=+1 (Up)
-    // col 0 -> x=-1 (Left), col 2 -> x=+1 (Right)
-
-    // Draw all faces as black by default
-    float black[3] = {0.0f, 0.0f, 0.0f};
-
-    // Front face (z=+1) - only for layer 2
-    glBegin(GL_QUADS);
-    glNormal3f(0.0f, 0.0f, 1.0f);
-    if (layer == 2) {
-        const auto& face = cube.getFront();
-        // Vertex order: TL(0,0), TR(0,2), BR(2,2), BL(2,0)
-        // Row is inverted to match U/D move behavior
-        int idx = (2 - row) * 3 + col;
-        auto rgb = colorProvider_.getFaceColorRgb(face[idx]);
-        glColor3f(rgb[0], rgb[1], rgb[2]);
-        glVertex3f(-0.5f, 0.5f, 0.5f);  // vertex 0: top-left
-        glVertex3f(0.5f, 0.5f, 0.5f);   // vertex 1: top-right
-        glVertex3f(0.5f, -0.5f, 0.5f);  // vertex 2: bottom-right
-        glVertex3f(-0.5f, -0.5f, 0.5f); // vertex 3: bottom-left
-        glEnd();
-    } else {
-        glColor3fv(black);
-        glVertex3f(-0.5f, 0.5f, 0.5f);
-        glVertex3f(0.5f, 0.5f, 0.5f);
-        glVertex3f(0.5f, -0.5f, 0.5f);
-        glVertex3f(-0.5f, -0.5f, 0.5f);
-        glEnd();
-    }
-
-    // Back face (z=-1) - only for layer 0
-    glBegin(GL_QUADS);
-    glNormal3f(0.0f, 0.0f, -1.0f);
-    if (layer == 0) {
-        const auto& face = cube_.getBack();
-        // Vertex order: TR(0,2), TL(0,0), BL(2,0), BR(2,2)
-        // Back face in 3D is viewed from behind, so left-right is reversed
-        // Row is inverted to match U/D move behavior
-        // Grid: 0 1 2 / 3 4 5 / 6 7 8 (from 2D view perspective)
-        // 3D view: col 0 (left visually) = grid col 2, col 2 (right visually) = grid col 0
-        int idx = (2 - row) * 3 + (2 - col);  // Mirror col for back face
-        auto rgb = colorProvider_.getFaceColorRgb(face[idx]);
-        glColor3f(rgb[0], rgb[1], rgb[2]);
-        glVertex3f(0.5f, 0.5f, -0.5f);  // vertex 0: top-right
-        glVertex3f(-0.5f, 0.5f, -0.5f); // vertex 1: top-left
-        glVertex3f(-0.5f, -0.5f, -0.5f); // vertex 2: bottom-left
-        glVertex3f(0.5f, -0.5f, -0.5f);  // vertex 3: bottom-right
-        glEnd();
-    } else {
-        glColor3fv(black);
-        glVertex3f(0.5f, 0.5f, -0.5f);
-        glVertex3f(-0.5f, 0.5f, -0.5f);
-        glVertex3f(-0.5f, -0.5f, -0.5f);
-        glVertex3f(0.5f, -0.5f, -0.5f);
-        glEnd();
-    }
-
-    // Top face (y=+1) - only for row 2
-    glBegin(GL_QUADS);
-    glNormal3f(0.0f, 1.0f, 0.0f);
-    if (row == 2) {
-        const auto& face = cube_.getUp();
-        // Up face grid: layer=0 is top (back), layer=2 is bottom (front)
-        int idx = layer * 3 + col;
-        auto rgb = colorProvider_.getFaceColorRgb(face[idx]);
-        glColor3f(rgb[0], rgb[1], rgb[2]);
-        glVertex3f(-0.5f, 0.5f, -0.5f); // vertex 0: top-back-left
-        glVertex3f(0.5f, 0.5f, -0.5f);  // vertex 1: top-back-right
-        glVertex3f(0.5f, 0.5f, 0.5f);   // vertex 2: top-front-right
-        glVertex3f(-0.5f, 0.5f, 0.5f);  // vertex 3: top-front-left
-        glEnd();
-    } else {
-        glColor3fv(black);
-        glVertex3f(-0.5f, 0.5f, -0.5f);
-        glVertex3f(0.5f, 0.5f, -0.5f);
-        glVertex3f(0.5f, 0.5f, 0.5f);
-        glVertex3f(-0.5f, 0.5f, 0.5f);
-        glEnd();
-    }
-
-    // Bottom face (y=-1) - only for row 0
-    glBegin(GL_QUADS);
-    glNormal3f(0.0f, -1.0f, 0.0f);
-    if (row == 0) {
-        const auto& face = cube_.getDown();
-        // Down face grid: layer=2 is top (front), layer=0 is bottom (back)
-        // When viewed from below (y=-1), left-right is mirrored in visual space
-        int idx = (2 - layer) * 3 + col;  // Mirror layer for down face to match 2D view
-        auto rgb = colorProvider_.getFaceColorRgb(face[idx]);
-        glColor3f(rgb[0], rgb[1], rgb[2]);
-        glVertex3f(-0.5f, -0.5f, 0.5f);  // vertex 0: bottom-front-left
-        glVertex3f(0.5f, -0.5f, 0.5f);   // vertex 1: bottom-front-right
-        glVertex3f(0.5f, -0.5f, -0.5f);  // vertex 2: bottom-back-right
-        glVertex3f(-0.5f, -0.5f, -0.5f); // vertex 3: bottom-back-left
-        glEnd();
-    } else {
-        glColor3fv(black);
-        glVertex3f(-0.5f, -0.5f, 0.5f);
-        glVertex3f(0.5f, -0.5f, 0.5f);
-        glVertex3f(0.5f, -0.5f, -0.5f);
-        glVertex3f(-0.5f, -0.5f, -0.5f);
-        glEnd();
-    }
-
-    // Right face (x=+1) - only for col 2
-    glBegin(GL_QUADS);
-    glNormal3f(1.0f, 0.0f, 0.0f);
-    if (col == 2) {
-        const auto& face = cube_.getRight();
-        // Right face grid: row=2 is top, layer=2 is front
-        // Layer is inverted to match F/B move behavior
-        int idx = (2 - row) * 3 + (2 - layer);
-        auto rgb = colorProvider_.getFaceColorRgb(face[idx]);
-        glColor3f(rgb[0], rgb[1], rgb[2]);
-        glVertex3f(0.5f, 0.5f, 0.5f);   // vertex 0: right-top-front
-        glVertex3f(0.5f, -0.5f, 0.5f);  // vertex 1: right-bottom-front
-        glVertex3f(0.5f, -0.5f, -0.5f); // vertex 2: right-bottom-back
-        glVertex3f(0.5f, 0.5f, -0.5f);  // vertex 3: right-top-back
-        glEnd();
-    } else {
-        glColor3fv(black);
-        glVertex3f(0.5f, 0.5f, 0.5f);
-        glVertex3f(0.5f, -0.5f, 0.5f);
-        glVertex3f(0.5f, -0.5f, -0.5f);
-        glVertex3f(0.5f, 0.5f, -0.5f);
-        glEnd();
-    }
-
-    // Left face (x=-1) - only for col 0
-    glBegin(GL_QUADS);
-    glNormal3f(-1.0f, 0.0f, 0.0f);
-    if (col == 0) {
-        const auto& face = cube_.getLeft();
-        // Left face grid: row=2 is top, layer=0 is back
-        // idx = (2 - row) * 3 + layer maps layer 0->0, 1->1, 2->2 to fix left-right mirroring
-        int idx = (2 - row) * 3 + layer;
-        auto rgb = colorProvider_.getFaceColorRgb(face[idx]);
-        glColor3f(rgb[0], rgb[1], rgb[2]);
-        glVertex3f(-0.5f, 0.5f, 0.5f);  // vertex 0: left-top-front
-        glVertex3f(-0.5f, 0.5f, -0.5f); // vertex 1: left-top-back
-        glVertex3f(-0.5f, -0.5f, -0.5f); // vertex 2: left-bottom-back
-        glVertex3f(-0.5f, -0.5f, 0.5f);  // vertex 3: left-bottom-front
-        glEnd();
-    } else {
-        glColor3fv(black);
-        glVertex3f(-0.5f, 0.5f, 0.5f);
-        glVertex3f(-0.5f, 0.5f, -0.5f);
-        glVertex3f(-0.5f, -0.5f, -0.5f);
-        glVertex3f(-0.5f, -0.5f, 0.5f);
-        glEnd();
-    }
-}
-
-bool CubeRenderer::isDoubleMove(Move move) const {
-    switch (move) {
-        case Move::U2: case Move::D2: case Move::L2: case Move::R2:
-        case Move::F2: case Move::B2: case Move::M2: case Move::E2: case Move::S2:
-        case Move::X2: case Move::Y2: case Move::Z2:
-            return true;
-        default:
-            return false;
-    }
-}
-
-// Check if a small cube is in the rotating slice for current move
-bool CubeRenderer::isCubeAnimating(int cubeIndex) const {
-    if (!isAnimating_) return false;
-
-    // Calculate position in 3x3x3 grid
-    // Note: In 3D model: layer 0=Back, 1=Middle, 2=Front
-    int layer = cubeIndex / 9;
-    int posInLayer = cubeIndex % 9;
-    int row = posInLayer / 3;   // 0=bottom, 1=middle, 2=top
-    int col = posInLayer % 3;   // 0=left, 1=middle, 2=right
-
-    switch (currentMove_) {
-        // U move: All cubes at row 2 (top layer)
-        case Move::U:
-        case Move::UP:
-        case Move::U2:
-            return (row == 2);
-
-        // D move: All cubes at row 0 (bottom layer)
-        case Move::D:
-        case Move::DP:
-        case Move::D2:
-            return (row == 0);
-
-        // L move: All cubes at col 0 (left slice)
-        case Move::L:
-        case Move::LP:
-        case Move::L2:
-            return (col == 0);
-
-        // R move: All cubes at col 2 (right slice)
-        case Move::R:
-        case Move::RP:
-        case Move::R2:
-            return (col == 2);
-
-        // F move: Front face (layer 2) only
-        case Move::F:
-        case Move::FP:
-        case Move::F2:
-            return (layer == 2);
-
-        // B move: Back face (layer 0) only
-        case Move::B:
-        case Move::BP:
-        case Move::B2:
-            return (layer == 0);
-
-        // M move: middle column (col 1, between L and R)
-        case Move::M:
-        case Move::MP:
-        case Move::M2:
-            return (col == 1);
-
-        // E move: middle row (row 1)
-        case Move::E:
-        case Move::EP:
-        case Move::E2:
-            return (row == 1);
-
-        // S move: middle layer (layer 1, between F and B)
-        case Move::S:
-        case Move::SP:
-        case Move::S2:
-            return (layer == 1);
-
-        // X rotation: ALL cubes animate (entire cube rotation)
-        case Move::X:
-        case Move::XP:
-        case Move::X2:
-            return true;
-
-        // Y rotation: ALL cubes animate (entire cube rotation)
-        case Move::Y:
-        case Move::YP:
-        case Move::Y2:
-            return true;
-
-        // Z rotation: ALL cubes animate (entire cube rotation)
-        case Move::Z:
-        case Move::ZP:
-        case Move::Z2:
-            return true;
-
-        default:
-            return false;
-    }
-}
-
-// Apply rotation transformation to the current cube based on move type
-void CubeRenderer::applyRotationTransform(float angle, Move move) {
-    switch (move) {
-        // U moves rotate around Y axis
-        case Move::U:
-            glRotatef(angle, 0.0f, -1.0f, 0.0f);
-            break;
-        case Move::U2:
-            glRotatef(angle * 2, 0.0f, -1.0f, 0.0f);
-            break;
-        case Move::UP:
-            glRotatef(angle, 0.0f, 1.0f, 0.0f);
-            break;
-
-        // D moves rotate around Y axis (opposite of U)
-        case Move::D:
-            glRotatef(angle, 0.0f, 1.0f, 0.0f);
-            break;
-        case Move::D2:
-            glRotatef(angle * 2, 0.0f, 1.0f, 0.0f);
-            break;
-        case Move::DP:
-            glRotatef(angle, 0.0f, -1.0f, 0.0f);
-            break;
-
-        // L moves rotate around X axis
-        case Move::L:
-            glRotatef(angle, 1.0f, 0.0f, 0.0f);
-            break;
-        case Move::L2:
-            glRotatef(angle * 2, 1.0f, 0.0f, 0.0f);
-            break;
-        case Move::LP:
-            glRotatef(angle, -1.0f, 0.0f, 0.0f);
-            break;
-
-        // R moves rotate around X axis (opposite of L)
-        case Move::R:
-            glRotatef(angle, -1.0f, 0.0f, 0.0f);
-            break;
-        case Move::R2:
-            glRotatef(angle * 2, -1.0f, 0.0f, 0.0f);
-            break;
-        case Move::RP:
-            glRotatef(angle, 1.0f, 0.0f, 0.0f);
-            break;
-
-        // F moves rotate around Z axis
-        case Move::F:
-            glRotatef(angle, 0.0f, 0.0f, -1.0f);
-            break;
-        case Move::F2:
-            glRotatef(angle * 2, 0.0f, 0.0f, -1.0f);
-            break;
-        case Move::FP:
-            glRotatef(angle, 0.0f, 0.0f, 1.0f);
-            break;
-
-        // B moves rotate around Z axis (opposite of F)
-        case Move::B:
-            glRotatef(angle, 0.0f, 0.0f, 1.0f);
-            break;
-        case Move::B2:
-            glRotatef(angle * 2, 0.0f, 0.0f, 1.0f);
-            break;
-        case Move::BP:
-            glRotatef(angle, 0.0f, 0.0f, -1.0f);
-            break;
-
-        // M moves rotate around X axis (same as L)
-        case Move::M:
-            glRotatef(angle, 1.0f, 0.0f, 0.0f);
-            break;
-        case Move::M2:
-            glRotatef(angle * 2, 1.0f, 0.0f, 0.0f);
-            break;
-        case Move::MP:
-            glRotatef(angle, -1.0f, 0.0f, 0.0f);
-            break;
-
-        // E moves rotate around Y axis (opposite direction of U when viewed from top)
-        case Move::E:
-            glRotatef(-angle, 0.0f, -1.0f, 0.0f);
-            break;
-        case Move::E2:
-            glRotatef(-angle * 2, 0.0f, -1.0f, 0.0f);
-            break;
-        case Move::EP:
-            glRotatef(-angle, 0.0f, 1.0f, 0.0f);
-            break;
-
-        // S moves rotate around Z axis (same as F)
-        case Move::S:
-            glRotatef(angle, 0.0f, 0.0f, -1.0f);
-            break;
-        case Move::S2:
-            glRotatef(angle * 2, 0.0f, 0.0f, -1.0f);
-            break;
-        case Move::SP:
-            glRotatef(angle, 0.0f, 0.0f, 1.0f);
-            break;
-
-        // X rotation - entire cube rotates around X axis (same direction as R)
-        case Move::X:
-            glRotatef(angle, -1.0f, 0.0f, 0.0f);
-            break;
-        case Move::X2:
-            glRotatef(angle * 2, -1.0f, 0.0f, 0.0f);
-            break;
-        case Move::XP:
-            glRotatef(angle, 1.0f, 0.0f, 0.0f);
-            break;
-
-        // Y rotation - entire cube rotates around Y axis (same direction as U)
-        case Move::Y:
-            glRotatef(angle, 0.0f, -1.0f, 0.0f);
-            break;
-        case Move::Y2:
-            glRotatef(angle * 2, 0.0f, -1.0f, 0.0f);
-            break;
-        case Move::YP:
-            glRotatef(angle, 0.0f, 1.0f, 0.0f);
-            break;
-
-        // Z rotation - entire cube rotates around Z axis (same direction as F)
-        case Move::Z:
-            glRotatef(angle, 0.0f, 0.0f, -1.0f);
-            break;
-        case Move::Z2:
-            glRotatef(angle * 2, 0.0f, 0.0f, -1.0f);
-            break;
-        case Move::ZP:
-            glRotatef(angle, 0.0f, 0.0f, 1.0f);
-            break;
-
-        default:
-            break;
     }
 }

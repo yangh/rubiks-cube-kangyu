@@ -55,8 +55,8 @@ void saveRendererConfig(CubeRenderer& renderer) {
     config.setRight(renderer.colorProvider_.customRight);
     config.setUp(renderer.colorProvider_.customUp);
     config.setDown(renderer.colorProvider_.customDown);
-    config.setEnableAnimation(renderer.enableAnimation);
-    config.setAnimationSpeed(renderer.animationSpeed);
+    config.setEnableAnimation(renderer.animator_.enableAnimation);
+    config.setAnimationSpeed(renderer.animator_.animationSpeed);
     config.setUsingDefaults(false);
     saveColorConfig(config);
 }
@@ -108,15 +108,12 @@ void resetCube(CubeRenderer& renderer) {
 
 // Helper function to scramble cube
 void scrambleCube(CubeRenderer& renderer) {
-    // Disable animation for instant scramble
-    bool oldAnimation = renderer.enableAnimation;
-    renderer.enableAnimation = false;
+    bool oldAnimation = renderer.animator_.enableAnimation;
+    renderer.animator_.enableAnimation = false;
 
-    // Generate and execute scramble
     std::vector<Move> scrambleMoves = renderer.scramble(20);
 
-    // Restore animation setting
-    renderer.enableAnimation = oldAnimation;
+    renderer.animator_.enableAnimation = oldAnimation;
 }
 
 void showAbout() {
@@ -252,16 +249,17 @@ int main(int argc, char* argv[]) {
         io.FontDefault = chineseFont;
     }
 
-    // Initialize cube renderer
-    CubeRenderer renderer;
+    // Initialize cube and renderer
+    RubiksCube cube;
+    CubeRenderer renderer(cube);
 
     // Load color configuration from file
     ColorConfig config = loadColorConfig();
     renderer.setCustomColors(config);
 
     // Load animation settings from config
-    renderer.enableAnimation = config.getEnableAnimation();
-    renderer.animationSpeed = config.getAnimationSpeed();
+    renderer.animator_.enableAnimation = config.getEnableAnimation();
+    renderer.animator_.animationSpeed = config.getAnimationSpeed();
 
     if (!config.isUsingDefaults()) {
         std::cout << "Loaded custom configuration from: " << getConfigFilePath() << std::endl;
@@ -817,10 +815,10 @@ int main(int argc, char* argv[]) {
 
                 // Animation section
                 ImGui::Text("Animation:");
-                bool prevEnableAnim = renderer.enableAnimation;
-                float prevAnimSpeed = renderer.animationSpeed;
-                ImGui::Checkbox("Enable Animation", &renderer.enableAnimation);
-                ImGui::SliderFloat("Speed", &renderer.animationSpeed, 0.1f, 3.0f, "%.1fx", ImGuiSliderFlags_Logarithmic);
+                bool prevEnableAnim = renderer.animator_.enableAnimation;
+                float prevAnimSpeed = renderer.animator_.animationSpeed;
+                ImGui::Checkbox("Enable Animation", &renderer.animator_.enableAnimation);
+                ImGui::SliderFloat("Speed", &renderer.animator_.animationSpeed, 0.1f, 3.0f, "%.1fx", ImGuiSliderFlags_Logarithmic);
                 if (ImGui::IsItemHovered()) {
                     ImGui::SetTooltip("1.0x = 200ms per move");
                 }
@@ -831,7 +829,7 @@ int main(int argc, char* argv[]) {
                 }
 
                 // Also save when checkbox changes
-                if (renderer.enableAnimation != prevEnableAnim) {
+                if (renderer.animator_.enableAnimation != prevEnableAnim) {
                     saveRendererConfig(renderer);
                 }
 
