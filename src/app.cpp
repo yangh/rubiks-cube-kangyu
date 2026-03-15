@@ -221,6 +221,7 @@ bool Application::initImGui() {
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
+    ImGui::GetStyle().FrameRounding = 4.0f;
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(this->window_, true);
@@ -238,6 +239,8 @@ void Application::loadFonts() {
         "/usr/share/fonts/opentype/noto/NotoSansCJK-Regular.ttc",
         "/usr/share/fonts/truetype/arphic/uming.ttc",
         "/usr/share/fonts/truetype/arphic/ukai.ttc",
+        "./data/NotoSansCJK-Regular.ttc",
+        "../data/NotoSansCJK-Regular.ttc",
         nullptr
     };
 
