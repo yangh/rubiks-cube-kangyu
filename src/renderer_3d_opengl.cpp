@@ -56,7 +56,7 @@ void Renderer3DOpenGL::render(int windowWidth, int windowHeight) {
         return;
     }
 
-    float sidebarWidth = fmaxf(350.0f, windowWidth * 0.4f);
+    float sidebarWidth = 480.0f;
     int viewX = 10;
     int viewY = 10;
     int viewWidth = windowWidth - (int)sidebarWidth - 20;
