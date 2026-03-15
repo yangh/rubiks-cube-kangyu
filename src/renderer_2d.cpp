@@ -6,10 +6,11 @@ Renderer2D::Renderer2D() {
 void Renderer2D::draw(ImDrawList* drawList, ImVec2 offset, float scale,
                       const RubiksCube& cube, const ColorProvider& colors) {
     float stickerSize = 30.0f * scale;
-    float gap = 3.0f * scale;
+    float gap = 1.0f * scale;
+    float gap_face = 3.0f * scale;
     float faceSize = stickerSize * 3.0f + gap * 2.0f;
 
-    float spacing = faceSize + gap;
+    float spacing = faceSize + gap_face;
     offset.x -= spacing * 0.5;
 
     drawFace(drawList, cube.getUp(),
