@@ -40,12 +40,11 @@ void Renderer2D::drawFace(ImDrawList* drawList, const std::array<Color, 9>& face
     float totalSize = size * 3.0f + gap * 2.0f;
     float startX = offset.x - totalSize / 2.0f + size / 2.0f;
     float startY = offset.y - totalSize / 2.0f + size / 2.0f;
+    float cornerRadius = size * 0.12f;
 
-    ImVec2 p1(offset.x - totalSize / 2.0f, offset.y + totalSize / 2.0f);
-    ImVec2 p2(offset.x + totalSize / 2.0f, offset.y + totalSize / 2.0f);
-    ImVec2 p3(offset.x + totalSize / 2.0f, offset.y - totalSize / 2.0f);
-    ImVec2 p4(offset.x - totalSize / 2.0f, offset.y - totalSize / 2.0f);
-    drawList->AddQuadFilled(p1, p2, p3, p4, IM_COL32(25, 25, 25, 255));
+    ImVec2 faceMin(offset.x - totalSize / 2.0f, offset.y - totalSize / 2.0f);
+    ImVec2 faceMax(offset.x + totalSize / 2.0f, offset.y + totalSize / 2.0f);
+    drawList->AddRectFilled(faceMin, faceMax, IM_COL32(25, 25, 25, 255), cornerRadius * 0.5f);
 
     for (int row = 0; row < 3; ++row) {
         for (int col = 0; col < 3; ++col) {
@@ -62,14 +61,11 @@ void Renderer2D::drawFace(ImDrawList* drawList, const std::array<Color, 9>& face
             float x = startX + static_cast<float>(col) * (size + gap);
             float y = startY + static_cast<float>(row) * (size + gap);
 
-            ImVec2 s1(x - size / 2.0f, y + size / 2.0f);
-            ImVec2 s2(x + size / 2.0f, y + size / 2.0f);
-            ImVec2 s3(x + size / 2.0f, y - size / 2.0f);
-            ImVec2 s4(x - size / 2.0f, y - size / 2.0f);
-            drawList->AddQuadFilled(s1, s2, s3, s4, color);
+            ImVec2 sMin(x - size / 2.0f, y - size / 2.0f);
+            ImVec2 sMax(x + size / 2.0f, y + size / 2.0f);
+            drawList->AddRectFilled(sMin, sMax, color, cornerRadius);
 
-            ImU32 black = IM_COL32(0, 0, 0, 255);
-            drawList->AddQuad(s1, s2, s3, s4, black, 2.0f);
+            drawList->AddRect(sMin, sMax, IM_COL32(0, 0, 0, 255), cornerRadius, 0, 1.5f);
         }
     }
 }
