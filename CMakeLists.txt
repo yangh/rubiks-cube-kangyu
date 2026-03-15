@@ -15,6 +15,7 @@ add_subdirectory(third_party)
 # Create main executable
 add_executable(rubiks-cube
     src/main.cpp
+    src/app.cpp
     src/cube.cpp
     src/cube_animator.cpp
     src/renderer.cpp
