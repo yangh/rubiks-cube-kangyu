@@ -4,7 +4,6 @@
 #include <array>
 #include <string>
 
-// RGB color structure
 struct RgbColor {
     float r;
     float g;
@@ -13,13 +12,11 @@ struct RgbColor {
     RgbColor() : r(0.0f), g(0.0f), b(0.0f) {}
     RgbColor(float red, float green, float blue) : r(red), g(green), b(blue) {}
 
-    // Convert to std::array<float, 3> for compatibility with renderer
     std::array<float, 3> toArray() const {
         return {r, g, b};
     }
 };
 
-// Color configuration for all cube faces
 class ColorConfig {
 private:
     RgbColor front_;
@@ -31,9 +28,10 @@ private:
     bool usingDefaults_;
     bool enableAnimation_;
     float animationSpeed_;
+    int easingType_;
 
 public:
-    ColorConfig() : usingDefaults_(true), enableAnimation_(true), animationSpeed_(1.0f) {
+    ColorConfig() : usingDefaults_(true), enableAnimation_(true), animationSpeed_(1.0f), easingType_(0) {
         front_ = RgbColor(0.0f, 1.0f, 0.0f);    // Green
         back_ = RgbColor(0.0f, 0.0f, 1.0f);     // Blue
         left_ = RgbColor(1.0f, 0.5f, 0.0f);     // Orange
@@ -75,6 +73,8 @@ public:
     void setEnableAnimation(bool value) { enableAnimation_ = value; }
     float getAnimationSpeed() const { return animationSpeed_; }
     void setAnimationSpeed(float value) { animationSpeed_ = value; }
+    int getEasingType() const { return easingType_; }
+    void setEasingType(int value) { easingType_ = value; }
 
     // Set from array (for UI convenience)
     void setFront(const std::array<float, 3>& color) { front_ = RgbColor(color[0], color[1], color[2]); }

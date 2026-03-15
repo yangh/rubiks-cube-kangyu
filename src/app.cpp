@@ -1,5 +1,6 @@
 #include "app.h"
 #include "config.h"
+#include "cube_animator.h"
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <iostream>
@@ -269,6 +270,7 @@ void Application::initApp() {
     // Load animation settings from config
     this->renderer_->animator_.enableAnimation = config.getEnableAnimation();
     this->renderer_->animator_.animationSpeed = config.getAnimationSpeed();
+    this->renderer_->animator_.easingType = static_cast<EasingType>(config.getEasingType());
 
     if (!config.isUsingDefaults()) {
         std::cout << "Loaded custom configuration from: " << getConfigFilePath() << std::endl;
@@ -737,6 +739,16 @@ void Application::renderSettingsTab() {
             ImGui::SetTooltip("1.0x = 200ms per move");
         }
 
+        int prevEasingType = static_cast<int>(this->renderer_->animator_.easingType);
+        const char* easingTypes[] = { "Smooth Step", "Ease-Out Cubic", "Ease-Out Back" };
+        if (ImGui::Combo("Easing", &prevEasingType, easingTypes, IM_ARRAYSIZE(easingTypes))) {
+            this->renderer_->animator_.easingType = static_cast<EasingType>(prevEasingType);
+            saveRendererConfig();
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Smoothstep: smooth start/end\nEase-Out Cubic: magnetic feel\nEase-Out Back: subtle overshoot snap");
+        }
+
         // Save animation settings when slider is deactivated (user released it)
         if (ImGui::IsItemDeactivatedAfterEdit()) {
             saveRendererConfig();
@@ -745,13 +757,6 @@ void Application::renderSettingsTab() {
         // Also save when checkbox changes
         if (this->renderer_->animator_.enableAnimation != prevEnableAnim) {
             saveRendererConfig();
-        }
-
-        // Show animation status
-        if (this->renderer_->isAnimating()) {
-            ImGui::SameLine();
-            ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "(Playing %.0f%%)",
-                              this->renderer_->animationProgress() * 100.0f);
         }
 
         ImGui::Spacing();
@@ -876,6 +881,7 @@ void Application::saveRendererConfig() {
     config.setDown(this->renderer_->colorProvider_.customDown);
     config.setEnableAnimation(this->renderer_->animator_.enableAnimation);
     config.setAnimationSpeed(this->renderer_->animator_.animationSpeed);
+    config.setEasingType(static_cast<int>(this->renderer_->animator_.easingType));
     config.setUsingDefaults(false);
     saveColorConfig(config);
 }

@@ -4,6 +4,37 @@
 
 extern bool g_enableDump;
 
+const char* getEasingTypeName(EasingType type) {
+    switch (type) {
+        case EasingType::SmoothStep:    return "Smoothstep";
+        case EasingType::EaseOutCubic:  return "Ease-Out Cubic";
+        case EasingType::EaseOutBack:   return "Ease-Out Back";
+        default: return "Unknown";
+    }
+}
+
+static float applyEasing(EasingType type, float t) {
+    switch (type) {
+        case EasingType::SmoothStep:
+            return t * t * (3.0f - 2.0f * t);
+
+        case EasingType::EaseOutCubic:
+            return 1.0f - (1.0f - t) * (1.0f - t) * (1.0f - t);
+
+        case EasingType::EaseOutBack: {
+            // 1.70158f for 10% overshot;
+            // 1.00000f for  5% overshot;
+            // 0.50000f for  2% overshot;
+            const float c1 = 1.0f;
+            const float c3 = c1 + 1.0f;
+            return 1.0f + c3 * powf(t - 1.0f, 3.0f) + c1 * powf(t - 1.0f, 2.0f);
+        }
+
+        default:
+            return t;
+    }
+}
+
 CubeAnimator::CubeAnimator() 
     : preAnimationCube_() {
 }
@@ -124,7 +155,7 @@ bool CubeAnimator::isCubeInAnimatingSlice(int cubeIndex) const {
 float CubeAnimator::getCurrentAngle() const {
     if (!isAnimating_) return 0.0f;
     
-    float easeProgress = animationProgress_ * animationProgress_ * (3.0f - 2.0f * animationProgress_);
+    float easeProgress = applyEasing(easingType, animationProgress_);
     return rotationAngle_ * easeProgress;
 }
 

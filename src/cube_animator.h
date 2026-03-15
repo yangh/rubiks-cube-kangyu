@@ -5,6 +5,16 @@
 #include <functional>
 #include <queue>
 
+// Easing function types for animation
+enum class EasingType {
+    SmoothStep = 0,
+    EaseOutCubic = 1,
+    EaseOutBack = 2
+};
+
+// Get easing type name for display
+const char* getEasingTypeName(EasingType type);
+
 class CubeAnimator {
 public:
     using MoveCallback = std::function<void(Move, bool)>;
@@ -23,7 +33,8 @@ public:
     Move currentMove() const { return currentMove_; }
     bool isCubeInAnimatingSlice(int cubeIndex) const;
     
-    // 配置
+    EasingType easingType = EasingType::SmoothStep;
+
     float animationSpeed = 1.0f;
     bool enableAnimation = true;
     

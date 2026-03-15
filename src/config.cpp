@@ -578,6 +578,17 @@ ColorConfig loadColorConfig() {
         }
     }
 
+    std::string easingTypeKey = "\"easingType\":";
+    size_t easingTypePos = json.find(easingTypeKey);
+    if (easingTypePos != std::string::npos) {
+        size_t valStart = easingTypePos + easingTypeKey.length();
+        skipWhitespace(json, valStart);
+        float easingVal;
+        if (parseNumberValue(json, valStart, easingVal)) {
+            config.setEasingType(static_cast<int>(easingVal));
+        }
+    }
+
     return config;
 }
 
@@ -620,7 +631,8 @@ bool saveColorConfig(const ColorConfig& config) {
     file << "    \"down\": " << writeRgbColor(config.down()) << "\n";
     file << "  },\n";
     file << "  \"enableAnimation\": " << (config.getEnableAnimation() ? "true" : "false") << ",\n";
-    file << "  \"animationSpeed\": " << config.getAnimationSpeed() << "\n";
+    file << "  \"animationSpeed\": " << config.getAnimationSpeed() << ",\n";
+    file << "  \"easingType\": " << config.getEasingType() << "\n";
     file << "}\n";
 
     file.close();
