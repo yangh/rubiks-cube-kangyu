@@ -551,10 +551,7 @@ void Application::renderFormulasTab() {
 
                     if (ImGui::Selectable(filename.c_str(), isSelected)) {
                         this->formulaManager_.setSelectedFile(filename);
-                        // Auto-scroll to selected file
-                        if (isSelected) {
-                            ImGui::SetScrollHereY();
-                        }
+                        this->formulaInputDirty_ = true;
                     }
                 }
             }
