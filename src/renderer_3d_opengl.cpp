@@ -217,16 +217,7 @@ void Renderer3DOpenGL::drawSticker(float centerX, float centerY, float centerZ,
 }
 
 void Renderer3DOpenGL::drawCube(int cubeIndex, bool usePreAnimationState) {
-    const RubiksCube& cube = usePreAnimationState ? animator_->getPreAnimationCube() : *cube_;
-
-    int layer = cubeIndex / 9;
-    int posInLayer = cubeIndex % 9;
-    int row = posInLayer / 3;
-    int col = posInLayer % 3;
-
     float black[3] = {0.0f, 0.0f, 0.0f};
-    float stickerSize = 0.9f;
-    float stickerOffset = 0.001f;
 
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 0.0f, 1.0f);
@@ -236,13 +227,6 @@ void Renderer3DOpenGL::drawCube(int cubeIndex, bool usePreAnimationState) {
     glVertex3f(0.5f, -0.5f, 0.5f);
     glVertex3f(-0.5f, -0.5f, 0.5f);
     glEnd();
-    
-    if (layer == 2) {
-        const auto& face = cube.getFront();
-        int idx = (2 - row) * 3 + col;
-        auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
-        drawSticker(0.0f, 0.0f, 0.5f + stickerOffset, stickerSize, rgb.data(), 0.0f, 0.0f, 1.0f);
-    }
 
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 0.0f, -1.0f);
@@ -252,13 +236,6 @@ void Renderer3DOpenGL::drawCube(int cubeIndex, bool usePreAnimationState) {
     glVertex3f(-0.5f, -0.5f, -0.5f);
     glVertex3f(0.5f, -0.5f, -0.5f);
     glEnd();
-    
-    if (layer == 0) {
-        const auto& face = cube_->getBack();
-        int idx = (2 - row) * 3 + (2 - col);
-        auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
-        drawSticker(0.0f, 0.0f, -0.5f - stickerOffset, stickerSize, rgb.data(), 0.0f, 0.0f, -1.0f);
-    }
 
     glBegin(GL_QUADS);
     glNormal3f(0.0f, 1.0f, 0.0f);
@@ -268,13 +245,6 @@ void Renderer3DOpenGL::drawCube(int cubeIndex, bool usePreAnimationState) {
     glVertex3f(0.5f, 0.5f, 0.5f);
     glVertex3f(-0.5f, 0.5f, 0.5f);
     glEnd();
-    
-    if (row == 2) {
-        const auto& face = cube_->getUp();
-        int idx = layer * 3 + col;
-        auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
-        drawSticker(0.0f, 0.5f + stickerOffset, 0.0f, stickerSize, rgb.data(), 0.0f, 1.0f, 0.0f);
-    }
 
     glBegin(GL_QUADS);
     glNormal3f(0.0f, -1.0f, 0.0f);
@@ -284,13 +254,6 @@ void Renderer3DOpenGL::drawCube(int cubeIndex, bool usePreAnimationState) {
     glVertex3f(0.5f, -0.5f, -0.5f);
     glVertex3f(-0.5f, -0.5f, -0.5f);
     glEnd();
-    
-    if (row == 0) {
-        const auto& face = cube_->getDown();
-        int idx = (2 - layer) * 3 + col;
-        auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
-        drawSticker(0.0f, -0.5f - stickerOffset, 0.0f, stickerSize, rgb.data(), 0.0f, -1.0f, 0.0f);
-    }
 
     glBegin(GL_QUADS);
     glNormal3f(1.0f, 0.0f, 0.0f);
@@ -300,13 +263,6 @@ void Renderer3DOpenGL::drawCube(int cubeIndex, bool usePreAnimationState) {
     glVertex3f(0.5f, -0.5f, -0.5f);
     glVertex3f(0.5f, 0.5f, -0.5f);
     glEnd();
-    
-    if (col == 2) {
-        const auto& face = cube_->getRight();
-        int idx = (2 - row) * 3 + (2 - layer);
-        auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
-        drawSticker(0.5f + stickerOffset, 0.0f, 0.0f, stickerSize, rgb.data(), 1.0f, 0.0f, 0.0f);
-    }
 
     glBegin(GL_QUADS);
     glNormal3f(-1.0f, 0.0f, 0.0f);
@@ -316,7 +272,56 @@ void Renderer3DOpenGL::drawCube(int cubeIndex, bool usePreAnimationState) {
     glVertex3f(-0.5f, -0.5f, -0.5f);
     glVertex3f(-0.5f, -0.5f, 0.5f);
     glEnd();
-    
+
+    drawStickers(cubeIndex, usePreAnimationState);
+}
+
+void Renderer3DOpenGL::drawStickers(int cubeIndex, bool usePreAnimationState) {
+    const RubiksCube& cube = usePreAnimationState ? animator_->getPreAnimationCube() : *cube_;
+
+    int layer = cubeIndex / 9;
+    int posInLayer = cubeIndex % 9;
+    int row = posInLayer / 3;
+    int col = posInLayer % 3;
+
+    float stickerSize = 0.9f;
+    float stickerOffset = 0.001f;
+
+    if (layer == 2) {
+        const auto& face = cube.getFront();
+        int idx = (2 - row) * 3 + col;
+        auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
+        drawSticker(0.0f, 0.0f, 0.5f + stickerOffset, stickerSize, rgb.data(), 0.0f, 0.0f, 1.0f);
+    }
+
+    if (layer == 0) {
+        const auto& face = cube_->getBack();
+        int idx = (2 - row) * 3 + (2 - col);
+        auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
+        drawSticker(0.0f, 0.0f, -0.5f - stickerOffset, stickerSize, rgb.data(), 0.0f, 0.0f, -1.0f);
+    }
+
+    if (row == 2) {
+        const auto& face = cube_->getUp();
+        int idx = layer * 3 + col;
+        auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
+        drawSticker(0.0f, 0.5f + stickerOffset, 0.0f, stickerSize, rgb.data(), 0.0f, 1.0f, 0.0f);
+    }
+
+    if (row == 0) {
+        const auto& face = cube_->getDown();
+        int idx = (2 - layer) * 3 + col;
+        auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
+        drawSticker(0.0f, -0.5f - stickerOffset, 0.0f, stickerSize, rgb.data(), 0.0f, -1.0f, 0.0f);
+    }
+
+    if (col == 2) {
+        const auto& face = cube_->getRight();
+        int idx = (2 - row) * 3 + (2 - layer);
+        auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
+        drawSticker(0.5f + stickerOffset, 0.0f, 0.0f, stickerSize, rgb.data(), 1.0f, 0.0f, 0.0f);
+    }
+
     if (col == 0) {
         const auto& face = cube_->getLeft();
         int idx = (2 - row) * 3 + layer;

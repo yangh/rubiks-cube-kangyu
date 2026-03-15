@@ -26,6 +26,7 @@ private:
     
     bool initGL();
     void drawCube(int cubeIndex, bool usePreAnimationState);
+    void drawStickers(int cubeIndex, bool usePreAnimationState);
     void drawSticker(float centerX, float centerY, float centerZ, 
                      float size, const float rgb[3],
                      float nx, float ny, float nz);
