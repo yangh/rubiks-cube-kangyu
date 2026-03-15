@@ -86,6 +86,10 @@ std::string colorToString(Color color);
 // Helper function to get inverse of a move (defined in main.cpp)
 Move getInverseMove(Move move);
 
+// Check if two colors are opposite on a standard Rubik's cube
+// Opposite pairs: WHITE-YELLOW, RED-ORANGE, GREEN-BLUE
+bool isOppositeColor(Color a, Color b);
+
 // Represents the 3x3x3 Rubik's cube state
 class RubiksCube {
 public:
@@ -145,6 +149,14 @@ public:
 
     // Check if redo is available
     bool canRedo() const { return !redoHistory_.empty(); }
+
+    // Validate cube color configuration
+    // Returns true if no edge/corner contains opposite colors
+    // Opposite pairs: WHITE-YELLOW, RED-ORANGE, GREEN-BLUE
+    bool isValidColorConfiguration() const;
+
+    // Get detailed validation error message (empty if valid)
+    std::string getValidationError() const;
 
 private:
     std::array<Color, 9> front_;

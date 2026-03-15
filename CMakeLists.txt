@@ -133,3 +133,17 @@ target_include_directories(test_axis_rotate
 
 # Add axis rotation test
 add_test(NAME axis_rotate COMMAND test_axis_rotate)
+
+# Create color validation test executable
+add_executable(test_color_validation
+    tests/test_color_validation.cpp
+    src/cube.cpp
+)
+
+target_include_directories(test_color_validation
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+# Add color validation test
+add_test(NAME color_validation COMMAND test_color_validation)
