@@ -136,41 +136,42 @@ void Renderer3DOpenGL::render(int windowWidth, int windowHeight) {
 }
 
 void Renderer3DOpenGL::drawCircleCanvas() {
-    float radiusX = 1.34f;
-    float radiusZ = 1.08f;
-    float yOffset = -1.0f;
+    float radius = 0.75f;
+    float yOffset = -0.8f;
     int segments = 64;
     float r = 0.3f;
     float g = 0.35f;
     float b = 0.45f;
-    float a = 0.2f;
+    float a = 0.3f;
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_LINE_SMOOTH);
+    glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
 
     glBegin(GL_TRIANGLE_FAN);
     glColor4f(r, g, b, a);
     glVertex3f(0.0f, yOffset, 0.0f);
-
     for (int i = 0; i <= segments; i++) {
         float angle = 2.0f * M_PI * i / segments;
-        float x = radiusX * cosf(angle);
-        float z = radiusZ * sinf(angle);
+        float x = radius * cosf(angle);
+        float z = radius * sinf(angle);
         glVertex3f(x, yOffset, z);
     }
     glEnd();
 
-    glLineWidth(1.5f);
+    glLineWidth(2.0f);
     glBegin(GL_LINE_LOOP);
-    glColor4f(r * 0.8f, g * 0.8f, b * 0.8f, a * 0.8f);
+    glColor4f(r * 1.2f, g * 1.2f, b * 1.2f, a * 1.5f);
     for (int i = 0; i < segments; i++) {
         float angle = 2.0f * M_PI * i / segments;
-        float x = radiusX * cosf(angle);
-        float z = radiusZ * sinf(angle);
+        float x = radius * cosf(angle);
+        float z = radius * sinf(angle);
         glVertex3f(x, yOffset, z);
     }
     glEnd();
 
+    glDisable(GL_LINE_SMOOTH);
     glDisable(GL_BLEND);
 }
 
