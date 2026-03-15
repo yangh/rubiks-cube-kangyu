@@ -2,7 +2,15 @@
 
 A 3D Rubik's cube simulator built with C++, ImGUI, and OpenGL with advanced features including animations, formula execution, and undo/redo capabilities.
 
-![Rubik's Cube Screenshot](data/rubiks-cube-kangyu-v1.0.png)
+![Rubik's Cube Screenshot](data/rubiks-cube-kangyu-v1.2.png)
+
+## Version 1.2 Highlights
+
+- **Modular Architecture**: CubeRenderer refactored into separate components (ViewState, ColorProvider, CubeAnimator, Renderer2D, Renderer3DOpenGL)
+- **Double Moves**: Full support for U2/D2/L2/R2/F2/B2/M2/E2/S2/X2/Y2/Z2 (180° rotations)
+- **Improved 3D Rendering**: Rounded corners on stickers, better viewport centering, circle shadow canvas
+- **Configurable Animation Easing**: Choose from linear, ease-in, ease-out, ease-in-out animation curves
+- **Cleaner Codebase**: Application class extracted, main.cpp reduced to thin entry point
 
 ## Features
 
@@ -169,21 +177,38 @@ Example: "U2" rotates the Up face 180 degrees (same as "U U").
 
 ```
 src/
-├── main.cpp      - Application entry point, main loop, and UI
-├── cube.h        - Cube state representation and move logic
-├── cube.cpp      - Cube implementation with rotation algorithms
-├── renderer.h    - 2D/3D rendering and animation management
-├── renderer.cpp  - Renderer implementation using ImGui
-├── formula.h     - Formula system for move sequences
-├── formula.cpp   - Formula parsing and execution
-├── config.h      - Configuration management for colors and settings
-└── config.cpp    - Config file I/O operations
+├── main.cpp              - Thin entry point (64 lines)
+├── app.h / app.cpp       - Application class with main loop and UI
+├── cube.h / cube.cpp     - Cube state representation and move logic
+├── renderer.h / cpp      - CubeRenderer facade class
+├── view_state.h / cpp    - View rotation/scale state
+├── color_provider.h/cpp  - Color configuration management
+├── cube_animator.h/cpp   - Animation controller with easing
+├── renderer_2d.h / cpp   - 2D unfolded cube view
+├── irenderer_3d.h        - 3D renderer interface
+├── renderer_3d_opengl.h/cpp - OpenGL 3D implementation
+├── formula.h / cpp       - Formula system for move sequences
+├── config.h / cpp        - Configuration management
+├── model.h / cpp         - 3D model loader
+└── shader.h / cpp        - Shader utilities
 
 third_party/
-└── imgui/       - ImGUI library
+└── imgui/                - ImGUI library
 
-formula/         - User formula files (created automatically)
+formula/                  - User formula files (created automatically)
 ```
+
+## Architecture
+
+The application follows a modular architecture with clear separation of concerns:
+
+- **CubeRenderer**: Facade class that coordinates all rendering components
+- **RubiksCube**: Pure data model (injected into renderer via reference)
+- **CubeAnimator**: Manages animation state, timing, and easing functions
+- **Renderer2D**: Stateless 2D unfolded cube visualization
+- **Renderer3DOpenGL**: OpenGL-based 3D rendering with IRenderer3D interface
+- **ColorProvider**: Centralized color configuration
+- **ViewState**: View rotation angles and scale factors
 
 ## Configuration File
 
@@ -208,3 +233,13 @@ Each line should be in format: `name: move_sequence` or `name: move_sequence loo
 ## License
 
 MIT
+
+## Changelog
+
+### v1.2.0 (2026-03-16)
+- **Architecture Refactoring**: CubeRenderer split into modular components (ViewState, ColorProvider, CubeAnimator, Renderer2D, Renderer3DOpenGL)
+- **Double Moves**: Full support for U2/D2/L2/R2/F2/B2/M2/E2/S2/X2/Y2/Z2
+- **3D Rendering Improvements**: Rounded sticker corners, circle shadow canvas, proper viewport centering
+- **Configurable Animation Easing**: Linear, ease-in, ease-out, ease-in-out curves
+- **Code Quality**: Application class extracted, main.cpp reduced to thin entry point
+- **UI Polish**: Bigger stickers, softer colors, adjusted 2D sticker gaps
