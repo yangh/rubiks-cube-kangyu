@@ -740,6 +740,76 @@ void testSliceMovePatterns() {
     }
 }
 
+void testDoubleMoves() {
+    std::cout << "\n=== Test 16: Double Moves ===" << std::endl;
+
+    assertTest("U2 converts to 'U2'", moveToString(Move::U2) == "U2");
+    assertTest("D2 converts to 'D2'", moveToString(Move::D2) == "D2");
+    assertTest("L2 converts to 'L2'", moveToString(Move::L2) == "L2");
+    assertTest("R2 converts to 'R2'", moveToString(Move::R2) == "R2");
+    assertTest("F2 converts to 'F2'", moveToString(Move::F2) == "F2");
+    assertTest("B2 converts to 'B2'", moveToString(Move::B2) == "B2");
+    assertTest("M2 converts to 'M2'", moveToString(Move::M2) == "M2");
+    assertTest("E2 converts to 'E2'", moveToString(Move::E2) == "E2");
+    assertTest("S2 converts to 'S2'", moveToString(Move::S2) == "S2");
+
+    struct SelfInverseTest {
+        std::string name;
+        Move move;
+    };
+
+    SelfInverseTest selfInverseTests[] = {
+        {"U2", Move::U2},
+        {"D2", Move::D2},
+        {"L2", Move::L2},
+        {"R2", Move::R2},
+        {"F2", Move::F2},
+        {"B2", Move::B2},
+        {"M2", Move::M2},
+        {"E2", Move::E2},
+        {"S2", Move::S2},
+    };
+
+    for (const auto& test : selfInverseTests) {
+        RubiksCube cube;
+        cube.executeMove(test.move);
+        cube.executeMove(test.move);
+        assertTest(test.name + " + " + test.name + " returns to solved", cube.isSolved());
+    }
+
+    struct EquivalenceTest {
+        std::string name;
+        Move doubleMove;
+        Move singleMove;
+    };
+
+    EquivalenceTest equivTests[] = {
+        {"U2 vs U+U", Move::U2, Move::U},
+        {"D2 vs D+D", Move::D2, Move::D},
+        {"L2 vs L+L", Move::L2, Move::L},
+        {"R2 vs R+R", Move::R2, Move::R},
+        {"F2 vs F+F", Move::F2, Move::F},
+        {"B2 vs B+B", Move::B2, Move::B},
+        {"M2 vs M+M", Move::M2, Move::M},
+        {"E2 vs E+E", Move::E2, Move::E},
+        {"S2 vs S+S", Move::S2, Move::S},
+    };
+
+    for (const auto& test : equivTests) {
+        RubiksCube cube1, cube2;
+        cube1.executeMove(test.doubleMove);
+        cube2.executeMove(test.singleMove);
+        cube2.executeMove(test.singleMove);
+        bool statesMatch = (cube1.getFront() == cube2.getFront()) &&
+                          (cube1.getBack() == cube2.getBack()) &&
+                          (cube1.getLeft() == cube2.getLeft()) &&
+                          (cube1.getRight() == cube2.getRight()) &&
+                          (cube1.getUp() == cube2.getUp()) &&
+                          (cube1.getDown() == cube2.getDown());
+        assertTest(test.name + " are equivalent", statesMatch);
+    }
+}
+
 int main() {
     std::cout << YELLOW << "Rubik's Cube Logic Tests" << RESET << std::endl;
     std::cout << "===============================" << std::endl;
@@ -759,6 +829,7 @@ int main() {
     testSliceAdjacentFaces();
     testSliceMoveToString();
     testSliceMovePatterns();
+    testDoubleMoves();
 
     std::cout << "\\n========================================" << std::endl;
     std::cout << YELLOW << "Test Results:" << RESET << std::endl;

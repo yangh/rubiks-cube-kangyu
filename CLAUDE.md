@@ -125,3 +125,14 @@ Standard moves:
 - **F'**: Front face counter-clockwise
 - **B**: Back face clockwise
 - **B'**: Back face counter-clockwise
+
+Double moves (180 degree rotation):
+- **U2**: Up face 180 degree rotation (same as U + U)
+- **D2**: Down face 180 degree rotation
+- **L2**: Left face 180 degree rotation
+- **R2**: Right face 180 degree rotation
+- **F2**: Front face 180 degree rotation
+- **B2**: Back face 180 degree rotation
+- **M2**: Middle slice 180 degree rotation
+- **E2**: Equator slice 180 degree rotation
+- **S2**: Standing slice 180 degree rotation

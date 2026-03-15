@@ -150,6 +150,13 @@ make -C build
 - **S**: Standing slice (between F and B) clockwise
 - **S'**: Standing slice counter-clockwise
 
+### Double Moves (180° Rotation)
+- **U2/D2/L2/R2/F2/B2**: 180° rotation of corresponding face
+- **M2/E2/S2**: 180° rotation of corresponding slice
+- **X2/Y2/Z2**: 180° rotation around corresponding axis
+
+Example: "U2" rotates the Up face 180 degrees (same as "U U").
+
 ### Axis Rotations (Whole Cube)
 - **X**: Rotate entire cube around X-axis (right-left axis), equivalent to R M' L'
 - **X'**: Rotate entire cube counter-clockwise around X-axis
@@ -157,11 +164,6 @@ make -C build
 - **Y'**: Rotate entire cube counter-clockwise around Y-axis
 - **Z**: Rotate entire cube around Z-axis (front-back axis), equivalent to F S B'
 - **Z'**: Rotate entire cube counter-clockwise around Z-axis
-
-### Double Moves (180° Rotation)
-- **U2/D2/L2/R2/F2/B2**: 180° rotation of corresponding face
-- **M2/E2/S2**: 180° rotation of corresponding slice
-- **X2/Y2/Z2**: 180° rotation around corresponding axis
 
 ## Project Structure
 

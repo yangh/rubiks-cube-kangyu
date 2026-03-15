@@ -83,6 +83,7 @@ private:
     RubiksCube preAnimationCube_;  // Cube state before animation
     std::queue<Move> moveQueue_;
     bool recordCurrentMoveHistory_ = true;  // Whether current animation should record history
+    float rotationAngle_ = 90.0f;  // Animation angle: 90° for single moves, 180° for double moves
 
     // Project 3D point to 2D screen coordinates
     ImVec2 project(float x, float y, float z, ImVec2 center, float scale);
@@ -117,6 +118,7 @@ private:
     void startNextAnimation();
     bool isStickerAnimating(Move move, Face faceIndex, int stickerIndex) const;
     std::array<float, 3> rotateSticker(const std::array<float, 3>& pos, Move move, float angle) const;
+    bool isDoubleMove(Move move) const;
 
     // View rotation animation helper - smooth interpolation considering 360 degree wraparound
     void lerpRotation(float& current, float target, float deltaTime);

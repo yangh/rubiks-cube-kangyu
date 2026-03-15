@@ -221,21 +221,21 @@ void RubiksCube::e(bool prime) {
 // S: Rotate standing slice (between F and B)
 void RubiksCube::s(bool prime) {
     // S affects: Up[3,4,5], Down[3,4,5], Left[1,4,7], Right[1,4,7]
-    // Match main implementation
+    // Correct implementation with proper edge rotation
     if (prime) {
-        // S' (counter-clockwise from front): up -> left -> down -> right -> up
-        std::array<Color, 3> temp = {up_[3], up_[4], up_[5]};
-        up_[3] = right_[1]; up_[4] = right_[4]; up_[5] = right_[7];
-        right_[1] = down_[5]; right_[4] = down_[4]; right_[7] = down_[3];
+        // S' (counter-clockwise from front): UL->DL->DR->UR->UL
+        std::array<Color, 9> temp = up_;
+        up_[5] = right_[7]; up_[4] = right_[4]; up_[3] = right_[1];
+        right_[7] = down_[3]; right_[4] = down_[4]; right_[1] = down_[5];
         down_[3] = left_[1]; down_[4] = left_[4]; down_[5] = left_[7];
-        left_[1] = temp[0]; left_[4] = temp[1]; left_[7] = temp[2];
+        left_[1] = temp[5]; left_[4] = temp[4]; left_[7] = temp[3];
     } else {
-        // S (clockwise from front): up -> right -> down -> left -> up
-        std::array<Color, 3> temp = {up_[3], up_[4], up_[5]};
-        up_[5] = left_[1]; up_[4] = left_[4]; up_[3] = left_[7];
+        // S (clockwise from front): DL->UL->UR->DR->DL
+        std::array<Color, 9> temp = up_;
+        up_[3] = left_[7]; up_[4] = left_[4]; up_[5] = left_[1];
         left_[1] = down_[3]; left_[4] = down_[4]; left_[7] = down_[5];
-        down_[3] = right_[1]; down_[4] = right_[4]; down_[5] = right_[7];
-        right_[1] = temp[0]; right_[4] = temp[1]; right_[7] = temp[2];
+        down_[5] = right_[1]; down_[4] = right_[4]; down_[3] = right_[7];
+        right_[1] = temp[3]; right_[4] = temp[4]; right_[7] = temp[5];
     }
 }
 

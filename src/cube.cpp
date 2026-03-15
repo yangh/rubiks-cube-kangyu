@@ -318,7 +318,7 @@ void RubiksCube::reset() {
 }
 
 std::vector<Move> RubiksCube::scramble(int numMoves) {
-    // Array of all 15 basic moves (U, U', D, D', L, L', R, R', F, F', B, B', E, S, M)
+    // Array of all 24 basic moves (face moves + slice moves + double moves)
     static const Move basicMoves[] = {
         Move::U, Move::UP,
         Move::D, Move::DP,
@@ -327,6 +327,8 @@ std::vector<Move> RubiksCube::scramble(int numMoves) {
         Move::F, Move::FP,
         Move::B, Move::BP,
         Move::E, Move::S, Move::M,
+        // Double moves (180°)
+        Move::U2, Move::D2, Move::L2, Move::R2, Move::F2, Move::B2, Move::M2, Move::E2, Move::S2,
     };
     static const int numBasicMoves = sizeof(basicMoves)/sizeof(Move);
 

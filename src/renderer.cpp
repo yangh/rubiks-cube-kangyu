@@ -313,7 +313,7 @@ void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
     if (isAnimating_) {
         // Quadratic ease-in-out: 3t^2 - 2t^3
         float easeProgress = animationProgress_ * animationProgress_ * (3.0f - 2.0f * animationProgress_);
-        animAngle = 90.0f * easeProgress;
+        animAngle = rotationAngle_ * easeProgress;
     }
 
     for (int layer = 0; layer < 3; layer++) {
@@ -536,7 +536,7 @@ void CubeRenderer::drawAnimated3DFace(ImDrawList* drawList, const std::array<Col
                                       Face faceIndex) {
     // Quadratic ease-in-out: 3t^2 - 2t^3
     float easeProgress = animationProgress_ * animationProgress_ * (3.0f - 2.0f * animationProgress_);
-    float currentAngle = 90.0f * easeProgress;  // Always use positive 90 degrees, rotateSticker handles direction
+    float currentAngle = rotationAngle_ * easeProgress;  // Always use positive 90 degrees, rotateSticker handles direction
 
     // Draw black background for face
     ImVec2 projected[4];
@@ -887,6 +887,7 @@ void CubeRenderer::startNextAnimation() {
     currentMove_ = moveQueue_.front();
     moveQueue_.pop();
     preAnimationCube_ = cube_;  // Save current state
+    rotationAngle_ = isDoubleMove(currentMove_) ? 180.0f : 90.0f;
 
     if (g_enableDump) {
         std::cout << "\n=== Starting " << moveToString(currentMove_) << " ===" << std::endl;
@@ -1295,6 +1296,17 @@ void CubeRenderer::lerpRotation(float& current, float target, float deltaTime) {
     // Snap to target if very close
     if (fabsf(diff) < 0.1f) {
         current = target;
+    }
+}
+
+bool CubeRenderer::isDoubleMove(Move move) const {
+    switch (move) {
+        case Move::U2: case Move::D2: case Move::L2: case Move::R2:
+        case Move::F2: case Move::B2: case Move::M2: case Move::E2: case Move::S2:
+        case Move::X2: case Move::Y2: case Move::Z2:
+            return true;
+        default:
+            return false;
     }
 }
 
