@@ -38,14 +38,12 @@ std::array<float, 3> ColorProvider::getRgbForColor(Color color) const {
     }
 }
 
-ImU32 ColorProvider::getFaceColor(Color color) const {
+uint32_t ColorProvider::getFaceColor(Color color) const {
     std::array<float, 3> rgb = getRgbForColor(color);
-    return IM_COL32(
-        static_cast<int>(rgb[0] * 255),
-        static_cast<int>(rgb[1] * 255),
-        static_cast<int>(rgb[2] * 255),
-        255
-    );
+    return static_cast<uint32_t>(255) << 24
+         | static_cast<uint32_t>(rgb[2] * 255) << 16
+         | static_cast<uint32_t>(rgb[1] * 255) << 8
+         | static_cast<uint32_t>(rgb[0] * 255);
 }
 
 std::array<float, 3> ColorProvider::getFaceColorRgb(Color color) const {

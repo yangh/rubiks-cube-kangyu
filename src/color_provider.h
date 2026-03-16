@@ -2,8 +2,8 @@
 #define COLOR_PROVIDER_H
 
 #include <array>
+#include <cstdint>
 #include "config.h"
-#include <imgui.h>
 #include "cube.h"
 
 namespace DefaultColors {
@@ -35,7 +35,7 @@ public:
     void setCustomColors(const ColorConfig& config);
     void resetToDefaults();
     
-    ImU32 getFaceColor(Color color) const;
+    uint32_t getFaceColor(Color color) const;
     std::array<float, 3> getFaceColorRgb(Color color) const;
     
     std::array<float, 3> customFront = DefaultColors::GREEN;
