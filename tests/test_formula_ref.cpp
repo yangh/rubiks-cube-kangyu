@@ -505,13 +505,7 @@ int main() {
     std::filesystem::path exePath = std::filesystem::canonical(std::filesystem::current_path());
     std::filesystem::path projectRoot = exePath;
 
-    // Navigate up to find project root (looking for rubiks-imgui directory)
-    while (projectRoot.has_parent_path() &&
-           projectRoot.filename() != "rubiks-imgui") {
-        projectRoot = projectRoot.parent_path();
-    }
-
-    // If we ended at "build", go to parent
+    // Navigate up to find project root (looking for build directory)
     if (projectRoot.filename() == "build") {
         projectRoot = projectRoot.parent_path();
     }
