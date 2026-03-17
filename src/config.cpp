@@ -1,4 +1,5 @@
 #include "config.h"
+#include "color_provider.h"
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -639,4 +640,18 @@ bool saveColorConfig(const ColorConfig& config) {
 
     std::cout << "Configuration saved to: " << configPath << std::endl;
     return true;
+}
+
+ColorConfig::ColorConfig() :
+    usingDefaults_(true),
+    enableAnimation_(true),
+    animationSpeed_(1.0f),
+    easingType_(0)
+{
+        front_ = RgbColor(DefaultColors::GREEN);
+        back_  = RgbColor(DefaultColors::BLUE);
+        left_  = RgbColor(DefaultColors::ORANGE);
+        right_ = RgbColor(DefaultColors::RED);
+        up_    = RgbColor(DefaultColors::WHITE);
+        down_  = RgbColor(DefaultColors::YELLOW);
 }

@@ -4,21 +4,21 @@ ColorProvider::ColorProvider() = default;
 
 void ColorProvider::setCustomColors(const ColorConfig& config) {
     customFront = config.getFrontColor();
-    customBack = config.getBackColor();
-    customLeft = config.getLeftColor();
+    customBack  = config.getBackColor();
+    customLeft  = config.getLeftColor();
     customRight = config.getRightColor();
-    customUp = config.getUpColor();
-    customDown = config.getDownColor();
+    customUp    = config.getUpColor();
+    customDown  = config.getDownColor();
     useCustomColors = !config.isUsingDefaults();
 }
 
 void ColorProvider::resetToDefaults() {
     customFront = DefaultColors::GREEN;
-    customBack = DefaultColors::BLUE;
-    customLeft = DefaultColors::ORANGE;
+    customBack  = DefaultColors::BLUE;
+    customLeft  = DefaultColors::ORANGE;
     customRight = DefaultColors::RED;
-    customUp = DefaultColors::WHITE;
-    customDown = DefaultColors::YELLOW;
+    customUp    = DefaultColors::WHITE;
+    customDown  = DefaultColors::YELLOW;
     useCustomColors = false;
 }
 

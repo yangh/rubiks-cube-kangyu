@@ -17,11 +17,11 @@ namespace DefaultColors {
     
     inline const std::array<float, 3>& forFace(Face face) {
         switch (face) {
-            case Face::UP: return WHITE;
-            case Face::DOWN: return YELLOW;
+            case Face::UP:    return WHITE;
+            case Face::DOWN:  return YELLOW;
             case Face::FRONT: return GREEN;
-            case Face::BACK: return BLUE;
-            case Face::LEFT: return ORANGE;
+            case Face::BACK:  return BLUE;
+            case Face::LEFT:  return ORANGE;
             case Face::RIGHT: return RED;
             default: return BLACK;
         }
@@ -39,11 +39,11 @@ public:
     std::array<float, 3> getFaceColorRgb(Color color) const;
     
     std::array<float, 3> customFront = DefaultColors::GREEN;
-    std::array<float, 3> customBack = DefaultColors::BLUE;
-    std::array<float, 3> customLeft = DefaultColors::ORANGE;
+    std::array<float, 3> customBack  = DefaultColors::BLUE;
+    std::array<float, 3> customLeft  = DefaultColors::ORANGE;
     std::array<float, 3> customRight = DefaultColors::RED;
-    std::array<float, 3> customUp = DefaultColors::WHITE;
-    std::array<float, 3> customDown = DefaultColors::YELLOW;
+    std::array<float, 3> customUp    = DefaultColors::WHITE;
+    std::array<float, 3> customDown  = DefaultColors::YELLOW;
     bool useCustomColors = false;
 
 private:
