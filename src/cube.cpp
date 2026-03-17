@@ -251,63 +251,59 @@ void RubiksCube::rotateRight(bool prime) {
 void RubiksCube::rotateFront(bool prime) {
     rotateFaceClockwise(front_, prime);
 
+    std::array<Color, 9> temp = up_;
     if (prime) {
-        std::array<Color, 9> temp = up_;
-        up_[6] = right_[0]; up_[7] = right_[3]; up_[8] = right_[6];
-        right_[0] = down_[2]; right_[3] = down_[1]; right_[6] = down_[0];
-        down_[0] = left_[2]; down_[1] = left_[5]; down_[2] = left_[8];
-        left_[2] = temp[8]; left_[5] = temp[7]; left_[8] = temp[6];
+        up_   [6] = right_[0];  up_   [7] = right_[3];  up_   [8] = right_[6];
+        right_[0] = down_ [2];  right_[3] = down_ [1];  right_[6] = down_ [0];
+        down_ [0] = left_ [2];  down_ [1] = left_ [5];  down_ [2] = left_ [8];
+        left_ [2] = temp  [8];  left_ [5] = temp  [7];  left_ [8] = temp  [6];
     } else {
-        std::array<Color, 9> temp = up_;
-        up_[6] = left_[8]; up_[7] = left_[5]; up_[8] = left_[2];
-        left_[2] = down_[0]; left_[5] = down_[1]; left_[8] = down_[2];
-        down_[0] = right_[6]; down_[1] = right_[3]; down_[2] = right_[0];
-        right_[0] = temp[6]; right_[3] = temp[7]; right_[6] = temp[8];
+        up_   [6] = left_ [8];  up_   [7] = left_ [5];  up_   [8] = left_ [2];
+        left_ [2] = down_ [0];  left_ [5] = down_ [1];  left_ [8] = down_ [2];
+        down_ [0] = right_[6];  down_ [1] = right_[3];  down_ [2] = right_[0];
+        right_[0] = temp  [6];  right_[3] = temp  [7];  right_[6] = temp  [8];
     }
 }
 
 void RubiksCube::rotateBack(bool prime) {
     rotateFaceClockwise(back_, prime);
 
+    std::array<Color, 9> temp = up_;
     if (prime) {
-        std::array<Color, 9> temp = up_;
-        up_[0] = left_[6]; up_[1] = left_[3]; up_[2] = left_[0];
-        left_[0] = down_[6]; left_[3] = down_[7]; left_[6] = down_[8];
-        down_[6] = right_[8]; down_[7] = right_[5]; down_[8] = right_[2];
-        right_[2] = temp[0]; right_[5] = temp[1]; right_[8] = temp[2];
+        up_   [0] = left_ [6];  up_   [1] = left_ [3];  up_   [2] = left_ [0];
+        left_ [0] = down_ [6];  left_ [3] = down_ [7];  left_ [6] = down_ [8];
+        down_ [6] = right_[8];  down_ [7] = right_[5];  down_ [8] = right_[2];
+        right_[2] = temp  [0];  right_[5] = temp  [1];  right_[8] = temp  [2];
     } else {
-        std::array<Color, 9> temp = up_;
-        up_[0] = right_[2]; up_[1] = right_[5]; up_[2] = right_[8];
-        right_[2] = down_[8]; right_[5] = down_[7]; right_[8] = down_[6];
-        down_[6] = left_[0]; down_[7] = left_[3]; down_[8] = left_[6];
-        left_[0] = temp[2]; left_[3] = temp[1]; left_[6] = temp[0];
+        up_   [0] = right_[2];  up_   [1] = right_[5];  up_   [2] = right_[8];
+        right_[2] = down_ [8];  right_[5] = down_ [7];  right_[8] = down_ [6];
+        down_ [6] = left_ [0];  down_ [7] = left_ [3];  down_ [8] = left_ [6];
+        left_ [0] = temp  [2];  left_ [3] = temp  [1];  left_ [6] = temp  [0];
     }
 }
 
 void RubiksCube::rotateStanding(bool prime) {
+    std::array<Color, 9> temp = up_;
     if (prime) {
-        std::array<Color, 9> temp = up_;
-        up_[5] = right_[7]; up_[4] = right_[4]; up_[3] = right_[1];
-        right_[7] = down_[3]; right_[4] = down_[4]; right_[1] = down_[5];
-        down_[3] = left_[1]; down_[4] = left_[4]; down_[5] = left_[7];
-        left_[1] = temp[5]; left_[4] = temp[4]; left_[7] = temp[3];
+        up_   [5] = right_[7];  up_   [4] = right_[4];  up_   [3] = right_[1];
+        right_[7] = down_ [3];  right_[4] = down_ [4];  right_[1] = down_ [5];
+        down_ [3] = left_ [1];  down_ [4] = left_ [4];  down_ [5] = left_ [7];
+        left_ [1] = temp  [5];  left_ [4] = temp  [4];  left_ [7] = temp  [3];
     } else {
-        std::array<Color, 9> temp = up_;
-        up_[3] = left_[7]; up_[4] = left_[4]; up_[5] = left_[1];
-        left_[1] = down_[3]; left_[4] = down_[4]; left_[7] = down_[5];
-        down_[5] = right_[1]; down_[4] = right_[4]; down_[3] = right_[7];
-        right_[1] = temp[3]; right_[4] = temp[4]; right_[7] = temp[5];
+        up_   [3] = left_ [7];  up_   [4] = left_ [4];  up_   [5] = left_ [1];
+        left_ [1] = down_ [3];  left_ [4] = down_ [4];  left_ [7] = down_ [5];
+        down_ [5] = right_[1];  down_ [4] = right_[4];  down_ [3] = right_[7];
+        right_[1] = temp  [3];  right_[4] = temp  [4];  right_[7] = temp  [5];
     }
 }
 
 void RubiksCube::rotateFaceClockwise(std::array<Color, 9>& face, bool prime) {
+    std::array<Color, 9> temp = face;
     if (prime) {
-        std::array<Color, 9> temp = face;
         face[0] = temp[2]; face[1] = temp[5]; face[2] = temp[8];
         face[3] = temp[1]; face[4] = temp[4]; face[5] = temp[7];
         face[6] = temp[0]; face[7] = temp[3]; face[8] = temp[6];
     } else {
-        std::array<Color, 9> temp = face;
         face[0] = temp[6]; face[1] = temp[3]; face[2] = temp[0];
         face[3] = temp[7]; face[4] = temp[4]; face[5] = temp[1];
         face[6] = temp[8]; face[7] = temp[5]; face[8] = temp[2];
@@ -371,12 +367,12 @@ bool RubiksCube::isValidColorConfiguration() const {
 std::string RubiksCube::getValidationError() const {
     struct EdgeDef { const std::array<Color, 9>* f1; int i1; const std::array<Color, 9>* f2; int i2; const char* name; };
     EdgeDef edges[12] = {
-        {&up_, 7, &front_, 1, "UF"}, {&up_, 3, &left_, 1, "UL"},
-        {&up_, 5, &right_, 1, "UR"}, {&up_, 1, &back_, 1, "UB"},
-        {&down_, 1, &front_, 7, "DF"}, {&down_, 3, &left_, 7, "DL"},
-        {&down_, 5, &right_, 7, "DR"}, {&down_, 7, &back_, 7, "DB"},
-        {&front_, 3, &left_, 5, "FL"}, {&front_, 5, &right_, 3, "FR"},
-        {&back_, 3, &right_, 5, "BL"}, {&back_, 5, &left_, 3, "BR"}
+        {&up_,    7, &front_, 1, "UF"}, {&up_,    3, &left_,  1, "UL"},
+        {&up_,    5, &right_, 1, "UR"}, {&up_,    1, &back_,  1, "UB"},
+        {&down_,  1, &front_, 7, "DF"}, {&down_,  3, &left_,  7, "DL"},
+        {&down_,  5, &right_, 7, "DR"}, {&down_,  7, &back_,  7, "DB"},
+        {&front_, 3, &left_,  5, "FL"}, {&front_, 5, &right_, 3, "FR"},
+        {&back_,  3, &right_, 5, "BL"}, {&back_,  5, &left_,  3, "BR"}
     };
     
     for (const auto& e : edges) {
@@ -388,10 +384,14 @@ std::string RubiksCube::getValidationError() const {
     
     struct CornerDef { const std::array<Color, 9>* f1; int i1; const std::array<Color, 9>* f2; int i2; const std::array<Color, 9>* f3; int i3; const char* name; };
     CornerDef corners[8] = {
-        {&up_, 6, &front_, 0, &left_, 2, "UFL"}, {&up_, 8, &front_, 2, &right_, 0, "UFR"},
-        {&up_, 0, &back_, 2, &left_, 0, "UBL"}, {&up_, 2, &back_, 0, &right_, 2, "UBR"},
-        {&down_, 0, &front_, 6, &left_, 8, "DFL"}, {&down_, 2, &front_, 8, &right_, 6, "DFR"},
-        {&down_, 6, &back_, 8, &left_, 6, "DBL"}, {&down_, 8, &back_, 6, &right_, 8, "DBR"}
+        {&up_,   6, &front_, 0, &left_,  2, "UFL"},
+        {&up_,   8, &front_, 2, &right_, 0, "UFR"},
+        {&up_,   0, &back_,  2, &left_,  0, "UBL"},
+        {&up_,   2, &back_,  0, &right_, 2, "UBR"},
+        {&down_, 0, &front_, 6, &left_,  8, "DFL"},
+        {&down_, 2, &front_, 8, &right_, 6, "DFR"},
+        {&down_, 6, &back_,  8, &left_,  6, "DBL"},
+        {&down_, 8, &back_,  6, &right_, 8, "DBR"}
     };
     
     for (const auto& c : corners) {
