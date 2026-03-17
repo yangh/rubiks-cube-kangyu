@@ -50,18 +50,6 @@ ref::Color toRefColor(Color color) {
     return ref::Color::WHITE; // Should not reach here
 }
 
-// Convert our Move to ref Move
-bool isDoubleMove(Move move) {
-    switch (move) {
-        case Move::U2: case Move::D2: case Move::L2: case Move::R2:
-        case Move::F2: case Move::B2: case Move::M2: case Move::E2: case Move::S2:
-        case Move::X2: case Move::Y2: case Move::Z2:
-            return true;
-        default:
-            return false;
-    }
-}
-
 ref::Move toRefMove(Move move) {
     switch (move) {
         case Move::U:  return ref::Move::U;
