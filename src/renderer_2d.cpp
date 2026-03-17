@@ -15,27 +15,27 @@ void Renderer2D::draw(ImDrawList* drawList, ImVec2 offset, float scale,
 
     drawFace(drawList, cube.getUp(),
             ImVec2(offset.x, offset.y - spacing),
-            stickerSize, gap, false, Color::WHITE, colors);
+            stickerSize, gap, Color::WHITE, colors);
 
     drawFace(drawList, cube.getLeft(),
             ImVec2(offset.x - spacing, offset.y),
-            stickerSize, gap, false, Color::ORANGE, colors);
+            stickerSize, gap, Color::ORANGE, colors);
     drawFace(drawList, cube.getFront(),
             ImVec2(offset.x, offset.y),
-            stickerSize, gap, false, Color::GREEN, colors);
+            stickerSize, gap, Color::GREEN, colors);
     drawFace(drawList, cube.getRight(),
             ImVec2(offset.x + spacing, offset.y),
-            stickerSize, gap, false, Color::RED, colors);
+            stickerSize, gap, Color::RED, colors);
     drawFace(drawList, cube.getBack(),
             ImVec2(offset.x + spacing * 2, offset.y),
-            stickerSize, gap, false, Color::BLUE, colors);
+            stickerSize, gap, Color::BLUE, colors);
     drawFace(drawList, cube.getDown(),
             ImVec2(offset.x, offset.y + spacing),
-            stickerSize, gap, false, Color::YELLOW, colors);
+            stickerSize, gap, Color::YELLOW, colors);
 }
 
 void Renderer2D::drawFace(ImDrawList* drawList, const std::array<Color, 9>& face,
-                          ImVec2 offset, float size, float gap, bool flipVertical, Color faceType,
+                          ImVec2 offset, float size, float gap, Color faceType,
                           const ColorProvider& colors) {
     float totalSize = size * 3.0f + gap * 2.0f;
     float startX = offset.x - totalSize / 2.0f + size / 2.0f;
@@ -51,8 +51,6 @@ void Renderer2D::drawFace(ImDrawList* drawList, const std::array<Color, 9>& face
             int index;
             if (faceType == Color::BLUE) {
                 index = row * 3 + col;
-            } else if (flipVertical) {
-                index = (2 - row) * 3 + col;
             } else {
                 index = row * 3 + col;
             }
