@@ -82,11 +82,11 @@ public:
 // Get default color configuration
 ColorConfig getDefaultColorConfig();
 
-// Load color configuration from ~/.rubiks-cube/config.json
+// Load color configuration from ~/.rubiks-cube/config.ini
 // Returns default configuration if file doesn't exist or is invalid
 ColorConfig loadColorConfig();
 
-// Save color configuration to ~/.rubiks-cube/config.json
+// Save color configuration to ~/.rubiks-cube/config.ini
 // Returns true on success, false on failure
 bool saveColorConfig(const ColorConfig& config);
 
