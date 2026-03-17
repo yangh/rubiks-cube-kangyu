@@ -4,10 +4,6 @@
 #include <iostream>
 #include <vector>
 
-std::array<Color, 9> RubiksCube::fillColor(Color color) {
-    return {color, color, color, color, color, color, color, color, color};
-}
-
 void RubiksCube::executeMove(Move move) {
     executeMove(move, true);
 }

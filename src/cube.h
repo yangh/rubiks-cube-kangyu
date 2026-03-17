@@ -77,7 +77,6 @@ private:
     void rotateY(bool prime);
     void rotateZ(bool prime);
     void rotateFaceClockwise(std::array<Color, 9>& face, bool prime);
-    static std::array<Color, 9> fillColor(Color color);
 };
 
 #endif // CUBE_H

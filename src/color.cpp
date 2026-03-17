@@ -1,5 +1,9 @@
 #include "color.h"
 
+std::array<Color, 9> fillColor(Color color) {
+    return {color, color, color, color, color, color, color, color, color};
+}
+
 std::array<float, 3> colorToRgb(Color color) {
     switch (color) {
         case Color::WHITE:  return DefaultColors::WHITE;

@@ -17,6 +17,7 @@ enum class Color {
 };
 
 // Color utility functions (moved from cube.h/cpp)
+std::array<Color, 9> fillColor(Color color);
 std::array<float, 3> colorToRgb(Color color);
 std::string colorToString(Color color);
 bool isOppositeColor(Color a, Color b);
