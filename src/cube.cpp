@@ -2,7 +2,6 @@
 #include "move.h"
 #include <algorithm>
 #include <iostream>
-#include <random>
 #include <vector>
 
 std::array<Color, 9> RubiksCube::fillColor(Color color) {
@@ -115,35 +114,10 @@ void RubiksCube::reset() {
 }
 
 std::vector<Move> RubiksCube::scramble(int numMoves) {
-    static const Move basicMoves[] = {
-        Move::U, Move::UP,
-        Move::D, Move::DP,
-        Move::L, Move::LP,
-        Move::R, Move::RP,
-        Move::F, Move::FP,
-        Move::B, Move::BP,
-        Move::E, Move::S, Move::M,
-        Move::U2, Move::D2,
-        Move::L2, Move::R2,
-        Move::F2, Move::B2,
-        Move::M2, Move::E2,
-        Move::S2,
-    };
-    static const int numBasicMoves = sizeof(basicMoves)/sizeof(Move);
-
-    std::vector<Move> scrambleMoves;
-    scrambleMoves.reserve(numMoves);
-
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<> dis(0, numBasicMoves - 1);
-
-    for (int i = 0; i < numMoves; ++i) {
-        Move randomMove = basicMoves[dis(gen)];
-        scrambleMoves.push_back(randomMove);
-        executeMove(randomMove);
+    std::vector<Move> scrambleMoves = generateRandomMoves(numMoves);
+    for (Move m : scrambleMoves) {
+        executeMove(m);
     }
-
     return scrambleMoves;
 }
 

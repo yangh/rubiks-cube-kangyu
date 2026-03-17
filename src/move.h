@@ -102,6 +102,9 @@ std::vector<Move> parseMoveSequence(const std::string& sequence);
 // Get inverse of a move
 Move getInverseMove(Move move);
 
+// Generate random moves for scrambling
+std::vector<Move> generateRandomMoves(int numMoves);
+
 // Inline accessors for move properties
 inline std::string moveToStringFast(Move move) { return MoveLookup::getMoveInfo(move).name; }
 inline Move getInverseMoveFast(Move move) { return MoveLookup::getMoveInfo(move).inverse; }
