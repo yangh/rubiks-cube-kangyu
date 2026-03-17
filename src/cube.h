@@ -18,9 +18,13 @@ enum class Face {
 
 class RubiksCube {
 public:
-    RubiksCube();
+    RubiksCube() { reset(); };
     RubiksCube(const RubiksCube&) = default;
     RubiksCube& operator=(const RubiksCube&) = default;
+
+    std::vector<Move> scramble(int numMoves = 20);
+    void reset();
+    void dump() const;
 
     void executeMove(Move move);
     void executeMove(Move move, bool recordHistory);
@@ -28,10 +32,18 @@ public:
     void pushToMoveHistory(Move move);
     void popRedoHistory();
     void pushToRedoHistory(Move move);
+
+    void undo();
+    void redo();
+    Move getInverseMoveForUndo() const;
+    Move getMoveForRedo() const;
+    const std::vector<Move>& getMoveHistory() const { return moveHistory_; }
+    const std::vector<Move>& getRedoHistory() const { return redoHistory_; }
+    bool canRedo() const { return !redoHistory_.empty(); }
+
     bool isSolved() const;
-    void reset();
-    std::vector<Move> scramble(int numMoves = 20);
-    void dump() const;
+    bool isValidColorConfiguration() const;
+    std::string getValidationError() const;
 
     std::array<Color, 9> getFront() const { return front_; }
     std::array<Color, 9> getBack() const { return back_; }
@@ -39,16 +51,6 @@ public:
     std::array<Color, 9> getRight() const { return right_; }
     std::array<Color, 9> getUp() const { return up_; }
     std::array<Color, 9> getDown() const { return down_; }
-
-    const std::vector<Move>& getMoveHistory() const { return moveHistory_; }
-    Move getInverseMoveForUndo() const;
-    Move getMoveForRedo() const;
-    void undo();
-    void redo();
-    const std::vector<Move>& getRedoHistory() const { return redoHistory_; }
-    bool canRedo() const { return !redoHistory_.empty(); }
-    bool isValidColorConfiguration() const;
-    std::string getValidationError() const;
 
 private:
     std::array<Color, 9> front_;

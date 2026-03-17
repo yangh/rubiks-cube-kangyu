@@ -8,16 +8,6 @@ std::array<Color, 9> RubiksCube::fillColor(Color color) {
     return {color, color, color, color, color, color, color, color, color};
 }
 
-RubiksCube::RubiksCube()
-    : front_(fillColor(Color::GREEN))
-    , back_( fillColor(Color::BLUE))
-    , left_( fillColor(Color::ORANGE))
-    , right_(fillColor(Color::RED))
-    , up_(   fillColor(Color::WHITE))
-    , down_( fillColor(Color::YELLOW))
-{
-}
-
 void RubiksCube::executeMove(Move move) {
     executeMove(move, true);
 }
@@ -86,20 +76,6 @@ void RubiksCube::popRedoHistory() {
 
 void RubiksCube::pushToRedoHistory(Move move) {
     redoHistory_.push_back(move);
-}
-
-bool RubiksCube::isSolved() const {
-    auto checkFace = [](const std::array<Color, 9>& face) -> bool {
-        const Color first = face[0];
-        for (int i = 1; i < 9; ++i) {
-            if (face[i] != first) return false;
-        }
-        return true;
-    };
-
-    return checkFace(front_) && checkFace(back_) &&
-           checkFace(left_) && checkFace(right_) &&
-           checkFace(up_) && checkFace(down_);
 }
 
 void RubiksCube::reset() {
@@ -372,6 +348,20 @@ void RubiksCube::rotateZ(bool prime) {
         rotateStanding(false);
         rotateBack(true);
     }
+}
+
+bool RubiksCube::isSolved() const {
+    auto checkFace = [](const std::array<Color, 9>& face) -> bool {
+        const Color first = face[0];
+        for (int i = 1; i < 9; ++i) {
+            if (face[i] != first) return false;
+        }
+        return true;
+    };
+
+    return checkFace(front_) && checkFace(back_) &&
+           checkFace(left_) && checkFace(right_) &&
+           checkFace(up_) && checkFace(down_);
 }
 
 bool RubiksCube::isValidColorConfiguration() const {
