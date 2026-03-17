@@ -3,7 +3,11 @@
   "started_at": "2026-03-15T11:38:52.144Z",
   "session_ids": [
     "ses_30ec773f1ffe5Djzg6lPZtEFzy",
-    "ses_30f7ab1caffeN84rvHGId4qjJp"
+    "ses_30f7ab1caffeN84rvHGId4qjJp",
+    "ses_303abf7c9ffenOhl5MFGfGfl8J",
+    "ses_303aad473ffeSPjQ38h9urCfvP",
+    "ses_303a0c215ffeJfeF95OW3dSeYf",
+    "ses_3038da2bfffe9DFfYbiOAO6eGJ"
   ],
   "plan_name": "main-refactor",
   "agent": "atlas",
