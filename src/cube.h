@@ -1,6 +1,7 @@
 #ifndef CUBE_H
 #define CUBE_H
 
+#include "move_utils.h"
 #include <array>
 #include <string>
 #include <vector>
@@ -23,47 +24,6 @@ enum class Face {
     RIGHT,
     UP,
     DOWN
-};
-
-// Standard Rubik's cube moves
-enum class Move {
-    U,  // Up
-    UP, // Up prime
-    D,  // Down
-    DP, // Down prime
-    L,  // Left
-    LP, // Left prime
-    R,  // Right
-    RP, // Right prime
-    F,  // Front
-    FP, // Front prime
-    B,  // Back
-    BP,  // Back prime
-    M,  // Middle slice (between L and R)
-    MP, // Middle slice prime
-    E,  // Equator slice (between U and D)
-    EP, // Equator slice prime
-    S,  // Standing slice (between F and B)
-    SP, // Standing slice prime
-    X,  // X-axis rotation (right-left axis)
-    XP, // X-axis rotation prime
-    Y,  // Y-axis rotation (up-down axis)
-    YP, // Y-axis rotation prime
-    Z,  // Z-axis rotation (front-back axis)
-    ZP, // Z-axis rotation prime
-    // Double moves (180° rotation)
-    U2,  // Up face double
-    D2,  // Down face double
-    L2,  // Left face double
-    R2,  // Right face double
-    F2,  // Front face double
-    B2,  // Back face double
-    M2,  // Middle slice double
-    E2,  // Equator slice double
-    S2,  // Standing slice double
-    X2,  // X-axis double rotation
-    Y2,  // Y-axis double rotation
-    Z2   // Z-axis double rotation
 };
 
 // Convert color to RGB
