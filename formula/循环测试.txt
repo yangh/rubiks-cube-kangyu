@@ -17,3 +17,5 @@ Sune循环: R U R' U R U U R' * 6
 
 # 6次回原公式
 洗刷刷: U R U' R' * 6
+
+MUMU: M' U' * 8

@@ -217,8 +217,8 @@ void Renderer3DOpenGL::buildCircleCanvas() {
         fillVerts.push_back(radius * cosf(a1)); fillVerts.push_back(yOffset); fillVerts.push_back(radius * sinf(a1));
         fillVerts.push_back(radius * cosf(a2)); fillVerts.push_back(yOffset); fillVerts.push_back(radius * sinf(a2));
     }
-    circleFillGeom_.vertices = std::move(fillVerts);
     circleFillGeom_.vertexCount = fillVerts.size() / 3;
+    circleFillGeom_.vertices = std::move(fillVerts);
     
     // Circle line loop
     std::vector<float> lineVerts;
@@ -228,8 +228,8 @@ void Renderer3DOpenGL::buildCircleCanvas() {
         lineVerts.push_back(yOffset);
         lineVerts.push_back(radius * sinf(angle));
     }
-    circleLineGeom_.vertices = std::move(lineVerts);
     circleLineGeom_.vertexCount = lineVerts.size() / 3;
+    circleLineGeom_.vertices = std::move(lineVerts);
 }
 
 std::array<Color, 9> Renderer3DOpenGL::getCubeFace(const RubiksCube& cube, int faceIdx) {
