@@ -1,5 +1,5 @@
 #include "renderer_3d_opengl.h"
-#include "view_state.h"
+#include "renderer.h"
 #include "color.h"
 #include "animator.h"
 #include "move.h"
