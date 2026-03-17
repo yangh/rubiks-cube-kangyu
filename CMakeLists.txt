@@ -19,7 +19,7 @@ add_executable(rubiks-cube
     src/app.cpp
     src/cube.cpp
     src/move.cpp
-    src/cube_animator.cpp
+    src/animator.cpp
     src/renderer.cpp
     src/renderer_2d.cpp
     src/renderer_3d_opengl.cpp

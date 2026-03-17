@@ -1,6 +1,6 @@
 #include "app.h"
 #include "config.h"
-#include "cube_animator.h"
+#include "animator.h"
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <iostream>

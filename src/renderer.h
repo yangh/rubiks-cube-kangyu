@@ -2,7 +2,7 @@
 #define RENDERER_H
 
 #include "cube.h"
-#include "cube_animator.h"
+#include "animator.h"
 #include "config.h"
 #include "view_state.h"
 #include "color.h"

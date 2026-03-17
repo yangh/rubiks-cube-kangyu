@@ -1,5 +1,5 @@
-#ifndef CUBE_ANIMATOR_H
-#define CUBE_ANIMATOR_H
+#ifndef ANIMATOR_H
+#define ANIMATOR_H
 
 #include "cube.h"
 #include <functional>
@@ -60,4 +60,4 @@ private:
     void startNextAnimation();
 };
 
-#endif // CUBE_ANIMATOR_H
+#endif // ANIMATOR_H

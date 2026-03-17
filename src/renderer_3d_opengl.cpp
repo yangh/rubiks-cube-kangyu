@@ -1,7 +1,7 @@
 #include "renderer_3d_opengl.h"
 #include "view_state.h"
 #include "color.h"
-#include "cube_animator.h"
+#include "animator.h"
 #include "move.h"
 #include <cmath>
 #include <iostream>
