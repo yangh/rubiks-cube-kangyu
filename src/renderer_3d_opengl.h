@@ -1,7 +1,7 @@
 #ifndef RENDERER_3D_OPENGL_H
 #define RENDERER_3D_OPENGL_H
 
-#include "irenderer_3d.h"
+#include "renderer_3d.h"
 #include "cube.h"
 #include <GL/gl.h>
 #include <vector>

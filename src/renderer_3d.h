@@ -1,5 +1,5 @@
-#ifndef IRENDERER_3D_H
-#define IRENDERER_3D_H
+#ifndef RENDERER_3D_H
+#define RENDERER_3D_H
 
 // Forward declarations
 struct ViewState;
@@ -21,4 +21,4 @@ public:
     virtual void setCube(const RubiksCube* cube) = 0;
 };
 
-#endif // IRENDERER_3D_H
+#endif // RENDERER_3D_H
