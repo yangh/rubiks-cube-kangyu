@@ -38,7 +38,7 @@ A 3D Rubik's cube simulator built with C++, [Dear ImGui](https://github.com/ocor
   - 3D View: Left-click drag (XY rotation), Right-click drag (Z rotation), Scroll wheel (Z rotation + zoom)
   - 2D View: Mouse wheel zoom
 - **Keyboard Shortcuts**: Comprehensive keyboard support with Shift+Key for prime moves, fullscreen toggle
-- **Settings Persistence**: All preferences saved to config.json
+- **Settings Persistence**: All preferences saved to config.ini
 
 ## Requirements
 
@@ -131,7 +131,7 @@ make -C build
 
 ### Settings and Configuration
 - **Animation**: Enable/disable animations and adjust speed (0.1x to 3.0x)
-- **Colors**: Customize each face color (persisted to ~/.rubiks-cube/config.json)
+- **Colors**: Customize each face color (persisted to ~/.rubiks-cube/config.ini)
 - **Views**: Adjust 2D and 3D scale, rotation angles
 - **Reset to Defaults**: Restore default colors and settings
 
@@ -178,25 +178,27 @@ Example: "U2" rotates the Up face 180 degrees (same as "U U").
 
 ```
 src/
-├── main.cpp              - Thin entry point (64 lines)
-├── app.h / app.cpp       - Application class with main loop and UI
-├── cube.h / cube.cpp     - Cube state representation and move logic
-├── renderer.h / cpp      - CubeRenderer facade class
-├── view_state.h / cpp    - View rotation/scale state
-├── color_provider.h/cpp  - Color configuration management
-├── cube_animator.h/cpp   - Animation controller with easing
-├── renderer_2d.h / cpp   - 2D unfolded cube view
-├── irenderer_3d.h        - 3D renderer interface
-├── renderer_3d_opengl.h/cpp - OpenGL 3D implementation
-├── formula.h / cpp       - Formula system for move sequences
-├── config.h / cpp        - Configuration management
-├── model.h / cpp         - 3D model loader
-└── shader.h / cpp        - Shader utilities
+├── main.cpp                  - Application entry point
+├── app.h / app.cpp           - Application class with main loop and UI
+├── cube.h / cube.cpp         - Cube state representation and move logic
+├── move.h / move.cpp         - Move execution and scramble logic
+├── color.h / color.cpp       - Color definitions and ColorProvider
+├── animator.h / animator.cpp - Animation controller with easing
+├── renderer.h / renderer.cpp - CubeRenderer facade class
+├── renderer_2d.h / renderer_2d.cpp - 2D unfolded cube view
+├── renderer_3d.h             - 3D renderer interface
+├── renderer_3d_opengl.h / renderer_3d_opengl.cpp - OpenGL 3D implementation
+├── formula.h / formula.cpp   - Formula system for move sequences
+├── config.h / config.cpp     - Configuration management (INI format)
+├── model.h / model.cpp       - 3D model loader
+├── shader.h / shader.cpp     - Shader utilities
+├── models/                   - 3D model assets
+└── shaders/                  - GLSL shader files
 
 third_party/
-└── imgui/                - ImGUI library
+└── imgui/                    - ImGUI library
 
-formula/                  - User formula files (created automatically)
+formula/                      - User formula files (created automatically)
 ```
 
 ## Architecture
@@ -213,10 +215,10 @@ The application follows a modular architecture with clear separation of concerns
 
 ## Configuration File
 
-Settings are saved to `~/.rubiks-cube/config.json` including:
-- Custom colors for each face
+Settings are saved to `~/.rubiks-cube/config.ini` using a simple INI format (`key = value`), including:
+- Custom colors for each face (e.g. `front = 0.0, 0.8, 0.4`)
 - Animation preferences (enabled/disabled, speed)
-- View parameters (scales, rotations)
+- Easing type
 
 ## Formula File Format
 
@@ -244,3 +246,7 @@ MIT
 - **Configurable Animation Easing**: Linear, ease-in, ease-out, ease-in-out curves
 - **Code Quality**: Application class extracted, main.cpp reduced to thin entry point
 - **UI Polish**: Bigger stickers, softer colors, adjusted 2D sticker gaps
+
+### v1.2.1 (2026-03-18)
+- **Config Format**: Replaced hand-rolled JSON parser with simple INI format (`key = value`), config file renamed from `config.json` to `config.ini`
+- **Code Reduction**: config.cpp reduced from 657 to 241 lines
