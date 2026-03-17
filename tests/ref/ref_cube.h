@@ -66,7 +66,7 @@ public:
 
 private:
     // Helper to fill a face with a single color
-    static std::array<Color, 9> fillColor(Color color);
+    static std::array<Color, 9> fillFaceColor(Color color);
 
 private:
     // Face colors (same representation as our cube)

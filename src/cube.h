@@ -46,11 +46,11 @@ public:
     std::string getValidationError() const;
 
     std::array<Color, 9> getFront() const { return front_; }
-    std::array<Color, 9> getBack() const { return back_; }
-    std::array<Color, 9> getLeft() const { return left_; }
+    std::array<Color, 9> getBack()  const { return back_;  }
+    std::array<Color, 9> getLeft()  const { return left_;  }
     std::array<Color, 9> getRight() const { return right_; }
-    std::array<Color, 9> getUp() const { return up_; }
-    std::array<Color, 9> getDown() const { return down_; }
+    std::array<Color, 9> getUp()    const { return up_;    }
+    std::array<Color, 9> getDown()  const { return down_;  }
 
 private:
     std::array<Color, 9> front_;

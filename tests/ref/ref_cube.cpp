@@ -3,16 +3,16 @@
 namespace ref {
 
 RubiksCube::RubiksCube()
-    : front_(fillColor(Color::GREEN))
-    , back_(fillColor(Color::BLUE))
-    , left_(fillColor(Color::ORANGE))
-    , right_(fillColor(Color::RED))
-    , up_(fillColor(Color::WHITE))
-    , down_(fillColor(Color::YELLOW))
+    : front_(fillFaceColor(Color::GREEN))
+    , back_(fillFaceColor(Color::BLUE))
+    , left_(fillFaceColor(Color::ORANGE))
+    , right_(fillFaceColor(Color::RED))
+    , up_(fillFaceColor(Color::WHITE))
+    , down_(fillFaceColor(Color::YELLOW))
 {
 }
 
-std::array<Color, 9> RubiksCube::fillColor(Color color) {
+std::array<Color, 9> RubiksCube::fillFaceColor(Color color) {
     return {color, color, color, color, color, color, color, color, color};
 }
 
@@ -343,12 +343,12 @@ std::array<Color, 9> RubiksCube::getFace(Face face) const {
 }
 
 void RubiksCube::reset() {
-    front_ = fillColor(Color::GREEN);
-    back_ = fillColor(Color::BLUE);
-    left_ = fillColor(Color::ORANGE);
-    right_ = fillColor(Color::RED);
-    up_ = fillColor(Color::WHITE);
-    down_ = fillColor(Color::YELLOW);
+    front_ = fillFaceColor(Color::GREEN);
+    back_ = fillFaceColor(Color::BLUE);
+    left_ = fillFaceColor(Color::ORANGE);
+    right_ = fillFaceColor(Color::RED);
+    up_ = fillFaceColor(Color::WHITE);
+    down_ = fillFaceColor(Color::YELLOW);
 }
 
 } // namespace ref

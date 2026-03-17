@@ -75,12 +75,12 @@ void RubiksCube::pushToRedoHistory(Move move) {
 }
 
 void RubiksCube::reset() {
-    front_ = fillColor(Color::GREEN);
-    back_  = fillColor(Color::BLUE);
-    left_  = fillColor(Color::ORANGE);
-    right_ = fillColor(Color::RED);
-    up_    = fillColor(Color::WHITE);
-    down_  = fillColor(Color::YELLOW);
+    front_ = fillFaceColor(Color::GREEN);
+    back_  = fillFaceColor(Color::BLUE);
+    left_  = fillFaceColor(Color::ORANGE);
+    right_ = fillFaceColor(Color::RED);
+    up_    = fillFaceColor(Color::WHITE);
+    down_  = fillFaceColor(Color::YELLOW);
     moveHistory_.clear();
     redoHistory_.clear();
 }

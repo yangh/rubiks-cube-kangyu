@@ -6,7 +6,7 @@
 #include <string>
 #include "config.h"
 
-// Color enum (moved from cube.h)
+// Color enum
 enum class Color {
     WHITE,
     YELLOW,
@@ -16,14 +16,14 @@ enum class Color {
     BLUE
 };
 
-// Color utility functions (moved from cube.h/cpp)
-std::array<Color, 9> fillColor(Color color);
+// Color utility functions
+std::array<Color, 9> fillFaceColor(Color color);
 std::array<float, 3> colorToRgb(Color color);
 std::string colorToString(Color color);
 bool isOppositeColor(Color a, Color b);
 
-// DefaultColors namespace (from color_provider.h, WITHOUT forFace to avoid circular dependency)
-namespace DefaultColors {
+// DefaultColorRGB namespace (from color_provider.h, WITHOUT forFace to avoid circular dependency)
+namespace DefaultColorRGB {
     constexpr std::array<float, 3> WHITE  = {1.0f, 1.0f, 1.0f};
     constexpr std::array<float, 3> YELLOW = {1.0f, 1.0f, 0.0f};
     constexpr std::array<float, 3> RED    = {1.0f, 0.0f, 0.0f};
@@ -44,12 +44,12 @@ public:
     uint32_t getFaceColor(Color color) const;
     std::array<float, 3> getFaceColorRgb(Color color) const;
     
-    std::array<float, 3> customFront = DefaultColors::GREEN;
-    std::array<float, 3> customBack  = DefaultColors::BLUE;
-    std::array<float, 3> customLeft  = DefaultColors::ORANGE;
-    std::array<float, 3> customRight = DefaultColors::RED;
-    std::array<float, 3> customUp    = DefaultColors::WHITE;
-    std::array<float, 3> customDown  = DefaultColors::YELLOW;
+    std::array<float, 3> customFront = DefaultColorRGB::GREEN;
+    std::array<float, 3> customBack  = DefaultColorRGB::BLUE;
+    std::array<float, 3> customLeft  = DefaultColorRGB::ORANGE;
+    std::array<float, 3> customRight = DefaultColorRGB::RED;
+    std::array<float, 3> customUp    = DefaultColorRGB::WHITE;
+    std::array<float, 3> customDown  = DefaultColorRGB::YELLOW;
     bool useCustomColors = false;
 
 private:

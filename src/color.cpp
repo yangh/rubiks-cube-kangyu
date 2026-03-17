@@ -1,18 +1,18 @@
 #include "color.h"
 
-std::array<Color, 9> fillColor(Color color) {
+std::array<Color, 9> fillFaceColor(Color color) {
     return {color, color, color, color, color, color, color, color, color};
 }
 
 std::array<float, 3> colorToRgb(Color color) {
     switch (color) {
-        case Color::WHITE:  return DefaultColors::WHITE;
-        case Color::YELLOW: return DefaultColors::YELLOW;
-        case Color::RED:    return DefaultColors::RED;
-        case Color::ORANGE: return DefaultColors::ORANGE;
-        case Color::GREEN:  return DefaultColors::GREEN;
-        case Color::BLUE:   return DefaultColors::BLUE;
-        default:            return DefaultColors::BLACK;
+        case Color::WHITE:  return DefaultColorRGB::WHITE;
+        case Color::YELLOW: return DefaultColorRGB::YELLOW;
+        case Color::RED:    return DefaultColorRGB::RED;
+        case Color::ORANGE: return DefaultColorRGB::ORANGE;
+        case Color::GREEN:  return DefaultColorRGB::GREEN;
+        case Color::BLUE:   return DefaultColorRGB::BLUE;
+        default:            return DefaultColorRGB::BLACK;
     }
 }
 
@@ -44,12 +44,12 @@ void ColorProvider::setCustomColors(const ColorConfig& config) {
 }
 
 void ColorProvider::resetToDefaults() {
-    customFront = DefaultColors::GREEN;
-    customBack  = DefaultColors::BLUE;
-    customLeft  = DefaultColors::ORANGE;
-    customRight = DefaultColors::RED;
-    customUp    = DefaultColors::WHITE;
-    customDown  = DefaultColors::YELLOW;
+    customFront = DefaultColorRGB::GREEN;
+    customBack  = DefaultColorRGB::BLUE;
+    customLeft  = DefaultColorRGB::ORANGE;
+    customRight = DefaultColorRGB::RED;
+    customUp    = DefaultColorRGB::WHITE;
+    customDown  = DefaultColorRGB::YELLOW;
     useCustomColors = false;
 }
 
