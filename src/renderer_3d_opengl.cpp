@@ -371,17 +371,20 @@ void Renderer3DOpenGL::render(int windowWidth, int windowHeight) {
                 float yOffset = (row - 1.0f) * (1.0f + gap);
                 float zOffset = (layer - 1.0f) * (1.0f + gap);
                 
-                glPushMatrix();
-                glTranslatef(xOffset, yOffset, zOffset);
-                
                 // Check if this cube should rotate during animation
                 bool shouldAnimate = isAnimating && 
                     MoveLookup::isInSlice(cubeIndex, getAnimationSlice(animMove));
                 
+                glPushMatrix();
+                
+                // CRITICAL: Apply rotation BEFORE translation
+                // This makes the cube rotate around the cube center (layer axis),
+                // not around its own center (which would look like spinning in place)
                 if (shouldAnimate) {
-                    // Apply animation rotation around the move's axis
                     glRotatef(animAngle, animAxis.x, animAxis.y, animAxis.z);
                 }
+                
+                glTranslatef(xOffset, yOffset, zOffset);
                 
                 // Draw black faces using pre-computed geometry (FIX #1: single batch call)
                 glVertexPointer(3, GL_FLOAT, 0, &cubeBlackFaceGeom_.vertices[0]);
