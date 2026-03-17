@@ -117,6 +117,8 @@ int Application::run() {
         // Add dummy space
         ImGui::Dummy(size);
 
+        showAbout();
+
         ImGui::End();
 
         // ===== Window 2: 2D Unfolded View (Top Right) =====
@@ -155,9 +157,6 @@ int Application::run() {
 
         ImGui::End();
 
-        // Show About dialog if requested
-        showAbout();
-
         // Rendering
         int display_w, display_h;
         glfwGetFramebufferSize(this->window_, &display_w, &display_h);
@@ -171,8 +170,6 @@ int Application::run() {
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        // Render 3D cube on top (in the 3D view window area)
-        // Find the 3D view window and render there
         this->renderer_->render3DOverlay(display_w, display_h);
 
         glfwSwapBuffers(this->window_);
@@ -362,7 +359,6 @@ void Application::renderMenuBar() {
             }
             if (ImGui::MenuItem("About")) {
                 this->showAboutDialog_ = true;
-                ImGui::OpenPopup("About");
             }
             ImGui::Separator();
             if (ImGui::MenuItem("Exit")) {
@@ -851,24 +847,34 @@ void Application::renderShortcutsTab() {
 }
 
 void Application::showAbout() {
-    if (this->showAboutDialog_) {
-        ImGui::SetNextWindowSize(ImVec2(300, 200), ImGuiCond_Appearing);
-        if (ImGui::BeginPopupModal("About", &this->showAboutDialog_, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::Text("Rubik's Cube Simulator");
-            ImGui::Separator();
-            ImGui::Text("Version: 1.0.0");
-            ImGui::Text("Author: Walter");
-            ImGui::Spacing();
-            ImGui::TextWrapped("A 3D Rubik's cube simulator built with C++, ImGUI, and OpenGL. Rotate the cube using standard Rubik's cube notation formulas.");
-            ImGui::Spacing();
-            ImGui::TextWrapped("Dedicated for my mother, Kangyu Qiu. @2026");
-            ImGui::Spacing();
-            if (ImGui::Button("OK", ImVec2(120, 0))) {
-                this->showAboutDialog_ = false;
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
+    if (!this->showAboutDialog_) {
+        return;
+    }
+
+    ImGui::SetNextWindowSize(ImVec2(400, 400), ImGuiCond_Appearing);
+    ImGui::SetNextWindowPos(
+        ImVec2(ImGui::GetIO().DisplaySize.x * 2 / 3, ImGui::GetIO().DisplaySize.y / 2),
+        ImGuiCond_Appearing,
+        ImVec2(0.5f, 0.5f)
+    );
+    ImGui::SetNextWindowFocus();
+
+    if (ImGui::Begin("About", &this->showAboutDialog_, 
+        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse)) {
+        ImGui::Text("Rubik's Cube Simulator");
+        ImGui::Separator();
+        ImGui::Text("Version: 1.2.0");
+        ImGui::Text("Author: Walter");
+        ImGui::Spacing();
+        ImGui::TextWrapped("A 3D Rubik's cube simulator built with C++, Dear ImGui, and OpenGL.");
+        ImGui::Spacing();
+        ImGui::TextWrapped("Dedicated for my mother, Kangyu Qiu. @2026");
+        ImGui::Spacing();
+        ImGui::Separator();
+        if (ImGui::Button("OK", ImVec2(120, 0))) {
+            this->showAboutDialog_ = false;
         }
+        ImGui::End();
     }
 }
 
