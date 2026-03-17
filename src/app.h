@@ -34,8 +34,6 @@ private:
     void handleMoveShortcut(ImGuiKey key, Move normalMove, Move primeMove, ImGuiIO& io);
 
     void renderMenuBar();
-    void render3DView();
-    void render2DNetView();
     void renderControls();
 
     void renderMovesTab();

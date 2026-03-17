@@ -130,7 +130,3 @@ void CubeAnimator::startNextAnimation() {
         std::cout << "\n=== Starting " << moveToStringFast(currentMove_) << " ===" << std::endl;
     }
 }
-
-bool CubeAnimator::isDoubleMove(Move move) const {
-    return ::isDoubleMove(move);
-}

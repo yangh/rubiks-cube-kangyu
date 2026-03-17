@@ -58,7 +58,6 @@ private:
     CubeGetter cubeGetter_;
     
     void startNextAnimation();
-    bool isDoubleMove(Move move) const;
 };
 
 #endif // CUBE_ANIMATOR_H
