@@ -16,7 +16,7 @@ public:
     
 private:
     void drawFace(ImDrawList* drawList, const std::array<Color, 9>& face,
-                 ImVec2 offset, float size, float gap, Color faceType,
+                 ImVec2 offset, float size, float gap,
                  const ColorProvider& colors);
 };
 
