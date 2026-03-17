@@ -1,37 +1,9 @@
 #include "cube.h"
-#include "color_provider.h"
 #include "move.h"
 #include <algorithm>
 #include <iostream>
 #include <random>
 #include <vector>
-
-std::array<float, 3> colorToRgb(Color color) {
-    switch (color) {
-        case Color::WHITE:  return DefaultColors::WHITE;
-        case Color::YELLOW: return DefaultColors::YELLOW;
-        case Color::RED:    return DefaultColors::RED;
-        case Color::ORANGE: return DefaultColors::ORANGE;
-        case Color::GREEN:  return DefaultColors::GREEN;
-        case Color::BLUE:   return DefaultColors::BLUE;
-        default:            return DefaultColors::BLACK;
-    }
-}
-
-std::string colorToString(Color color) {
-    static const char* names[] = {"W", "Y", "R", "O", "G", "B"};
-    int idx = static_cast<int>(color);
-    return (idx >= 0 && idx < 6) ? names[idx] : "?";
-}
-
-bool isOppositeColor(Color a, Color b) {
-    return (a == Color::WHITE  && b == Color::YELLOW)  ||
-           (a == Color::YELLOW && b == Color::WHITE)   ||
-           (a == Color::RED    && b == Color::ORANGE)  ||
-           (a == Color::ORANGE && b == Color::RED)     ||
-           (a == Color::GREEN  && b == Color::BLUE)    ||
-           (a == Color::BLUE   && b == Color::GREEN);
-}
 
 std::array<Color, 9> RubiksCube::fillColor(Color color) {
     return {color, color, color, color, color, color, color, color, color};

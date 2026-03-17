@@ -4,7 +4,7 @@
 #include <array>
 #include <imgui.h>
 #include "cube.h"
-#include "color_provider.h"
+#include "color.h"
 
 class Renderer2D {
 public:

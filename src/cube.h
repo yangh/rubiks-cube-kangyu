@@ -1,19 +1,11 @@
 #ifndef CUBE_H
 #define CUBE_H
 
+#include "color.h"
 #include "move.h"
 #include <array>
 #include <string>
 #include <vector>
-
-enum class Color {
-    WHITE,
-    YELLOW,
-    RED,
-    ORANGE,
-    GREEN,
-    BLUE
-};
 
 enum class Face {
     FRONT,
@@ -23,10 +15,6 @@ enum class Face {
     UP,
     DOWN
 };
-
-std::array<float, 3> colorToRgb(Color color);
-std::string colorToString(Color color);
-bool isOppositeColor(Color a, Color b);
 
 class RubiksCube {
 public:

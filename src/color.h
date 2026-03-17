@@ -1,11 +1,27 @@
-#ifndef COLOR_PROVIDER_H
-#define COLOR_PROVIDER_H
+#ifndef COLOR_H
+#define COLOR_H
 
 #include <array>
 #include <cstdint>
+#include <string>
 #include "config.h"
-#include "cube.h"
 
+// Color enum (moved from cube.h)
+enum class Color {
+    WHITE,
+    YELLOW,
+    RED,
+    ORANGE,
+    GREEN,
+    BLUE
+};
+
+// Color utility functions (moved from cube.h/cpp)
+std::array<float, 3> colorToRgb(Color color);
+std::string colorToString(Color color);
+bool isOppositeColor(Color a, Color b);
+
+// DefaultColors namespace (from color_provider.h, WITHOUT forFace to avoid circular dependency)
 namespace DefaultColors {
     constexpr std::array<float, 3> WHITE  = {1.0f, 1.0f, 1.0f};
     constexpr std::array<float, 3> YELLOW = {1.0f, 1.0f, 0.0f};
@@ -14,20 +30,9 @@ namespace DefaultColors {
     constexpr std::array<float, 3> GREEN  = {0.0f, 1.0f, 0.0f};
     constexpr std::array<float, 3> BLUE   = {0.0f, 0.4f, 1.0f};
     constexpr std::array<float, 3> BLACK  = {0.0f, 0.0f, 0.0f};
-    
-    inline const std::array<float, 3>& forFace(Face face) {
-        switch (face) {
-            case Face::UP:    return WHITE;
-            case Face::DOWN:  return YELLOW;
-            case Face::FRONT: return GREEN;
-            case Face::BACK:  return BLUE;
-            case Face::LEFT:  return ORANGE;
-            case Face::RIGHT: return RED;
-            default: return BLACK;
-        }
-    }
 }
 
+// ColorProvider class (from color_provider.h, unchanged)
 class ColorProvider {
 public:
     ColorProvider();
@@ -50,4 +55,4 @@ private:
     std::array<float, 3> getRgbForColor(Color color) const;
 };
 
-#endif // COLOR_PROVIDER_H
+#endif // COLOR_H

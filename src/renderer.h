@@ -5,7 +5,7 @@
 #include "cube_animator.h"
 #include "config.h"
 #include "view_state.h"
-#include "color_provider.h"
+#include "color.h"
 #include "renderer_2d.h"
 #include "renderer_3d_opengl.h"
 #include <imgui.h>

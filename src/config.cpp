@@ -1,5 +1,5 @@
 #include "config.h"
-#include "color_provider.h"
+#include "color.h"
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
