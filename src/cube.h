@@ -1,12 +1,11 @@
 #ifndef CUBE_H
 #define CUBE_H
 
-#include "move_utils.h"
+#include "move.h"
 #include <array>
 #include <string>
 #include <vector>
 
-// Color representation for cube faces
 enum class Color {
     WHITE,
     YELLOW,
@@ -16,7 +15,6 @@ enum class Color {
     BLUE
 };
 
-// Face representation for cube faces
 enum class Face {
     FRONT,
     BACK,
@@ -26,62 +24,27 @@ enum class Face {
     DOWN
 };
 
-// Convert color to RGB
 std::array<float, 3> colorToRgb(Color color);
-
-// Convert move to string
-std::string moveToString(Move move);
-
-// Parse a move string (e.g., "U", "R'") to Move enum
-// Returns true if parsing succeeded
-bool parseMoveString(const std::string& moveStr, Move& outMove);
-
-// Parse a sequence of move strings to a vector of moves
-// Moves can be separated by spaces, commas, or newlines
-std::vector<Move> parseMoveSequence(const std::string& sequence);
-
-// Convert color to string abbreviation
 std::string colorToString(Color color);
-
-// Helper function to get inverse of a move (defined in main.cpp)
-Move getInverseMove(Move move);
-
-// Check if two colors are opposite on a standard Rubik's cube
-// Opposite pairs: WHITE-YELLOW, RED-ORANGE, GREEN-BLUE
 bool isOppositeColor(Color a, Color b);
 
-// Represents the 3x3x3 Rubik's cube state
 class RubiksCube {
 public:
     RubiksCube();
     RubiksCube(const RubiksCube&) = default;
     RubiksCube& operator=(const RubiksCube&) = default;
 
-    // Execute a move on the cube
     void executeMove(Move move);
-
-    // Execute a move with control over history recording (for animated undo/redo)
     void executeMove(Move move, bool recordHistory);
-
-    // Manual history management (for animated undo/redo)
     void popMoveHistory();
     void pushToMoveHistory(Move move);
     void popRedoHistory();
     void pushToRedoHistory(Move move);
-
-    // Check if the cube is solved
     bool isSolved() const;
-
-    // Reset the cube to solved state
     void reset();
-
-    // Scramble the cube with random moves
     std::vector<Move> scramble(int numMoves = 20);
-
-    // Dump cube state to console in 2D view format
     void dump() const;
 
-    // Get face colors (for rendering)
     std::array<Color, 9> getFront() const { return front_; }
     std::array<Color, 9> getBack() const { return back_; }
     std::array<Color, 9> getLeft() const { return left_; }
@@ -89,33 +52,14 @@ public:
     std::array<Color, 9> getUp() const { return up_; }
     std::array<Color, 9> getDown() const { return down_; }
 
-    // Get move history
     const std::vector<Move>& getMoveHistory() const { return moveHistory_; }
-
-    // Get the inverse move for undo (without executing it)
     Move getInverseMoveForUndo() const;
-
-    // Get the move for redo (without executing it)
     Move getMoveForRedo() const;
-
-    // Undo the last move
     void undo();
-
-    // Redo the last undone move
     void redo();
-
-    // Get redo history
     const std::vector<Move>& getRedoHistory() const { return redoHistory_; }
-
-    // Check if redo is available
     bool canRedo() const { return !redoHistory_.empty(); }
-
-    // Validate cube color configuration
-    // Returns true if no edge/corner contains opposite colors
-    // Opposite pairs: WHITE-YELLOW, RED-ORANGE, GREEN-BLUE
     bool isValidColorConfiguration() const;
-
-    // Get detailed validation error message (empty if valid)
     std::string getValidationError() const;
 
 private:
@@ -125,14 +69,9 @@ private:
     std::array<Color, 9> right_;
     std::array<Color, 9> up_;
     std::array<Color, 9> down_;
-
-    // Move history
     std::vector<Move> moveHistory_;
-
-    // Redo history (moves that were undone)
     std::vector<Move> redoHistory_;
 
-    // Face rotation functions
     void rotateRowX(bool prime, int row);
     void rotateUp(bool prime);
     void rotateDown(bool prime);
@@ -141,20 +80,13 @@ private:
     void rotateRight(bool prime);
     void rotateFront(bool prime);
     void rotateBack(bool prime);
-
-    // Slice rotation functions
-    void rotateMiddle(bool prime);   // M: between L and R
-    void rotateEquator(bool prime); // E: between U and D
-    void rotateStanding(bool prime); // S: between F and B
-    // Axis rotation functions
-    void rotateX(bool prime); // X-axis rotation (right-left)
-    void rotateY(bool prime); // Y-axis rotation (up-down)
-    void rotateZ(bool prime); // Z-axis rotation (front-back)
-
-    // Rotate a face 90 degrees clockwise (or counter-clockwise if prime)
+    void rotateMiddle(bool prime);
+    void rotateEquator(bool prime);
+    void rotateStanding(bool prime);
+    void rotateX(bool prime);
+    void rotateY(bool prime);
+    void rotateZ(bool prime);
     void rotateFaceClockwise(std::array<Color, 9>& face, bool prime);
-
-    // Helper function to fill an array with a single color
     static std::array<Color, 9> fillColor(Color color);
 };
 

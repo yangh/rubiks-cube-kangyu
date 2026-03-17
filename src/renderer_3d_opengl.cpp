@@ -2,7 +2,7 @@
 #include "view_state.h"
 #include "color_provider.h"
 #include "cube_animator.h"
-#include "move_utils.h"
+#include "move.h"
 #include <cmath>
 #include <iostream>
 #include <cstring>

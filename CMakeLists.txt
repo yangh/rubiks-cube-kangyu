@@ -18,6 +18,7 @@ add_executable(rubiks-cube
     src/main.cpp
     src/app.cpp
     src/cube.cpp
+    src/move.cpp
     src/cube_animator.cpp
     src/renderer.cpp
     src/renderer_2d.cpp
@@ -55,6 +56,7 @@ enable_testing()
 add_executable(test_cube
     tests/test_cube.cpp
     src/cube.cpp
+    src/move.cpp
 )
 
 target_include_directories(test_cube
@@ -69,6 +71,7 @@ add_test(NAME cube_logic COMMAND test_cube)
 add_executable(test_cube_2step
     tests/test_cube_2step.cpp
     src/cube.cpp
+    src/move.cpp
 )
 
 target_include_directories(test_cube_2step
@@ -83,6 +86,7 @@ add_test(NAME cube_2step_combos COMMAND test_cube_2step)
 add_executable(test_ref_verify
     tests/test_ref_verify.cpp
     src/cube.cpp
+    src/move.cpp
     tests/ref/ref_cube.cpp
 )
 
@@ -99,6 +103,7 @@ add_test(NAME reference_verify COMMAND test_ref_verify)
 add_executable(test_formula
     tests/test_formula.cpp
     src/cube.cpp
+    src/move.cpp
     src/formula.cpp
 )
 
@@ -114,6 +119,7 @@ add_test(NAME formula_verify COMMAND test_formula)
 add_executable(test_formula_ref
     tests/test_formula_ref.cpp
     src/cube.cpp
+    src/move.cpp
     src/formula.cpp
     tests/ref/ref_cube.cpp
 )
@@ -131,6 +137,7 @@ add_test(NAME formula_ref_verify COMMAND test_formula_ref)
 add_executable(test_axis_rotate
     tests/test_axis_rotate.cpp
     src/cube.cpp
+    src/move.cpp
 )
 
 target_include_directories(test_axis_rotate
@@ -145,6 +152,7 @@ add_test(NAME axis_rotate COMMAND test_axis_rotate)
 add_executable(test_color_validation
     tests/test_color_validation.cpp
     src/cube.cpp
+    src/move.cpp
 )
 
 target_include_directories(test_color_validation

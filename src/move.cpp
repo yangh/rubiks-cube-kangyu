@@ -1,82 +1,10 @@
-#ifndef MOVE_UTILS_H
-#define MOVE_UTILS_H
-
-#include <array>
-#include <string>
-
-enum class MoveFamily {
-    U, D, L, R, F, B,
-    M, E, S,
-    X, Y, Z,
-    NONE
-};
-
-// Standard Rubik's cube moves
-enum class Move {
-    U,  // Up
-    UP, // Up prime
-    D,  // Down
-    DP, // Down prime
-    L,  // Left
-    LP, // Left prime
-    R,  // Right
-    RP, // Right prime
-    F,  // Front
-    FP, // Front prime
-    B,  // Back
-    BP,  // Back prime
-    M,  // Middle slice (between L and R)
-    MP, // Middle slice prime
-    E,  // Equator slice (between U and D)
-    EP, // Equator slice prime
-    S,  // Standing slice (between F and B)
-    SP, // Standing slice prime
-    X,  // X-axis rotation (right-left axis)
-    XP, // X-axis rotation prime
-    Y,  // Y-axis rotation (up-down axis)
-    YP, // Y-axis rotation prime
-    Z,  // Z-axis rotation (front-back axis)
-    ZP, // Z-axis rotation prime
-    // Double moves (180° rotation)
-    U2,  // Up face double
-    D2,  // Down face double
-    L2,  // Left face double
-    R2,  // Right face double
-    F2,  // Front face double
-    B2,  // Back face double
-    M2,  // Middle slice double
-    E2,  // Equator slice double
-    S2,  // Standing slice double
-    X2,  // X-axis double rotation
-    Y2,  // Y-axis double rotation
-    Z2   // Z-axis double rotation
-};
-
-struct RotationAxis {
-    float x, y, z;
-};
-
-struct AnimationSlice {
-    int layer;
-    int row;
-    int col;
-    bool affectsAll;
-};
-
-struct MoveInfo {
-    const char* name;
-    Move inverse;
-    MoveFamily family;
-    Move baseMove;
-    RotationAxis axis;
-    AnimationSlice slice;
-    bool isPrime;
-    bool isDouble;
-};
+#include "move.h"
+#include <cctype>
+#include <sstream>
 
 namespace MoveLookup {
 
-inline const MoveInfo& getMoveInfo(Move move) {
+const MoveInfo& getMoveInfo(Move move) {
     static const MoveInfo table[] = {
         // name, inverse, family, base, axis, {layer,row,col,all}, isPrime, isDouble
         {"U",   Move::UP,  MoveFamily::U, Move::U,  {0, -1,  0}, {-1, 2, -1, false}, false, false},
@@ -125,7 +53,7 @@ inline const MoveInfo& getMoveInfo(Move move) {
     return unknown;
 }
 
-inline bool charToBaseMove(char c, Move& outMove) {
+bool charToBaseMove(char c, Move& outMove) {
     switch (c) {
         case 'U': outMove = Move::U; return true;
         case 'D': outMove = Move::D; return true;
@@ -143,7 +71,7 @@ inline bool charToBaseMove(char c, Move& outMove) {
     }
 }
 
-inline Move applyMoveModifier(Move base, bool prime, bool isDouble) {
+Move applyMoveModifier(Move base, bool prime, bool isDouble) {
     if (isDouble) {
         switch (base) {
             case Move::U: return Move::U2;
@@ -181,7 +109,7 @@ inline Move applyMoveModifier(Move base, bool prime, bool isDouble) {
     return base;
 }
 
-inline bool isInSlice(int cubeIndex, const AnimationSlice& slice) {
+bool isInSlice(int cubeIndex, const AnimationSlice& slice) {
     if (slice.affectsAll) return true;
     
     int layer = cubeIndex / 9;
@@ -196,14 +124,58 @@ inline bool isInSlice(int cubeIndex, const AnimationSlice& slice) {
     return true;
 }
 
+} // namespace MoveLookup
+
+std::string moveToString(Move move) {
+    return moveToStringFast(move);
 }
 
-inline std::string moveToStringFast(Move move) { return MoveLookup::getMoveInfo(move).name; }
-inline Move getInverseMoveFast(Move move) { return MoveLookup::getMoveInfo(move).inverse; }
-inline bool isDoubleMove(Move move) { return MoveLookup::getMoveInfo(move).isDouble; }
-inline bool isPrimeMove(Move move) { return MoveLookup::getMoveInfo(move).isPrime; }
-inline RotationAxis getRotationAxis(Move move) { return MoveLookup::getMoveInfo(move).axis; }
-inline MoveFamily getMoveFamily(Move move) { return MoveLookup::getMoveInfo(move).family; }
-inline const AnimationSlice& getAnimationSlice(Move move) { return MoveLookup::getMoveInfo(move).slice; }
+Move getInverseMove(Move move) {
+    return getInverseMoveFast(move);
+}
 
-#endif
+bool parseMoveString(const std::string& moveStr, Move& outMove) {
+    std::string trimmed = moveStr;
+    trimmed.erase(0, trimmed.find_first_not_of(" \t\n\r"));
+    trimmed.erase(trimmed.find_last_not_of(" \t\n\r") + 1);
+    if (trimmed.empty()) return false;
+
+    std::string upper = trimmed;
+    for (char& c : upper) c = std::toupper(c);
+
+    if (upper.empty() || upper.length() > 2) return false;
+
+    Move baseMove;
+    if (!MoveLookup::charToBaseMove(upper[0], baseMove)) return false;
+
+    bool isPrime = false;
+    bool isDouble = false;
+
+    if (upper.length() == 2) {
+        if (upper[1] == '\'') {
+            isPrime = true;
+        } else if (upper[1] == '2') {
+            isDouble = true;
+        } else {
+            return false;
+        }
+    }
+
+    outMove = MoveLookup::applyMoveModifier(baseMove, isPrime, isDouble);
+    return true;
+}
+
+std::vector<Move> parseMoveSequence(const std::string& sequence) {
+    std::vector<Move> moves;
+    std::istringstream iss(sequence);
+    std::string token;
+
+    while (iss >> token) {
+        Move move;
+        if (parseMoveString(token, move)) {
+            moves.push_back(move);
+        }
+    }
+
+    return moves;
+}
