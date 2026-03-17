@@ -22,12 +22,12 @@ public:
     
     CubeAnimator();
     
-    // 动画控制
+    // Animation control
     void queueMove(Move move, bool recordHistory = true);
     void update(float deltaTime);
     void reset();
     
-    // 状态查询
+    // State query
     bool isAnimating() const { return isAnimating_; }
     float progress() const { return animationProgress_; }
     Move currentMove() const { return currentMove_; }
@@ -38,11 +38,11 @@ public:
     float animationSpeed = 1.0f;
     bool enableAnimation = true;
     
-    // 动画状态快照（供渲染器使用）
+    // Animation state snapshot (for renderer use)
     const RubiksCube& getPreAnimationCube() const { return preAnimationCube_; }
-    float getCurrentAngle() const;  // 当前动画角度
+    float getCurrentAngle() const;  // Current animation angle
     
-    // 设置回调（动画完成时调用）
+    // Set callback (called when animation completes)
     void setMoveCompleteCallback(MoveCallback callback);
     void setCubeGetter(CubeGetter getter) { cubeGetter_ = getter; }
     

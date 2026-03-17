@@ -11,10 +11,10 @@ class IRenderer3D {
 public:
     virtual ~IRenderer3D() = default;
     
-    // 渲染 3D 视图（在 ImGui 渲染后调用）
+    // Render 3D view (called after ImGui rendering)
     virtual void render(int windowWidth, int windowHeight) = 0;
     
-    // 设置依赖项（使用指针，不拥有所有权）
+    // Set dependencies (uses pointers, no ownership)
     virtual void setViewState(const ViewState* state) = 0;
     virtual void setColorProvider(const ColorProvider* provider) = 0;
     virtual void setAnimator(const CubeAnimator* animator) = 0;
