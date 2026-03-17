@@ -3,6 +3,7 @@
 
 #include <GLFW/glfw3.h>
 #include <imgui.h>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -12,8 +13,13 @@
 
 class Application {
 public:
-    Application();
+    Application() = default;
     ~Application();
+
+    Application(const Application&) = delete;
+    Application& operator=(const Application&) = delete;
+    Application(Application&&) = delete;
+    Application& operator=(Application&&) = delete;
 
     int run();
     void setEnableDump(bool enable) { enableDump_ = enable; }
@@ -52,7 +58,7 @@ private:
 
     GLFWwindow* window_ = nullptr;
     RubiksCube cube_;
-    CubeRenderer* renderer_ = nullptr;
+    std::unique_ptr<CubeRenderer> renderer_;
     FormulaManager formulaManager_;
 
     bool isFullscreen_ = false;

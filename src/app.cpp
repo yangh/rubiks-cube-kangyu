@@ -7,14 +7,8 @@
 #include <cmath>
 #include <sstream>
 
-Application::Application() {
-}
-
 Application::~Application() {
-    if (renderer_) {
-        delete renderer_;
-        renderer_ = nullptr;
-    }
+    renderer_.reset();
 
     if (window_) {
         ImGui_ImplOpenGL3_Shutdown();
@@ -260,8 +254,7 @@ void Application::loadFonts() {
 }
 
 void Application::initApp() {
-    // Initialize cube and renderer
-    this->renderer_ = new CubeRenderer(this->cube_);
+    this->renderer_ = std::make_unique<CubeRenderer>(this->cube_);
 
     // Load color configuration from file
     ColorConfig config = loadColorConfig();
