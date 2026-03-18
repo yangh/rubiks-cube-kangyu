@@ -66,6 +66,13 @@ sudo pacman -S cmake glfw mesa
 brew install cmake glfw
 ```
 
+## Quick sart
+
+1. One command to build and run
+```bash
+make
+```
+
 ## Building
 
 1. Clone ImGUI (optional, will download automaticly):
