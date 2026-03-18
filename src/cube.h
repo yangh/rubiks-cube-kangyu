@@ -33,10 +33,7 @@ public:
     void popRedoHistory();
     void pushToRedoHistory(Move move);
 
-    void undo();
-    void redo();
-    Move getInverseMoveForUndo() const;
-    Move getMoveForRedo() const;
+    // Note: undo/redo logic is handled by CubeRenderer for animation support
     const std::vector<Move>& getMoveHistory() const { return moveHistory_; }
     const std::vector<Move>& getRedoHistory() const { return redoHistory_; }
     bool canRedo() const { return !redoHistory_.empty(); }

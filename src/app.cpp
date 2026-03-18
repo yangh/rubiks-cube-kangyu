@@ -52,9 +52,8 @@ int Application::run() {
         int windowWidth, windowHeight;
         glfwGetWindowSize(this->window_, &windowWidth, &windowHeight);
 
-        // Calculate responsive layout dimensions
-        float sidebarWidth = 480.0f;
-        float netViewHeight = 300.0f;
+        // Calculate responsive layout dimensions (using member variables)
+        // sidebarWidth_ and netViewHeight_ are defined in app.h
 
         // Start Dear ImGui frame
         ImGui_ImplOpenGL3_NewFrame();
@@ -68,7 +67,7 @@ int Application::run() {
 
         // ===== Window 1: 3D View (Left side) =====
         ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(windowWidth - sidebarWidth - 20, windowHeight - 20), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(windowWidth - sidebarWidth_ - 20, windowHeight - 20), ImGuiCond_Always);
         ImGui::Begin("3D View", nullptr, ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
         renderMenuBar();
@@ -117,8 +116,8 @@ int Application::run() {
 
         // ===== Window 2: 2D Unfolded View (Top Right) =====
         // Responsive height based on window size (25% of window height, min 250px)
-        ImGui::SetNextWindowPos(ImVec2(windowWidth - sidebarWidth + 10, 10), ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(sidebarWidth - 20, netViewHeight), ImGuiCond_Always);
+        ImGui::SetNextWindowPos(ImVec2(windowWidth - sidebarWidth_ + 10, 10), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(sidebarWidth_ - 20, netViewHeight_), ImGuiCond_Always);
         ImGui::Begin("2D Net View", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
         drawList = ImGui::GetWindowDrawList();
@@ -141,10 +140,10 @@ int Application::run() {
 
         // ===== Window 3: Controls (Bottom Right) =====
         // Start after 2D Net View window (fixed height + 10px gap)
-        float controlsY = 10.0f + netViewHeight + 10.0f;
+        float controlsY = 10.0f + netViewHeight_ + 10.0f;
         float controlsHeight = windowHeight - controlsY - 10.0f;
-        ImGui::SetNextWindowPos(ImVec2(windowWidth - sidebarWidth + 10, controlsY), ImGuiCond_Always);
-        ImGui::SetNextWindowSize(ImVec2(sidebarWidth - 20, controlsHeight), ImGuiCond_Always);
+        ImGui::SetNextWindowPos(ImVec2(windowWidth - sidebarWidth_ + 10, controlsY), ImGuiCond_Always);
+        ImGui::SetNextWindowSize(ImVec2(sidebarWidth_ - 20, controlsHeight), ImGuiCond_Always);
         ImGui::Begin("Controls", nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize);
 
         renderControls();
@@ -164,7 +163,7 @@ int Application::run() {
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 
-        this->renderer_->render3DOverlay(display_w, display_h);
+        this->renderer_->render3DOverlay(display_w, display_h, sidebarWidth_);
 
         glfwSwapBuffers(this->window_);
     }

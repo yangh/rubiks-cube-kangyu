@@ -300,13 +300,12 @@ void Renderer3DOpenGL::setCube(const RubiksCube* cube) {
     cube_ = cube;
 }
 
-void Renderer3DOpenGL::render(int windowWidth, int windowHeight) {
+void Renderer3DOpenGL::render(int windowWidth, int windowHeight, float sidebarWidth) {
     if (!viewState_ || !colorProvider_ || !animator_ || !cube_) {
         return;
     }
-    
-    // Setup viewport and scissor (same as original)
-    float sidebarWidth = 480.0f;
+
+    // Setup viewport and scissor
     int viewX = 10;
     int viewY = 10;
     int viewWidth = windowWidth - (int)sidebarWidth - 20;
