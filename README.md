@@ -68,10 +68,10 @@ brew install cmake glfw
 
 ## Building
 
-1. Clone ImGUI (required, first time only):
+1. Clone ImGUI (optional, will download automaticly):
 ```bash
 cd third_party
-git clone https://github.com/ocornut/imgui.git
+git clone -b v1.92.6 --depth 10 https://github.com/ocornut/imgui.git
 cd ..
 ```
 

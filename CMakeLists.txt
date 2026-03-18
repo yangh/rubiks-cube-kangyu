@@ -48,6 +48,21 @@ target_include_directories(rubiks-cube
 # Add ImGLAD loader from ImGUI (the OpenGL loader included in ImGUI backends)
 target_link_libraries(rubiks-cube PRIVATE ${CMAKE_DL_LIBS})
 
+# Enable FetchContent
+include(FetchContent)
+
+# Download ImGui
+FetchContent_Declare(
+    ImGui
+    GIT_REPOSITORY https://github.com/ocornut/imgui.git
+    GIT_TAG v1.92.6
+    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui
+    GIT_PROGRESS ON
+    GIT_SHALLOW 1
+)
+
+FetchContent_MakeAvailable(ImGui)
+
 # Enable testing
 enable_testing()
 
