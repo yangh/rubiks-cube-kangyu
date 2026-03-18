@@ -142,8 +142,8 @@ void CubeRenderer::draw2D(ImDrawList* drawList, ImVec2 offset, float scale) {
     renderer2D_.draw(drawList, offset, scale, cube_, colorProvider_);
 }
 
-void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight) {
-    renderer3D_.render(windowWidth, windowHeight);
+void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight, float sidebarWidth) {
+    renderer3D_.render(windowWidth, windowHeight, sidebarWidth);
 }
 
 void CubeRenderer::updateAnimation(float deltaTime) {
@@ -163,112 +163,3 @@ void CubeRenderer::updateAnimation(float deltaTime) {
     }
 }
 
-bool CubeRenderer::isStickerAnimating(Move move, Face faceIndex, int stickerIndex) const {
-    switch (move) {
-        case Move::U:
-        case Move::UP:
-        case Move::U2:
-            if (faceIndex == Face::UP) return true;
-            if (stickerIndex >= 0 && stickerIndex <= 2) {
-                return faceIndex == Face::FRONT || faceIndex == Face::LEFT || faceIndex == Face::BACK || faceIndex == Face::RIGHT;
-            }
-            return false;
-
-        case Move::D:
-        case Move::DP:
-        case Move::D2:
-            if (faceIndex == Face::DOWN) return true;
-            if (stickerIndex >= 6 && stickerIndex <= 8) {
-                return faceIndex == Face::FRONT || faceIndex == Face::LEFT || faceIndex == Face::BACK || faceIndex == Face::RIGHT;
-            }
-            return false;
-
-        case Move::L:
-        case Move::LP:
-        case Move::L2:
-            if (faceIndex == Face::LEFT) return true;
-            if (stickerIndex == 0 || stickerIndex == 3 || stickerIndex == 6) {
-                return faceIndex == Face::UP || faceIndex == Face::FRONT || faceIndex == Face::DOWN || faceIndex == Face::BACK;
-            }
-            return false;
-
-        case Move::R:
-        case Move::RP:
-        case Move::R2:
-            if (faceIndex == Face::RIGHT) return true;
-            if (stickerIndex == 2 || stickerIndex == 5 || stickerIndex == 8) {
-                return faceIndex == Face::UP || faceIndex == Face::FRONT || faceIndex == Face::DOWN || faceIndex == Face::BACK;
-            }
-            return false;
-
-        case Move::F:
-        case Move::FP:
-        case Move::F2:
-            if (faceIndex == Face::FRONT) return true;
-            if (faceIndex == Face::UP && stickerIndex >= 6 && stickerIndex <= 8) return true;
-            if (faceIndex == Face::LEFT && (stickerIndex == 2 || stickerIndex == 5 || stickerIndex == 8)) return true;
-            if (faceIndex == Face::DOWN && stickerIndex >= 0 && stickerIndex <= 2) return true;
-            if (faceIndex == Face::RIGHT && (stickerIndex == 0 || stickerIndex == 3 || stickerIndex == 6)) return true;
-            return false;
-
-        case Move::B:
-        case Move::BP:
-        case Move::B2:
-            if (faceIndex == Face::BACK) return true;
-            if (faceIndex == Face::UP && stickerIndex >= 0 && stickerIndex <= 2) return true;
-            if (faceIndex == Face::LEFT && (stickerIndex == 0 || stickerIndex == 3 || stickerIndex == 6)) return true;
-            if (faceIndex == Face::DOWN && stickerIndex >= 6 && stickerIndex <= 8) return true;
-            if (faceIndex == Face::RIGHT && (stickerIndex == 2 || stickerIndex == 5 || stickerIndex == 8)) return true;
-            return false;
-
-        case Move::M:
-        case Move::MP:
-        case Move::M2:
-            if (stickerIndex == 1 || stickerIndex == 4 || stickerIndex == 7) {
-                return faceIndex == Face::UP || faceIndex == Face::DOWN || faceIndex == Face::FRONT || faceIndex == Face::BACK;
-            }
-            return false;
-
-        case Move::E:
-        case Move::EP:
-        case Move::E2:
-            if (stickerIndex >= 3 && stickerIndex <= 5) {
-                return faceIndex == Face::FRONT || faceIndex == Face::BACK || faceIndex == Face::LEFT || faceIndex == Face::RIGHT;
-            }
-            return false;
-
-        case Move::S:
-        case Move::SP:
-        case Move::S2:
-            if (faceIndex == Face::UP || faceIndex == Face::DOWN) {
-                return stickerIndex >= 3 && stickerIndex <= 5;
-            }
-            if (faceIndex == Face::LEFT || faceIndex == Face::RIGHT) {
-                return stickerIndex == 1 || stickerIndex == 4 || stickerIndex == 7;
-            }
-            return false;
-
-        case Move::X:
-        case Move::XP:
-        case Move::X2:
-            return true;
-
-        case Move::Y:
-        case Move::YP:
-        case Move::Y2:
-            return true;
-
-        case Move::Z:
-        case Move::ZP:
-        case Move::Z2:
-            return true;
-
-        default:
-            return false;
-    }
-}
-
-std::array<float, 3> CubeRenderer::rotateSticker(const std::array<float, 3>& pos, Move move, float angle) const {
-    RotationAxis axis = getRotationAxis(move);
-    return rotateAroundAxis(pos, axis, angle);
-}

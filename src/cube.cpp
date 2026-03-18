@@ -93,43 +93,6 @@ std::vector<Move> RubiksCube::scramble(int numMoves) {
     return scrambleMoves;
 }
 
-void RubiksCube::undo() {
-    if (moveHistory_.empty()) {
-        return;
-    }
-
-    Move lastMove = moveHistory_.back();
-    moveHistory_.pop_back();
-    redoHistory_.push_back(lastMove);
-    Move inverseMove = getInverseMove(lastMove);
-    executeMove(inverseMove, false);
-}
-
-Move RubiksCube::getInverseMoveForUndo() const {
-    if (moveHistory_.empty()) {
-        return Move::U;
-    }
-    return getInverseMove(moveHistory_.back());
-}
-
-Move RubiksCube::getMoveForRedo() const {
-    if (redoHistory_.empty()) {
-        return Move::U;
-    }
-    return redoHistory_.back();
-}
-
-void RubiksCube::redo() {
-    if (redoHistory_.empty()) {
-        return;
-    }
-
-    Move moveToRedo = redoHistory_.back();
-    redoHistory_.pop_back();
-    moveHistory_.push_back(moveToRedo);
-    executeMove(moveToRedo, false);
-}
-
 void RubiksCube::dump() const {
     auto printRow = [](const std::array<Color, 9>& face, int row) {
         for (int col = 0; col < 3; ++col) {

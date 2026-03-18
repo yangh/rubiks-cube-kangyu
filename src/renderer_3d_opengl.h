@@ -11,7 +11,7 @@ public:
     Renderer3DOpenGL();
     ~Renderer3DOpenGL() override;
     
-    void render(int windowWidth, int windowHeight) override;
+    void render(int windowWidth, int windowHeight, float sidebarWidth) override;
     void setViewState(const ViewState* state) override;
     void setColorProvider(const ColorProvider* provider) override;
     void setAnimator(const CubeAnimator* animator) override;

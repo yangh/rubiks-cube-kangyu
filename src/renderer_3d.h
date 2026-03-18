@@ -12,7 +12,7 @@ public:
     virtual ~IRenderer3D() = default;
     
     // Render 3D view (called after ImGui rendering)
-    virtual void render(int windowWidth, int windowHeight) = 0;
+    virtual void render(int windowWidth, int windowHeight, float sidebarWidth) = 0;
     
     // Set dependencies (uses pointers, no ownership)
     virtual void setViewState(const ViewState* state) = 0;

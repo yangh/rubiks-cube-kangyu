@@ -36,7 +36,7 @@ public:
     void draw2D(ImDrawList* drawList, ImVec2 offset, float scale);
 
     // Render 3D overlay (called after ImGui rendering)
-    void render3DOverlay(int windowWidth, int windowHeight);
+    void render3DOverlay(int windowWidth, int windowHeight, float sidebarWidth);
 
     void executeMove(Move move);
     void executeMove(Move move, bool recordHistory);  // For animated undo/redo
@@ -66,9 +66,6 @@ public:
 
 private:
     RubiksCube& cube_;
-
-    bool isStickerAnimating(Move move, Face faceIndex, int stickerIndex) const;
-    std::array<float, 3> rotateSticker(const std::array<float, 3>& pos, Move move, float angle) const;
 };
 
 #endif // RENDERER_H
