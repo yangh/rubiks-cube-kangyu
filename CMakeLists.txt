@@ -5,6 +5,24 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+function(glsl_to_header GLSL_FILE VAR_NAME OUTPUT_NAME OUTPUT_DIR)
+    file(READ ${GLSL_FILE} CONTENT)
+    string(REPLACE "\\" "\\\\" CONTENT "${CONTENT}")
+    string(REPLACE "\"" "\\\"" CONTENT "${CONTENT}")
+    string(REPLACE "\n" "\\n\"\n\"" CONTENT "${CONTENT}")
+    set(HEADER_FILE "${OUTPUT_DIR}/${OUTPUT_NAME}.glsl.h")
+    file(WRITE ${HEADER_FILE}
+        "#pragma once\n"
+        "static const char* ${VAR_NAME} =\n\"${CONTENT}\";\n"
+    )
+endfunction()
+
+set(GLSL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/generated/glsl")
+file(MAKE_DIRECTORY ${GLSL_OUTPUT_DIR})
+
+glsl_to_header("${CMAKE_CURRENT_SOURCE_DIR}/src/shaders/cubie.vert.glsl" "cubieVertShader" "cubie.vert" ${GLSL_OUTPUT_DIR})
+glsl_to_header("${CMAKE_CURRENT_SOURCE_DIR}/src/shaders/cubie.frag.glsl" "cubieFragShader" "cubie.frag" ${GLSL_OUTPUT_DIR})
+
 # Find required packages
 find_package(OpenGL REQUIRED)
 find_package(glfw3 REQUIRED)
@@ -43,6 +61,7 @@ target_link_libraries(rubiks-cube
 target_include_directories(rubiks-cube
     PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${GLSL_OUTPUT_DIR}
 )
 
 # Add ImGLAD loader from ImGUI (the OpenGL loader included in ImGUI backends)

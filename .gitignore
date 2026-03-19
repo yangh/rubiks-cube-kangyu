@@ -60,3 +60,6 @@ cmake_install.cmake
 .cache
 .clangd
 
+# Generated GLSL headers
+*.glsl.h
+
