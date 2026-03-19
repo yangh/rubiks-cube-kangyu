@@ -161,16 +161,15 @@ void main() {
     vec3 n = calcNormal(p);
 
     int ci = cubieIdx;
-    int fi = getFaceIndex(n);
 
-    float stickerSize = cubieSize * 0.92;
-    float stickerRadius = cubieSize * 0.08;
-
-    vec3 pos = cubiePositions[ci];
     mat3 animRot;
     bool hasAnim = (animAngle != 0.0);
     if (hasAnim && animSliceMask[ci] > 0.5) {
         animRot = rotateAroundAxis(animAxis, radians(animAngle));
+    }
+
+    vec3 pos = cubiePositions[ci];
+    if (hasAnim && animSliceMask[ci] > 0.5) {
         pos = animRot * pos;
     }
     vec3 localP = p - pos;
@@ -178,7 +177,17 @@ void main() {
         localP = transpose(animRot) * localP;
     }
 
-    vec2 uv = projectToFace(localP, n);
+    vec3 localN = n;
+    if (hasAnim && animSliceMask[ci] > 0.5) {
+        localN = transpose(animRot) * n;
+    }
+
+    int fi = getFaceIndex(localN);
+
+    float stickerSize = cubieSize * 0.92;
+    float stickerRadius = cubieSize * 0.08;
+
+    vec2 uv = projectToFace(localP, localN);
     float sd = sdRoundRect(uv, vec2(stickerSize), stickerRadius);
 
     vec3 baseColor = vec3(0.02, 0.02, 0.02);
