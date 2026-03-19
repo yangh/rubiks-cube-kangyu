@@ -404,7 +404,7 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
     cubieShader_.setMat4("view", glm::value_ptr(viewMatrix));
     cubieShader_.setMat4("projection", glm::value_ptr(projMatrix));
     cubieShader_.setVec3("cameraPos", actualCamPos.x, actualCamPos.y, actualCamPos.z);
-    cubieShader_.setVec3("lightPos", 5.0f, 5.0f, 5.0f);
+    cubieShader_.setVec3("lightPos", actualCamPos.x, actualCamPos.y, actualCamPos.z);
     cubieShader_.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
     cubieShader_.setFloat("gap", gap_);
     cubieShader_.setFloat("cubieSize", cubieSize_ * cubeScale_);
