@@ -21,6 +21,7 @@ typedef void (APIENTRYP PFNGLUSEPROGRAMPROC) (GLuint program);
 typedef GLint(APIENTRYP PFNGLGETUNIFORMLOCATIONPROC) (GLuint program, const GLchar *name);
 typedef void (APIENTRYP PFNGLUNIFORM1IPROC) (GLint location, GLint v0);
 typedef void (APIENTRYP PFNGLUNIFORM1FPROC) (GLint location, GLfloat v0);
+typedef void (APIENTRYP PFNGLUNIFORM2FPROC) (GLint location, GLfloat v0, GLfloat v1);
 typedef void (APIENTRYP PFNGLUNIFORM3FPROC) (GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
 typedef void (APIENTRYP PFNGLUNIFORMMATRIX4FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
 typedef void (APIENTRYP PFNGLUNIFORMMATRIX3FVPROC) (GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
@@ -56,6 +57,7 @@ public:
         glGetProgramInfoLog = (PFNGLGETProgramInfoLogPROC)glfwGetProcAddress("glGetProgramInfoLog");
         glUniform1i = (PFNGLUNIFORM1IPROC)glfwGetProcAddress("glUniform1i");
         glUniform1f = (PFNGLUNIFORM1FPROC)glfwGetProcAddress("glUniform1f");
+        glUniform2f = (PFNGLUNIFORM2FPROC)glfwGetProcAddress("glUniform2f");
         glUniform3f = (PFNGLUNIFORM3FPROC)glfwGetProcAddress("glUniform3f");
         glUniformMatrix4fv = (PFNGLUNIFORMMATRIX4FVPROC)glfwGetProcAddress("glUniformMatrix4fv");
         glUniformMatrix3fv = (PFNGLUNIFORMMATRIX3FVPROC)glfwGetProcAddress("glUniformMatrix3fv");
@@ -70,7 +72,7 @@ public:
                glAttachShader && glDeleteShader && glLinkProgram && glDeleteProgram &&
                glUseProgram && glGetUniformLocation && glGetShaderiv && glGetProgramiv &&
                glGetShaderInfoLog && glGetProgramInfoLog && glUniform1i && glUniform1f &&
-               glUniform3f && glUniformMatrix4fv && glUniformMatrix3fv &&
+               glUniform2f && glUniform3f && glUniformMatrix4fv && glUniformMatrix3fv &&
                glEnableVertexAttribArray && glDisableVertexAttribArray &&
                glVertexAttribPointer && glDrawArrays && glGenVertexArrays && glBindVertexArray;
     }
@@ -91,6 +93,7 @@ public:
     PFNGLGETProgramInfoLogPROC glGetProgramInfoLog = nullptr;
     PFNGLUNIFORM1IPROC glUniform1i = nullptr;
     PFNGLUNIFORM1FPROC glUniform1f = nullptr;
+    PFNGLUNIFORM2FPROC glUniform2f = nullptr;
     PFNGLUNIFORM3FPROC glUniform3f = nullptr;
     PFNGLUNIFORMMATRIX4FVPROC glUniformMatrix4fv = nullptr;
     PFNGLUNIFORMMATRIX3FVPROC glUniformMatrix3fv = nullptr;

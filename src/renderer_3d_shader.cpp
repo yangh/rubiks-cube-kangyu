@@ -51,6 +51,7 @@ uniform vec3 faceColors[162];
 uniform float gap;
 uniform vec3 lightPos;
 uniform vec3 lightColor;
+uniform vec2 resolution;
 
 float sdRoundBox(vec3 p, vec3 b, float r) {
     vec3 q = abs(p) - b;
@@ -146,18 +147,37 @@ void main() {
     float t = 0.0;
     int cubieIdx = -1;
     bool hit = false;
+    float closestDist = 1e10;
+    float tClosest = 0.0;
+    int closestCubie = -1;
 
     for (int i = 0; i < 64; i++) {
         vec3 p = ro + t * rd;
-        float d = sceneSDF(p, cubieIdx);
-        if (d < 0.001) { hit = true; break; }
+        int ci;
+        float d = sceneSDF(p, ci);
+        if (d < closestDist) {
+            closestDist = d;
+            closestCubie = ci;
+            tClosest = t;
+        }
+        if (d < 0.001) { hit = true; cubieIdx = ci; break; }
         if (t > 20.0) break;
         t += max(d, 0.001);
     }
 
-    if (!hit) { discard; }
+    float coverage = 1.0;
+    vec3 p;
 
-    vec3 p = ro + t * rd;
+    if (hit) {
+        p = ro + t * rd;
+    } else {
+        float pixelSize = 2.0 * tClosest * tan(radians(22.5)) / resolution.y;
+        coverage = 1.0 - smoothstep(pixelSize * 0.3, pixelSize * 1.0, closestDist);
+        if (coverage < 0.01) { discard; }
+        p = ro + tClosest * rd;
+        cubieIdx = closestCubie;
+    }
+
     vec3 n = calcNormal(p);
 
     int ci = cubieIdx;
@@ -190,9 +210,12 @@ void main() {
     vec2 uv = projectToFace(localP, localN);
     float sd = sdRoundRect(uv, vec2(stickerSize), stickerRadius);
 
+    float edgeSoft = 0.015 * cubieSize;
+    float aa = 1.0 - smoothstep(-edgeSoft, edgeSoft, sd);
+
     vec3 baseColor = vec3(0.02, 0.02, 0.02);
     vec3 stickerColor = faceColors[ci * 6 + fi];
-    vec3 surfaceColor = (sd < 0.0) ? stickerColor : baseColor;
+    vec3 surfaceColor = mix(baseColor, stickerColor, aa);
 
     vec3 lightDir = normalize(lightPos - p);
     vec3 viewDir = normalize(cameraPos - p);
@@ -204,7 +227,7 @@ void main() {
 
     vec3 color = surfaceColor * (ambient + diff) + lightColor * spec * 0.4;
 
-    fragColor = vec4(color, 1.0);
+    fragColor = vec4(color * coverage, 1.0);
 }
 )";
 
@@ -385,6 +408,7 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
     cubieShader_.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
     cubieShader_.setFloat("gap", gap_);
     cubieShader_.setFloat("cubieSize", cubieSize_ * cubeScale_);
+    cubieShader_.setVec2("resolution", (float)viewW, (float)viewH);
     cubieShader_.setFloat("animAngle", isAnimating ? -animAngle : 0.0f);
     cubieShader_.setVec3("animAxis", animAxis.x, animAxis.y, animAxis.z);
 

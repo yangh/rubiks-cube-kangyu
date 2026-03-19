@@ -21,6 +21,7 @@ public:
     void setInt(const char* name, int value);
     void setFloat(const char* name, float value);
     void setVec3(const char* name, float x, float y, float z);
+    void setVec2(const char* name, float x, float y);
     void setMat4(const char* name, const float* value);
     void setMat3(const char* name, const float* value);
 
