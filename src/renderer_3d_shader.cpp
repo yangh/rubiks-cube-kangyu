@@ -46,14 +46,20 @@ uniform vec3 cubiePositions[27];
 uniform float cubieSize;
 uniform float animAngle;
 uniform vec3 animAxis;
-uniform float gap;
 uniform float animSliceMask[27];
+uniform vec3 faceColors[162];
+uniform float gap;
 uniform vec3 lightPos;
 uniform vec3 lightColor;
 
 float sdRoundBox(vec3 p, vec3 b, float r) {
     vec3 q = abs(p) - b;
     return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0) - r;
+}
+
+float sdRoundRect(vec2 p, vec2 b, float r) {
+    vec2 q = abs(p) - b;
+    return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
 }
 
 mat3 rotateAroundAxis(vec3 axis, float angle) {
@@ -111,6 +117,28 @@ vec3 calcNormal(vec3 p) {
     return normalize(n);
 }
 
+int getFaceIndex(vec3 n) {
+    vec3 an = abs(n);
+    if (an.x >= an.y && an.x >= an.z) {
+        return n.x > 0.0 ? 4 : 5;
+    } else if (an.y >= an.z) {
+        return n.y > 0.0 ? 2 : 3;
+    } else {
+        return n.z > 0.0 ? 0 : 1;
+    }
+}
+
+vec2 projectToFace(vec3 localP, vec3 n) {
+    vec3 an = abs(n);
+    if (an.x >= an.y && an.x >= an.z) {
+        return localP.yz;
+    } else if (an.y >= an.z) {
+        return localP.xz;
+    } else {
+        return localP.xy;
+    }
+}
+
 void main() {
     vec3 ro = cameraPos;
     vec3 rd = normalize(vWorldPos - cameraPos);
@@ -131,6 +159,32 @@ void main() {
 
     vec3 p = ro + t * rd;
     vec3 n = calcNormal(p);
+
+    int ci = cubieIdx;
+    int fi = getFaceIndex(n);
+
+    float stickerSize = cubieSize * 0.92;
+    float stickerRadius = cubieSize * 0.08;
+
+    vec3 pos = cubiePositions[ci];
+    mat3 animRot;
+    bool hasAnim = (animAngle != 0.0);
+    if (hasAnim && animSliceMask[ci] > 0.5) {
+        animRot = rotateAroundAxis(animAxis, radians(animAngle));
+        pos = animRot * pos;
+    }
+    vec3 localP = p - pos;
+    if (hasAnim && animSliceMask[ci] > 0.5) {
+        localP = transpose(animRot) * localP;
+    }
+
+    vec2 uv = projectToFace(localP, n);
+    float sd = sdRoundRect(uv, vec2(stickerSize), stickerRadius);
+
+    vec3 baseColor = vec3(0.02, 0.02, 0.02);
+    vec3 stickerColor = faceColors[ci * 6 + fi];
+    vec3 surfaceColor = (sd < 0.0) ? stickerColor : baseColor;
+
     vec3 lightDir = normalize(lightPos - p);
     vec3 viewDir = normalize(cameraPos - p);
     vec3 reflectDir = reflect(-lightDir, n);
@@ -139,145 +193,12 @@ void main() {
     float diff = max(dot(n, lightDir), 0.0);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
 
-    vec3 cubieColor = vec3(0.02, 0.02, 0.02);
-    vec3 color = cubieColor * (ambient + diff) + lightColor * spec * 0.4;
+    vec3 color = surfaceColor * (ambient + diff) + lightColor * spec * 0.4;
 
     fragColor = vec4(color, 1.0);
 }
 )";
 
-static const char* stickerVertShader = R"(
-#version 330 core
-
-out vec2 vUV;
-out vec3 vRayDir;
-
-uniform mat4 view;
-uniform mat4 projection;
-uniform vec3 cameraPos;
-
-const vec2 quadVertices[6] = vec2[6](
-    vec2(-1.0, -1.0), vec2(1.0, -1.0), vec2(1.0, 1.0),
-    vec2(-1.0, -1.0), vec2(1.0, 1.0), vec2(-1.0, 1.0)
-);
-
-void main() {
-    vUV = quadVertices[gl_VertexID] * 0.5 + 0.5;
-
-    vec4 rayTarget = inverse(projection) * vec4(quadVertices[gl_VertexID], 1.0, 1.0);
-    rayTarget.w = 0.0;
-    vRayDir = mat3(view) * rayTarget.xyz;
-
-    gl_Position = vec4(quadVertices[gl_VertexID], -1.0, 1.0);
-}
-)";
-
-static const char* stickerFragShader = R"(
-#version 330 core
-
-#define MAX_STICKERS 54
-
-in vec3 vRayDir;
-out vec4 fragColor;
-
-uniform vec3 cameraPos;
-uniform vec3 stickerCenters[MAX_STICKERS];
-uniform vec3 stickerNormals[MAX_STICKERS];
-uniform vec3 stickerColors[MAX_STICKERS];
-uniform int stickerCount;
-uniform vec3 lightPos;
-uniform vec3 lightColor;
-uniform float animAngle;
-uniform vec3 animAxis;
-
-float sdRoundRect(vec2 p, vec2 b, float r) {
-    vec2 q = abs(p) - b;
-    return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
-}
-
-mat3 rotateAroundAxis(vec3 axis, float angle) {
-    float c = cos(angle);
-    float s = sin(angle);
-    float t = 1.0 - c;
-    vec3 a = normalize(axis);
-    return mat3(
-        t * a.x * a.x + c,       t * a.x * a.y - s * a.z, t * a.x * a.z + s * a.y,
-        t * a.x * a.y + s * a.z, t * a.y * a.y + c,       t * a.y * a.z - s * a.x,
-        t * a.x * a.z - s * a.y, t * a.y * a.z + s * a.x, t * a.z * a.z + c
-    );
-}
-
-bool rayIntersectPlane(vec3 ro, vec3 rd, vec3 center, vec3 normal, out float t) {
-    float denom = dot(rd, normal);
-    if (abs(denom) < 1e-6) return false;
-    t = dot(center - ro, normal) / denom;
-    return t > 0.0;
-}
-
-void main() {
-    vec3 ro = cameraPos;
-    vec3 rd = normalize(vRayDir);
-
-    float minT = 1e10;
-    vec3 hitColor = vec3(0.0);
-    vec3 hitNormal = vec3(0.0);
-
-    mat3 animRot;
-    bool hasAnim = (animAngle != 0.0);
-    if (hasAnim) {
-        animRot = rotateAroundAxis(animAxis, radians(animAngle));
-    }
-
-    for (int i = 0; i < stickerCount; i++) {
-        vec3 center = stickerCenters[i];
-        vec3 normal = stickerNormals[i];
-
-        if (hasAnim) {
-            center = animRot * center;
-            normal = animRot * normal;
-        }
-
-        float t;
-        if (!rayIntersectPlane(ro, rd, center, normal, t)) continue;
-        if (t > minT) continue;
-
-        vec3 p = ro + t * rd;
-        vec3 localP = p - center;
-
-        vec3 u = normalize(cross(normal, vec3(0.0, 1.0, 0.0)));
-        if (length(u) < 0.001) u = normalize(cross(normal, vec3(1.0, 0.0, 0.0)));
-        vec3 v = cross(normal, u);
-
-        float uCoord = dot(localP, u);
-        float vCoord = dot(localP, v);
-
-        float d = sdRoundRect(vec2(uCoord, vCoord), vec2(0.13), 0.015);
-        if (d < 0.0) {
-            minT = t;
-            hitColor = stickerColors[i];
-            hitNormal = normal;
-        }
-    }
-
-    if (minT < 1e10) {
-        vec3 p = ro + minT * rd;
-        vec3 lightDir = normalize(lightPos - p);
-        vec3 viewDir = normalize(cameraPos - p);
-        vec3 reflectDir = reflect(-lightDir, hitNormal);
-
-        float ambient = 0.25;
-        float diff = max(dot(hitNormal, lightDir), 0.0);
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
-
-        vec3 color = hitColor * (ambient + diff) + lightColor * spec * 0.4;
-        fragColor = vec4(color, 1.0);
-    } else {
-        discard;
-    }
-}
-)";
-
-static const float kFaceOffset[6] = { 0.5f, -0.5f, 0.5f, -0.5f, 0.5f, -0.5f };
 static const float kFaceNormal[6][3] = {
     { 0.0f,  0.0f,  1.0f },
     { 0.0f,  0.0f, -1.0f },
@@ -304,16 +225,6 @@ void Renderer3DShader::buildShaders() {
     }
     if (!cubieShader_.linkProgram()) {
         std::cerr << "Failed to link cubie shader program" << std::endl;
-    }
-
-    if (!stickerShader_.compileShaderFromString(GL_VERTEX_SHADER, stickerVertShader)) {
-        std::cerr << "Failed to compile sticker vertex shader" << std::endl;
-    }
-    if (!stickerShader_.compileShaderFromString(GL_FRAGMENT_SHADER, stickerFragShader)) {
-        std::cerr << "Failed to compile sticker fragment shader" << std::endl;
-    }
-    if (!stickerShader_.linkProgram()) {
-        std::cerr << "Failed to link sticker shader program" << std::endl;
     }
 }
 
@@ -356,6 +267,8 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
     RotationAxis animAxis = getRotationAxis(animMove);
 
     float cubiePositions[27 * 3];
+    float faceColors[27 * 6 * 3];
+
     for (int i = 0; i < 27; i++) {
         int layer = i / 9;
         int posInLayer = i % 9;
@@ -371,7 +284,6 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
         cubiePositions[i * 3 + 2] = z;
     }
 
-    stickerData_.clear();
     int cubeIndex = 0;
     for (int layer = 0; layer < 3; layer++) {
         for (int row = 0; row < 3; row++) {
@@ -382,113 +294,55 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
                 const RubiksCube& renderCube = shouldAnimate
                     ? animator_->getPreAnimationCube() : *cube_;
 
-                if (layer == 2) {
-                    int idx = (2 - row) * 3 + col;
-                    auto face = getCubeFace(renderCube, 0);
-                    Color c = face[idx];
-                    auto rgb = colorProvider_->getFaceColorRgb(c);
-                    StickerData sd;
-                    sd.center[0] = kFaceOffset[0];
-                    sd.center[1] = (row - 1.0f) * (1.0f + gap_);
-                    sd.center[2] = (layer - 1.0f) * (1.0f + gap_);
-                    sd.normal[0] = kFaceNormal[0][0];
-                    sd.normal[1] = kFaceNormal[0][1];
-                    sd.normal[2] = kFaceNormal[0][2];
-                    sd.color[0] = rgb[0];
-                    sd.color[1] = rgb[1];
-                    sd.color[2] = rgb[2];
-                    stickerData_.push_back(sd);
+                struct FaceMapping {
+                    int faceIdx;
+                    int cubieRow, cubieCol;
+                    int localRow, localCol;
+                };
+                FaceMapping faces[6] = {
+                    { 0, layer, row, 2 - row, col },
+                    { 1, layer, row, 2 - row, 2 - col },
+                    { 2, row, layer, layer, col },
+                    { 3, row, layer, 2 - layer, col },
+                    { 4, row, col, 2 - row, 2 - layer },
+                    { 5, row, col, 2 - row, layer }
+                };
+
+                for (int f = 0; f < 6; f++) {
+                    auto& fm = faces[f];
+                    bool onFace = false;
+                    switch (fm.faceIdx) {
+                        case 0: onFace = (layer == 2); break;
+                        case 1: onFace = (layer == 0); break;
+                        case 2: onFace = (row == 2); break;
+                        case 3: onFace = (row == 0); break;
+                        case 4: onFace = (col == 2); break;
+                        case 5: onFace = (col == 0); break;
+                    }
+
+                    glm::vec3 color;
+                    if (onFace) {
+                        auto face = getCubeFace(renderCube, fm.faceIdx);
+                        int idx = fm.localRow * 3 + fm.localCol;
+                        auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
+                        color.x = rgb[0];
+                        color.y = rgb[1];
+                        color.z = rgb[2];
+                    } else {
+                        color = {0.02f, 0.02f, 0.02f};
+                    }
+
+                    int ci = cubeIndex;
+                    int fi = f;
+                    faceColors[(ci * 6 + fi) * 3 + 0] = color.x;
+                    faceColors[(ci * 6 + fi) * 3 + 1] = color.y;
+                    faceColors[(ci * 6 + fi) * 3 + 2] = color.z;
                 }
-                if (layer == 0) {
-                    int idx = (2 - row) * 3 + (2 - col);
-                    auto face = getCubeFace(renderCube, 1);
-                    Color c = face[idx];
-                    auto rgb = colorProvider_->getFaceColorRgb(c);
-                    StickerData sd;
-                    sd.center[0] = kFaceOffset[1];
-                    sd.center[1] = (row - 1.0f) * (1.0f + gap_);
-                    sd.center[2] = (layer - 1.0f) * (1.0f + gap_);
-                    sd.normal[0] = kFaceNormal[1][0];
-                    sd.normal[1] = kFaceNormal[1][1];
-                    sd.normal[2] = kFaceNormal[1][2];
-                    sd.color[0] = rgb[0];
-                    sd.color[1] = rgb[1];
-                    sd.color[2] = rgb[2];
-                    stickerData_.push_back(sd);
-                }
-                if (row == 2) {
-                    int idx = layer * 3 + col;
-                    auto face = getCubeFace(renderCube, 2);
-                    Color c = face[idx];
-                    auto rgb = colorProvider_->getFaceColorRgb(c);
-                    StickerData sd;
-                    sd.center[0] = (col - 1.0f) * (1.0f + gap_);
-                    sd.center[1] = kFaceOffset[2];
-                    sd.center[2] = (layer - 1.0f) * (1.0f + gap_);
-                    sd.normal[0] = kFaceNormal[2][0];
-                    sd.normal[1] = kFaceNormal[2][1];
-                    sd.normal[2] = kFaceNormal[2][2];
-                    sd.color[0] = rgb[0];
-                    sd.color[1] = rgb[1];
-                    sd.color[2] = rgb[2];
-                    stickerData_.push_back(sd);
-                }
-                if (row == 0) {
-                    int idx = (2 - layer) * 3 + col;
-                    auto face = getCubeFace(renderCube, 3);
-                    Color c = face[idx];
-                    auto rgb = colorProvider_->getFaceColorRgb(c);
-                    StickerData sd;
-                    sd.center[0] = (col - 1.0f) * (1.0f + gap_);
-                    sd.center[1] = kFaceOffset[3];
-                    sd.center[2] = (layer - 1.0f) * (1.0f + gap_);
-                    sd.normal[0] = kFaceNormal[3][0];
-                    sd.normal[1] = kFaceNormal[3][1];
-                    sd.normal[2] = kFaceNormal[3][2];
-                    sd.color[0] = rgb[0];
-                    sd.color[1] = rgb[1];
-                    sd.color[2] = rgb[2];
-                    stickerData_.push_back(sd);
-                }
-                if (col == 2) {
-                    int idx = (2 - row) * 3 + (2 - layer);
-                    auto face = getCubeFace(renderCube, 4);
-                    Color c = face[idx];
-                    auto rgb = colorProvider_->getFaceColorRgb(c);
-                    StickerData sd;
-                    sd.center[0] = kFaceOffset[4];
-                    sd.center[1] = (row - 1.0f) * (1.0f + gap_);
-                    sd.center[2] = (layer - 1.0f) * (1.0f + gap_);
-                    sd.normal[0] = kFaceNormal[4][0];
-                    sd.normal[1] = kFaceNormal[4][1];
-                    sd.normal[2] = kFaceNormal[4][2];
-                    sd.color[0] = rgb[0];
-                    sd.color[1] = rgb[1];
-                    sd.color[2] = rgb[2];
-                    stickerData_.push_back(sd);
-                }
-                if (col == 0) {
-                    int idx = (2 - row) * 3 + layer;
-                    auto face = getCubeFace(renderCube, 5);
-                    Color c = face[idx];
-                    auto rgb = colorProvider_->getFaceColorRgb(c);
-                    StickerData sd;
-                    sd.center[0] = kFaceOffset[5];
-                    sd.center[1] = (row - 1.0f) * (1.0f + gap_);
-                    sd.center[2] = (layer - 1.0f) * (1.0f + gap_);
-                    sd.normal[0] = kFaceNormal[5][0];
-                    sd.normal[1] = kFaceNormal[5][1];
-                    sd.normal[2] = kFaceNormal[5][2];
-                    sd.color[0] = rgb[0];
-                    sd.color[1] = rgb[1];
-                    sd.color[2] = rgb[2];
-                    stickerData_.push_back(sd);
-                }
+
                 cubeIndex++;
             }
         }
     }
-    stickerCount_ = static_cast<int>(stickerData_.size());
 
     float aspect = (float)viewW / (float)viewH;
     float fov = 45.0f;
@@ -542,25 +396,10 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
         snprintf(name, sizeof(name), "cubiePositions[%d]", i);
         cubieShader_.setVec3(name, cubiePositions[i*3], cubiePositions[i*3+1], cubiePositions[i*3+2]);
     }
-
-    stickerShader_.use();
-    stickerShader_.setMat4("view", glm::value_ptr(viewMatrix));
-    stickerShader_.setMat4("projection", glm::value_ptr(projMatrix));
-    stickerShader_.setVec3("cameraPos", actualCamPos.x, actualCamPos.y, actualCamPos.z);
-    stickerShader_.setVec3("lightPos", 5.0f, 5.0f, 5.0f);
-    stickerShader_.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-    stickerShader_.setFloat("animAngle", isAnimating ? animAngle : 0.0f);
-    stickerShader_.setVec3("animAxis", animAxis.x, animAxis.y, animAxis.z);
-    stickerShader_.setInt("stickerCount", stickerCount_);
-
-    for (int i = 0; i < stickerCount_; i++) {
-        char centerName[64], normalName[64], colorName[64];
-        snprintf(centerName, sizeof(centerName), "stickerCenters[%d]", i);
-        snprintf(normalName, sizeof(normalName), "stickerNormals[%d]", i);
-        snprintf(colorName, sizeof(colorName), "stickerColors[%d]", i);
-        stickerShader_.setVec3(centerName, stickerData_[i].center[0], stickerData_[i].center[1], stickerData_[i].center[2]);
-        stickerShader_.setVec3(normalName, stickerData_[i].normal[0], stickerData_[i].normal[1], stickerData_[i].normal[2]);
-        stickerShader_.setVec3(colorName, stickerData_[i].color[0], stickerData_[i].color[1], stickerData_[i].color[2]);
+    for (int i = 0; i < 162; i++) {
+        char name[64];
+        snprintf(name, sizeof(name), "faceColors[%d]", i);
+        cubieShader_.setVec3(name, faceColors[i*3], faceColors[i*3+1], faceColors[i*3+2]);
     }
 }
 
@@ -596,11 +435,6 @@ void Renderer3DShader::render(int windowWidth, int windowHeight, float sidebarWi
     glEnable(GL_DEPTH_TEST);
     cubieShader_.use();
     renderFullScreenQuad();
-
-    // Sticker rendering disabled for debugging
-    // glEnable(GL_DEPTH_TEST);
-    // stickerShader_.use();
-    // renderFullScreenQuad();
 
     GL_LOADER.glDisableVertexAttribArray(0);
     glDisable(GL_DEPTH_TEST);

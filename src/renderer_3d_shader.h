@@ -28,18 +28,9 @@ private:
     const CubeAnimator* animator_ = nullptr;
 
     Shader cubieShader_;
-    Shader stickerShader_;
 
     float cubieSize_ = 0.40f;
     float cubieRadius_ = 0.04f;
-
-    struct StickerData {
-        float center[3];
-        float normal[3];
-        float color[3];
-    };
-    std::vector<StickerData> stickerData_;
-    int stickerCount_ = 0;
 
     void buildShaders();
     void prepareUniforms(int viewW, int viewH);
