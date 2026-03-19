@@ -46,7 +46,7 @@ uniform vec3 animAxis;
 uniform float animSliceMask[27];
 uniform vec3 faceColors[162];
 uniform float gap;
-uniform vec3 lightPos;
+uniform vec3 lightPos[2];
 uniform vec3 lightColor;
 uniform vec2 resolution;
 
@@ -214,15 +214,19 @@ void main() {
     vec3 stickerColor = faceColors[ci * 6 + fi];
     vec3 surfaceColor = mix(baseColor, stickerColor, aa);
 
-    vec3 lightDir = normalize(lightPos - p);
-    vec3 viewDir = normalize(cameraPos - p);
-    vec3 reflectDir = reflect(-lightDir, n);
+    float ambient = 0.15;
+    vec3 color = surfaceColor * ambient;
 
-    float ambient = 0.25;
-    float diff = max(dot(n, lightDir), 0.0);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+    for (int li = 0; li < 2; li++) {
+        vec3 lightDir = normalize(lightPos[li] - p);
+        vec3 viewDir = normalize(cameraPos - p);
+        vec3 reflectDir = reflect(-lightDir, n);
 
-    vec3 color = surfaceColor * (ambient + diff) + lightColor * spec * 0.4;
+        float diff = max(dot(n, lightDir), 0.0);
+        float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32.0);
+
+        color += surfaceColor * diff * 0.7 + lightColor * spec * 0.3;
+    }
 
     fragColor = vec4(color * coverage, 1.0);
 }
@@ -401,7 +405,15 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
     cubieShader_.setMat4("view", glm::value_ptr(viewMatrix));
     cubieShader_.setMat4("projection", glm::value_ptr(projMatrix));
     cubieShader_.setVec3("cameraPos", actualCamPos.x, actualCamPos.y, actualCamPos.z);
-    cubieShader_.setVec3("lightPos", actualCamPos.x, actualCamPos.y, actualCamPos.z);
+
+    glm::vec3 camRight = glm::normalize(glm::vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]));
+    glm::vec3 camUp = glm::normalize(glm::vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]));
+    glm::vec3 camForward = glm::normalize(glm::vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2]));
+    float lightDist = 5.0f;
+    glm::vec3 lp0 = actualCamPos + (camRight * 0.7f + camUp * 0.8f + camForward * 0.7f) * lightDist;
+    glm::vec3 lp1 = actualCamPos + (-camRight * 0.7f + camUp * 0.8f + camForward * 0.7f) * lightDist;
+    cubieShader_.setVec3("lightPos[0]", lp0.x, lp0.y, lp0.z);
+    cubieShader_.setVec3("lightPos[1]", lp1.x, lp1.y, lp1.z);
     cubieShader_.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
     cubieShader_.setFloat("gap", gap_);
     cubieShader_.setFloat("cubieSize", cubieSize_ * cubeScale_);
