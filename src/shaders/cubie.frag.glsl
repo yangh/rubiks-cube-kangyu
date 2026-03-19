@@ -37,15 +37,9 @@ mat3 rotateAroundAxis(vec3 axis, float angle) {
     );
 }
 
-float sceneSDF(vec3 p, out int cubieIndex) {
+float sceneSDF(vec3 p, out int cubieIndex, mat3 animRot, bool hasAnim) {
     float minDist = 1e10;
     cubieIndex = -1;
-
-    mat3 animRot;
-    bool hasAnim = (animAngle != 0.0);
-    if (hasAnim) {
-        animRot = rotateAroundAxis(animAxis, radians(animAngle));
-    }
 
     for (int i = 0; i < 27; i++) {
         vec3 pos = cubiePositions[i];
@@ -70,14 +64,16 @@ float sceneSDF(vec3 p, out int cubieIndex) {
     return minDist;
 }
 
-vec3 calcNormal(vec3 p) {
-    const float eps = 0.001;
+vec3 calcNormal(vec3 p, mat3 animRot, bool hasAnim) {
+    const float h = 0.0005;
+    const vec2 k = vec2(1.0, -1.0);
     int dummy;
-    vec3 n;
-    n.x = sceneSDF(p + vec3(eps,0,0), dummy) - sceneSDF(p - vec3(eps,0,0), dummy);
-    n.y = sceneSDF(p + vec3(0,eps,0), dummy) - sceneSDF(p - vec3(0,eps,0), dummy);
-    n.z = sceneSDF(p + vec3(0,0,eps), dummy) - sceneSDF(p - vec3(0,0,eps), dummy);
-    return normalize(n);
+    return normalize(
+        k.xyy * sceneSDF(p + k.xyy * h, dummy, animRot, hasAnim) +
+        k.yyx * sceneSDF(p + k.yyx * h, dummy, animRot, hasAnim) +
+        k.yxy * sceneSDF(p + k.yxy * h, dummy, animRot, hasAnim) +
+        k.xxx * sceneSDF(p + k.xxx * h, dummy, animRot, hasAnim)
+    );
 }
 
 int getFaceIndex(vec3 n) {
@@ -106,6 +102,12 @@ void main() {
     vec3 ro = cameraPos;
     vec3 rd = normalize(vWorldPos - cameraPos);
 
+    mat3 animRot;
+    bool hasAnim = (animAngle != 0.0);
+    if (hasAnim) {
+        animRot = rotateAroundAxis(animAxis, radians(animAngle));
+    }
+
     float t = 0.0;
     int cubieIdx = -1;
     bool hit = false;
@@ -113,10 +115,10 @@ void main() {
     float tClosest = 0.0;
     int closestCubie = -1;
 
-    for (int i = 0; i < 64; i++) {
+    for (int i = 0; i < 48; i++) {
         vec3 p = ro + t * rd;
         int ci;
-        float d = sceneSDF(p, ci);
+        float d = sceneSDF(p, ci, animRot, hasAnim);
         if (d < closestDist) {
             closestDist = d;
             closestCubie = ci;
@@ -124,7 +126,8 @@ void main() {
         }
         if (d < 0.001) { hit = true; cubieIdx = ci; break; }
         if (t > 20.0) break;
-        t += max(d, 0.001);
+        if (t > 5.0 && d > t * 0.5) break;
+        t += d;
     }
 
     float coverage = 1.0;
@@ -140,15 +143,9 @@ void main() {
         cubieIdx = closestCubie;
     }
 
-    vec3 n = calcNormal(p);
+    vec3 n = calcNormal(p, animRot, hasAnim);
 
     int ci = cubieIdx;
-
-    mat3 animRot;
-    bool hasAnim = (animAngle != 0.0);
-    if (hasAnim && animSliceMask[ci] > 0.5) {
-        animRot = rotateAroundAxis(animAxis, radians(animAngle));
-    }
 
     vec3 pos = cubiePositions[ci];
     if (hasAnim && animSliceMask[ci] > 0.5) {

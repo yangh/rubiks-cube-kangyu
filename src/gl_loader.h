@@ -31,6 +31,12 @@ typedef void (APIENTRYP PFNGLVERTEXATTRIBPOINTERPROC) (GLuint index, GLint size,
 typedef void (APIENTRYP PFNGLDRAWARRAYSPROC) (GLenum mode, GLint first, GLsizei count);
 typedef void (APIENTRYP PFNGLGENVERTEXARRAYSPROC) (GLsizei n, GLuint *arrays);
 typedef void (APIENTRYP PFNGLBINDVERTEXARRAYPROC) (GLuint array);
+typedef void (APIENTRYP PFNGLGENBUFFERSPROC) (GLsizei n, GLuint *buffers);
+typedef void (APIENTRYP PFNGLDELETEBUFFERSPROC) (GLsizei n, const GLuint *buffers);
+typedef void (APIENTRYP PFNGLBINDBUFFERPROC) (GLenum target, GLuint buffer);
+typedef void (APIENTRYP PFNGLBUFFERDATAPROC) (GLenum target, GLsizeiptr size, const void *data, GLenum usage);
+typedef void (APIENTRYP PFNGLBUFFERSUBDATAPROC) (GLenum target, GLintptr offset, GLsizeiptr size, const void *data);
+typedef void (APIENTRYP PFNGLBINDBUFFERBASEPROC) (GLenum target, GLuint index, GLuint buffer);
 
 class GLLoader {
 public:
@@ -67,6 +73,12 @@ public:
         glDrawArrays = (PFNGLDRAWARRAYSPROC)glfwGetProcAddress("glDrawArrays");
         glGenVertexArrays = (PFNGLGENVERTEXARRAYSPROC)glfwGetProcAddress("glGenVertexArrays");
         glBindVertexArray = (PFNGLBINDVERTEXARRAYPROC)glfwGetProcAddress("glBindVertexArray");
+        glGenBuffers = (PFNGLGENBUFFERSPROC)glfwGetProcAddress("glGenBuffers");
+        glDeleteBuffers = (PFNGLDELETEBUFFERSPROC)glfwGetProcAddress("glDeleteBuffers");
+        glBindBuffer = (PFNGLBINDBUFFERPROC)glfwGetProcAddress("glBindBuffer");
+        glBufferData = (PFNGLBUFFERDATAPROC)glfwGetProcAddress("glBufferData");
+        glBufferSubData = (PFNGLBUFFERSUBDATAPROC)glfwGetProcAddress("glBufferSubData");
+        glBindBufferBase = (PFNGLBINDBUFFERBASEPROC)glfwGetProcAddress("glBindBufferBase");
 
         return glCreateProgram && glCreateShader && glShaderSource && glCompileShader &&
                glAttachShader && glDeleteShader && glLinkProgram && glDeleteProgram &&
@@ -103,6 +115,12 @@ public:
     PFNGLDRAWARRAYSPROC glDrawArrays = nullptr;
     PFNGLGENVERTEXARRAYSPROC glGenVertexArrays = nullptr;
     PFNGLBINDVERTEXARRAYPROC glBindVertexArray = nullptr;
+    PFNGLGENBUFFERSPROC glGenBuffers = nullptr;
+    PFNGLDELETEBUFFERSPROC glDeleteBuffers = nullptr;
+    PFNGLBINDBUFFERPROC glBindBuffer = nullptr;
+    PFNGLBUFFERDATAPROC glBufferData = nullptr;
+    PFNGLBUFFERSUBDATAPROC glBufferSubData = nullptr;
+    PFNGLBINDBUFFERBASEPROC glBindBufferBase = nullptr;
 };
 
 #define GL_LOADER GLLoader::instance()
