@@ -22,7 +22,7 @@ add_executable(rubiks-cube
     src/animator.cpp
     src/renderer.cpp
     src/renderer_2d.cpp
-    src/renderer_3d_opengl.cpp
+    src/renderer_3d_shader.cpp
     src/color.cpp
     src/shader.cpp
     src/model.cpp

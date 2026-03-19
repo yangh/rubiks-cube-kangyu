@@ -1,3 +1,4 @@
+#define GLFW_INCLUDE_NONE
 #include "app.h"
 #include "config.h"
 #include "animator.h"
@@ -6,6 +7,8 @@
 #include <iostream>
 #include <cmath>
 #include <sstream>
+
+#include "gl_loader.h"
 
 Application::~Application() {
     renderer_.reset();
@@ -178,10 +181,10 @@ bool Application::initGlfw() {
         return false;
     }
 
-    // Configure GLFW (OpenGL 2.1 compatible for simpler rendering)
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_ANY_PROFILE);
+    // Configure GLFW (OpenGL 3.3 for modern shader-based rendering)
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
 
     // Enable multisampling for anti-aliasing (8 samples)
     glfwWindowHint(GLFW_SAMPLES, 8);
@@ -195,6 +198,13 @@ bool Application::initGlfw() {
     }
 
     glfwMakeContextCurrent(this->window_);
+
+    if (!GL_LOADER.load(this->window_)) {
+        std::cerr << "Failed to initialize OpenGL functions" << std::endl;
+        glfwTerminate();
+        return false;
+    }
+
     glfwSwapInterval(1);
     glEnable(GL_MULTISAMPLE);
 

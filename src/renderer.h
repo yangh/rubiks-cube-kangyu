@@ -6,7 +6,7 @@
 #include "config.h"
 #include "color.h"
 #include "renderer_2d.h"
-#include "renderer_3d_opengl.h"
+#include "renderer_3d_shader.h"
 #include <imgui.h>
 
 struct ViewState {
@@ -62,7 +62,7 @@ public:
 
     ColorProvider colorProvider_;
     Renderer2D renderer2D_;
-    Renderer3DOpenGL renderer3D_;
+    Renderer3DShader renderer3D_;
 
 private:
     RubiksCube& cube_;
