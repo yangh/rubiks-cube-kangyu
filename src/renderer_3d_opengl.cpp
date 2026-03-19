@@ -1,11 +1,7 @@
 #include "renderer_3d_opengl.h"
 #include "renderer.h"
-#include "color.h"
-#include "animator.h"
-#include "move.h"
 #include <cmath>
 #include <iostream>
-#include <cstring>
 
 // Face direction definitions: offset and normal for 6 faces
 static const struct { float offset; float nx; float ny; float nz; } kFaceDirs[6] = {

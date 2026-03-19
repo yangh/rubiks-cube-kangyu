@@ -3,7 +3,6 @@
 #include <filesystem>
 #include <algorithm>
 #include <iostream>
-#include <sstream>
 
 FormulaManager::FormulaManager()
     : selectedItemIndex_(-1) {

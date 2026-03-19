@@ -1,6 +1,5 @@
 #include "shader.h"
 #include <iostream>
-#include <cstring>
 
 Shader::Shader() : program_(0) {
 }

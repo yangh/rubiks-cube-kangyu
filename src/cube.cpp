@@ -1,8 +1,5 @@
 #include "cube.h"
-#include "move.h"
-#include <algorithm>
 #include <iostream>
-#include <vector>
 
 void RubiksCube::executeMove(Move move) {
     executeMove(move, true);

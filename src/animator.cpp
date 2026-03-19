@@ -1,5 +1,4 @@
 #include "animator.h"
-#include "move.h"
 #include <cmath>
 #include <iostream>
 

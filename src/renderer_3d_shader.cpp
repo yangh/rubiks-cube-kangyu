@@ -1,8 +1,5 @@
 #include "renderer_3d_shader.h"
 #include "renderer.h"
-#include "color.h"
-#include "animator.h"
-#include "move.h"
 #include <cmath>
 #include <iostream>
 #include <glm/glm.hpp>

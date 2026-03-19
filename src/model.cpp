@@ -1,5 +1,8 @@
 #include "model.h"
-#include <algorithm>
+#include <GL/gl.h>
+#include <fstream>
+#include <sstream>
+#include <iostream>
 
 Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices)
     : vertices(vertices), indices(indices) {

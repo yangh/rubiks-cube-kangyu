@@ -1,10 +1,8 @@
 #ifndef RENDERER_2D_H
 #define RENDERER_2D_H
 
-#include <array>
 #include <imgui.h>
 #include "cube.h"
-#include "color.h"
 
 class Renderer2D {
 public:

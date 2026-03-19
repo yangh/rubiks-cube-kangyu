@@ -1,13 +1,8 @@
 #ifndef APP_H
 #define APP_H
 
-#include <GLFW/glfw3.h>
-#include <imgui.h>
 #include <memory>
-#include <string>
-#include <vector>
 
-#include "cube.h"
 #include "renderer.h"
 #include "formula.h"
 

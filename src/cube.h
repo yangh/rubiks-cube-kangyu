@@ -3,9 +3,6 @@
 
 #include "color.h"
 #include "move.h"
-#include <array>
-#include <string>
-#include <vector>
 
 enum class Face {
     FRONT,

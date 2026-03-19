@@ -1,15 +1,9 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include <GL/gl.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
 #include <string>
 #include <vector>
-#include <fstream>
-#include <sstream>
-#include <iostream>
 
 struct Vertex {
     glm::vec3 Position;

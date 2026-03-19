@@ -4,8 +4,6 @@
 #include "renderer_3d.h"
 #include "cube.h"
 #include "shader.h"
-#include <vector>
-#include <array>
 
 class Renderer3DShader : public IRenderer3D {
 public:

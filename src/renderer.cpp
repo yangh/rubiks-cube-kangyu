@@ -1,6 +1,4 @@
 #include "renderer.h"
-#include "config.h"
-#include "move.h"
 #include <cmath>
 #include <iostream>
 

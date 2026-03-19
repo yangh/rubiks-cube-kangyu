@@ -3,8 +3,6 @@
 
 #include "renderer_3d.h"
 #include "cube.h"
-#include <GL/gl.h>
-#include <vector>
 
 class Renderer3DOpenGL : public IRenderer3D {
 public:

@@ -6,7 +6,6 @@
 #include <imgui_impl_opengl3.h>
 #include <iostream>
 #include <cmath>
-#include <sstream>
 
 #include "gl_loader.h"
 

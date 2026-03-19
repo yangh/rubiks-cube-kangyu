@@ -4,7 +4,6 @@
 #include "cube.h"
 #include "animator.h"
 #include "config.h"
-#include "color.h"
 #include "renderer_2d.h"
 #include "renderer_3d_shader.h"
 #include <imgui.h>
