@@ -76,7 +76,7 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
     RotationAxis animAxis = getRotationAxis(animMove);
 
     float cubiePositions[27 * 3];
-    float faceColors[27 * 6 * 3];
+    float stickerColors[54 * 3];
 
     for (int i = 0; i < 27; i++) {
         int layer = i / 9;
@@ -103,49 +103,34 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
                 const RubiksCube& renderCube = shouldAnimate
                     ? animator_->getPreAnimationCube() : *cube_;
 
-                struct FaceMapping {
+                struct StickerMapping {
                     int faceIdx;
-                    int cubieRow, cubieCol;
+                    int stickerOffset;
                     int localRow, localCol;
                 };
-                FaceMapping faces[6] = {
-                    { 0, layer, row, 2 - row, col },
-                    { 1, layer, row, 2 - row, 2 - col },
-                    { 2, row, layer, layer, col },
-                    { 3, row, layer, 2 - layer, col },
-                    { 4, row, col, 2 - row, 2 - layer },
-                    { 5, row, col, 2 - row, layer }
+                StickerMapping stickers[6] = {
+                    { 0,  0, 2 - row, col },
+                    { 1,  9, 2 - row, 2 - col },
+                    { 2, 18, layer, col },
+                    { 3, 27, 2 - layer, col },
+                    { 4, 36, 2 - row, 2 - layer },
+                    { 5, 45, 2 - row, layer }
+                };
+
+                bool isExterior[6] = {
+                    layer == 2, layer == 0, row == 2, row == 0, col == 2, col == 0
                 };
 
                 for (int f = 0; f < 6; f++) {
-                    auto& fm = faces[f];
-                    bool onFace = false;
-                    switch (fm.faceIdx) {
-                        case 0: onFace = (layer == 2); break;
-                        case 1: onFace = (layer == 0); break;
-                        case 2: onFace = (row == 2); break;
-                        case 3: onFace = (row == 0); break;
-                        case 4: onFace = (col == 2); break;
-                        case 5: onFace = (col == 0); break;
-                    }
-
-                    glm::vec3 color;
-                    if (onFace) {
-                        auto face = getCubeFace(renderCube, fm.faceIdx);
-                        int idx = fm.localRow * 3 + fm.localCol;
-                        auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
-                        color.x = rgb[0];
-                        color.y = rgb[1];
-                        color.z = rgb[2];
-                    } else {
-                        color = {0.02f, 0.02f, 0.02f};
-                    }
-
-                    int ci = cubeIndex;
-                    int fi = f;
-                    faceColors[(ci * 6 + fi) * 3 + 0] = color.x;
-                    faceColors[(ci * 6 + fi) * 3 + 1] = color.y;
-                    faceColors[(ci * 6 + fi) * 3 + 2] = color.z;
+                    if (!isExterior[f]) continue;
+                    auto& sm = stickers[f];
+                    auto face = getCubeFace(renderCube, sm.faceIdx);
+                    int idx = sm.localRow * 3 + sm.localCol;
+                    auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
+                    int si = sm.stickerOffset + idx;
+                    stickerColors[si * 3 + 0] = rgb[0];
+                    stickerColors[si * 3 + 1] = rgb[1];
+                    stickerColors[si * 3 + 2] = rgb[2];
                 }
 
                 cubeIndex++;
@@ -214,10 +199,10 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
         snprintf(name, sizeof(name), "cubiePositions[%d]", i);
         cubieShader_.setVec3(name, cubiePositions[i*3], cubiePositions[i*3+1], cubiePositions[i*3+2]);
     }
-    for (int i = 0; i < 162; i++) {
+    for (int i = 0; i < 54; i++) {
         char name[64];
         snprintf(name, sizeof(name), "faceColors[%d]", i);
-        cubieShader_.setVec3(name, faceColors[i*3], faceColors[i*3+1], faceColors[i*3+2]);
+        cubieShader_.setVec3(name, stickerColors[i*3], stickerColors[i*3+1], stickerColors[i*3+2]);
     }
 }
 

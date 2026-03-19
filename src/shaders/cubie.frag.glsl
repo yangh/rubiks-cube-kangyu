@@ -9,7 +9,7 @@ uniform float cubieSize;
 uniform float animAngle;
 uniform vec3 animAxis;
 uniform float animSliceMask[27];
-uniform vec3 faceColors[162];
+uniform vec3 faceColors[54];
 uniform float gap;
 uniform vec3 lightPos[2];
 uniform vec3 lightColor;
@@ -166,6 +166,21 @@ void main() {
 
     int fi = getFaceIndex(localN);
 
+    int layer = ci / 9;
+    int posInLayer = ci % 9;
+    int row = posInLayer / 3;
+    int col = posInLayer % 3;
+
+    int stickerIdx = -1;
+    if (fi == 0 && layer == 2) stickerIdx = (2 - row) * 3 + col;
+    else if (fi == 1 && layer == 0) stickerIdx = 9 + (2 - row) * 3 + (2 - col);
+    else if (fi == 2 && row == 2) stickerIdx = 18 + layer * 3 + col;
+    else if (fi == 3 && row == 0) stickerIdx = 27 + (2 - layer) * 3 + col;
+    else if (fi == 4 && col == 2) stickerIdx = 36 + (2 - row) * 3 + (2 - layer);
+    else if (fi == 5 && col == 0) stickerIdx = 45 + (2 - row) * 3 + layer;
+
+    vec3 stickerColor = (stickerIdx >= 0) ? faceColors[stickerIdx] : vec3(0.02);
+
     float stickerSize = cubieSize * 0.92;
     float stickerRadius = cubieSize * 0.08;
 
@@ -176,8 +191,7 @@ void main() {
     float aa = 1.0 - smoothstep(-edgeSoft, edgeSoft, sd);
 
     vec3 baseColor = vec3(0.02, 0.02, 0.02);
-    vec3 stickerColor = faceColors[ci * 6 + fi];
-    vec3 surfaceColor = mix(baseColor, stickerColor, aa);
+    vec3 surfaceColor = (stickerIdx >= 0) ? mix(baseColor, stickerColor, aa) : baseColor;
 
     float ambient = 0.15;
     vec3 color = surfaceColor * ambient;
