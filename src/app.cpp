@@ -187,7 +187,7 @@ bool Application::initGlfw() {
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
 
     // Enable multisampling for anti-aliasing (8 samples)
-    glfwWindowHint(GLFW_SAMPLES, 8);
+    glfwWindowHint(GLFW_SAMPLES, 4);
 
     // Create window - wider to accommodate T-shaped layout
     this->window_ = glfwCreateWindow(1400, 900, "Rubik's Cube Simulator", nullptr, nullptr);

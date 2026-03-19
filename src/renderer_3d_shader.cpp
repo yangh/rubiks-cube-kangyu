@@ -47,6 +47,7 @@ uniform float cubieSize;
 uniform float animAngle;
 uniform vec3 animAxis;
 uniform float gap;
+uniform float animSliceMask[27];
 uniform vec3 lightPos;
 uniform vec3 lightColor;
 
@@ -71,13 +72,23 @@ float sceneSDF(vec3 p, out int cubieIndex) {
     float minDist = 1e10;
     cubieIndex = -1;
 
+    mat3 animRot;
+    bool hasAnim = (animAngle != 0.0);
+    if (hasAnim) {
+        animRot = rotateAroundAxis(animAxis, radians(animAngle));
+    }
+
     for (int i = 0; i < 27; i++) {
         vec3 pos = cubiePositions[i];
+
+        if (hasAnim && animSliceMask[i] > 0.5) {
+            pos = animRot * pos;
+        }
+
         vec3 localP = p - pos;
 
-        if (animAngle != 0.0) {
-            mat3 rot = rotateAroundAxis(animAxis, radians(animAngle));
-            localP = transpose(rot) * localP;
+        if (hasAnim && animSliceMask[i] > 0.5) {
+            localP = transpose(animRot) * localP;
         }
 
         float d = sdRoundBox(localP, vec3(cubieSize), cubieSize * 0.1);
@@ -511,8 +522,21 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
     cubieShader_.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
     cubieShader_.setFloat("gap", gap_);
     cubieShader_.setFloat("cubieSize", cubieSize_ * cubeScale_);
-    cubieShader_.setFloat("animAngle", isAnimating ? animAngle : 0.0f);
+    cubieShader_.setFloat("animAngle", isAnimating ? -animAngle : 0.0f);
     cubieShader_.setVec3("animAxis", animAxis.x, animAxis.y, animAxis.z);
+
+    int animSliceMask[27] = {};
+    if (isAnimating) {
+        AnimationSlice animSlice = getAnimationSlice(animMove);
+        for (int i = 0; i < 27; i++) {
+            animSliceMask[i] = MoveLookup::isInSlice(i, animSlice) ? 1 : 0;
+        }
+    }
+    for (int i = 0; i < 27; i++) {
+        char name[64];
+        snprintf(name, sizeof(name), "animSliceMask[%d]", i);
+        cubieShader_.setFloat(name, (float)animSliceMask[i]);
+    }
     for (int i = 0; i < 27; i++) {
         char name[64];
         snprintf(name, sizeof(name), "cubiePositions[%d]", i);
