@@ -18,6 +18,9 @@ public:
     void setAnimator(const CubeAnimator* animator) override;
     void setCube(const RubiksCube* cube) override;
 
+    float gap_ = 0.001f;
+    float cubeScale_ = 0.6f;
+
 private:
     const RubiksCube* cube_ = nullptr;
     const ViewState* viewState_ = nullptr;
@@ -29,7 +32,6 @@ private:
 
     float cubieSize_ = 0.40f;
     float cubieRadius_ = 0.04f;
-    float gap_ = 0.03f;
 
     struct StickerData {
         float center[3];

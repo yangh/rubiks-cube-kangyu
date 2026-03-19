@@ -43,6 +43,7 @@ out vec4 fragColor;
 
 uniform vec3 cameraPos;
 uniform vec3 cubiePositions[27];
+uniform float cubieSize;
 uniform float animAngle;
 uniform vec3 animAxis;
 uniform float gap;
@@ -79,7 +80,7 @@ float sceneSDF(vec3 p, out int cubieIndex) {
             localP = transpose(rot) * localP;
         }
 
-        float d = sdRoundBox(localP, vec3(0.36), 0.04);
+        float d = sdRoundBox(localP, vec3(cubieSize), cubieSize * 0.1);
 
         if (d < minDist) {
             minDist = d;
@@ -350,9 +351,9 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
         int row = posInLayer / 3;
         int col = posInLayer % 3;
 
-        float x = (col - 1.0f) * (1.0f + gap_);
-        float y = (row - 1.0f) * (1.0f + gap_);
-        float z = (layer - 1.0f) * (1.0f + gap_);
+        float x = (col - 1.0f) * (0.9f + gap_) * cubeScale_;
+        float y = (row - 1.0f) * (0.9f + gap_) * cubeScale_;
+        float z = (layer - 1.0f) * (0.9f + gap_) * cubeScale_;
 
         cubiePositions[i * 3] = x;
         cubiePositions[i * 3 + 1] = y;
@@ -509,6 +510,7 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
     cubieShader_.setVec3("lightPos", 5.0f, 5.0f, 5.0f);
     cubieShader_.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
     cubieShader_.setFloat("gap", gap_);
+    cubieShader_.setFloat("cubieSize", cubieSize_ * cubeScale_);
     cubieShader_.setFloat("animAngle", isAnimating ? animAngle : 0.0f);
     cubieShader_.setVec3("animAxis", animAxis.x, animAxis.y, animAxis.z);
     for (int i = 0; i < 27; i++) {

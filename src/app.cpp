@@ -342,6 +342,22 @@ void Application::handleKeyboardShortcuts() {
     if (ImGui::IsKeyPressed(ImGuiKey_P) && io.KeyCtrl) {
         this->renderer_->viewState_.celebrationMode = !this->renderer_->viewState_.celebrationMode;
     }
+
+    // Plus/Minus: adjust cube scale
+    if (ImGui::IsKeyPressed(ImGuiKey_Equal) && !io.KeyCtrl) {
+        this->renderer_->renderer3D_.cubeScale_ = std::min(2.0f, this->renderer_->renderer3D_.cubeScale_ + 0.1f);
+    }
+    if (ImGui::IsKeyPressed(ImGuiKey_Minus) && !io.KeyCtrl) {
+        this->renderer_->renderer3D_.cubeScale_ = std::max(0.2f, this->renderer_->renderer3D_.cubeScale_ - 0.1f);
+    }
+
+    // Ctrl+Plus/Ctrl+Minus: adjust gap
+    if (ImGui::IsKeyPressed(ImGuiKey_Equal) && io.KeyCtrl) {
+        this->renderer_->renderer3D_.gap_ = std::min(0.5f, this->renderer_->renderer3D_.gap_ + 0.05f);
+    }
+    if (ImGui::IsKeyPressed(ImGuiKey_Minus) && io.KeyCtrl) {
+        this->renderer_->renderer3D_.gap_ = std::max(0.0f, this->renderer_->renderer3D_.gap_ - 0.05f);
+    }
 }
 
 void Application::handleMoveShortcut(ImGuiKey key, Move normalMove, Move primeMove, ImGuiIO& io) {
