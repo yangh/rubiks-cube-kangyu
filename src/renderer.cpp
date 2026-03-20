@@ -77,8 +77,6 @@ void CubeRenderer::switchRenderer(int type) {
         r->setColorProvider(&colorProvider_);
         r->setAnimator(&animator_);
         r->setCube(&cube_);
-        static_cast<Renderer3DShader*>(r.get())->cubeScale_ = cubeScale_;
-        static_cast<Renderer3DShader*>(r.get())->gap_ = gap_;
         renderer3D_ = std::move(r);
     } else {
         auto r = std::make_unique<Renderer3DOpenGL>();
@@ -91,17 +89,23 @@ void CubeRenderer::switchRenderer(int type) {
 }
 
 void CubeRenderer::setCubeScale(float scale) {
-    cubeScale_ = scale;
-    if (rendererType_ == 1 && renderer3D_) {
-        static_cast<Renderer3DShader*>(renderer3D_.get())->cubeScale_ = scale;
+    if (renderer3D_) {
+        renderer3D_->setScale(scale);
     }
 }
 
 void CubeRenderer::setGap(float gap) {
-    gap_ = gap;
-    if (rendererType_ == 1 && renderer3D_) {
-        static_cast<Renderer3DShader*>(renderer3D_.get())->gap_ = gap;
+    if (renderer3D_) {
+        renderer3D_->setGap(gap);
     }
+}
+
+float CubeRenderer::getCubeScale() const {
+    return renderer3D_ ? renderer3D_->getScale() : 1.0f;
+}
+
+float CubeRenderer::getGap() const {
+    return renderer3D_ ? renderer3D_->getGap() : 0.03f;
 }
 
 void CubeRenderer::setCustomColors(const ColorConfig& config) {

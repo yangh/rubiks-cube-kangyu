@@ -14,6 +14,13 @@ public:
     void setColorProvider(const ColorProvider* provider) override;
     void setAnimator(const CubeAnimator* animator) override;
     void setCube(const RubiksCube* cube) override;
+    void setScale(float scale) override { cubeScale_ = scale; }
+    float getScale() const override { return cubeScale_; }
+    void setGap(float gap) override { gap_ = gap; }
+    float getGap() const override { return gap_; }
+
+    float cubeScale_ = 0.6f;
+    float gap_ = 0.03f;
     
 private:
     const RubiksCube* cube_ = nullptr;

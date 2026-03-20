@@ -196,9 +196,8 @@ void Renderer3DOpenGL::buildStickerInfo() {
 }
 
 void Renderer3DOpenGL::buildCircleCanvas() {
-    // Pre-compute circle canvas geometry (FIX #2: no trig per-frame)
-    float radius = 0.75f;
-    float yOffset = -0.8f;
+    float radius = 1.5f;
+    float yOffset = -1.6f;
     int segments = 64;
     float r = 0.3f, g = 0.35f, b = 0.45f, a = 0.3f;
     
@@ -253,7 +252,7 @@ void Renderer3DOpenGL::renderCircleCanvas() {
     // Save current matrix state
     glPushMatrix();
     glLoadIdentity();
-    glTranslatef(0.0f, 0.0f, -3.0f);
+    glTranslatef(0.0f, 0.0f, -kCameraDist);
     
     // Enable blending for transparency
     glEnable(GL_BLEND);
@@ -330,7 +329,7 @@ void Renderer3DOpenGL::render(int windowWidth, int windowHeight, float sidebarWi
     // Setup modelview matrix
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glTranslatef(0.0f, 0.0f, -3.0f);
+    glTranslatef(0.0f, 0.0f, -kCameraDist);
     
     // Ensure lighting is disabled (same as original)
     glDisable(GL_LIGHTING);
@@ -345,12 +344,10 @@ void Renderer3DOpenGL::render(int windowWidth, int windowHeight, float sidebarWi
     glRotatef(viewState_->rotationY, 0.0f, 1.0f, 0.0f);
     glRotatef(viewState_->rotationZ, 0.0f, 0.0f, 1.0f);
     
-    // Apply overall scale factors (same as original)
-    glScalef(0.9f, 0.9f, 0.9f);
     glDisable(GL_CULL_FACE);
-    glScalef(0.3f, 0.3f, 0.3f);
-    
-    float gap = 0.03f;
+
+    float spacing = (kCubieFace + gap_) * cubeScale_;
+    float cubieSize = kCubieFace * cubeScale_;
     float animAngle = animator_->getCurrentAngle();
     bool isAnimating = animator_->isAnimating();
     Move animMove = animator_->currentMove();
@@ -365,10 +362,10 @@ void Renderer3DOpenGL::render(int windowWidth, int windowHeight, float sidebarWi
     for (int layer = 0; layer < 3; layer++) {
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 3; col++) {
-                // Calculate cube grid position
-                float xOffset = (col - 1.0f) * (1.0f + gap);
-                float yOffset = (row - 1.0f) * (1.0f + gap);
-                float zOffset = (layer - 1.0f) * (1.0f + gap);
+                // Calculate cube grid position in world space
+                float xOffset = (col - 1.0f) * spacing;
+                float yOffset = (row - 1.0f) * spacing;
+                float zOffset = (layer - 1.0f) * spacing;
                 
                 // Check if this cube should rotate during animation
                 bool shouldAnimate = isAnimating && 
@@ -384,6 +381,7 @@ void Renderer3DOpenGL::render(int windowWidth, int windowHeight, float sidebarWi
                 }
                 
                 glTranslatef(xOffset, yOffset, zOffset);
+                glScalef(cubieSize, cubieSize, cubieSize);
                 
                 // Draw black faces using pre-computed geometry (FIX #1: single batch call)
                 glVertexPointer(3, GL_FLOAT, 0, &cubeBlackFaceGeom_.vertices[0]);

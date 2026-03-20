@@ -178,8 +178,8 @@ void main() {
 
     vec3 stickerColor = (stickerIdx >= 0) ? faceColors[stickerIdx] : vec3(0.02);
 
-    float stickerSize = cubieSize * 0.92;
-    float stickerRadius = cubieSize * 0.08;
+    float stickerSize = cubieSize * 0.80;  // sticker coverage ratio on cubie face; decrease this value to widen the black gap between sticker edge and cubie edge
+    float stickerRadius = cubieSize * 0.20;  // sticker corner radius
 
     vec2 uv = projectToFace(localP, localN);
     float sd = sdRoundRect(uv, vec2(stickerSize), stickerRadius);

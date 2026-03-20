@@ -84,9 +84,9 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
         int row = posInLayer / 3;
         int col = posInLayer % 3;
 
-        float x = (col - 1.0f) * (0.9f + gap_) * cubeScale_;
-        float y = (row - 1.0f) * (0.9f + gap_) * cubeScale_;
-        float z = (layer - 1.0f) * (0.9f + gap_) * cubeScale_;
+        float x = (col - 1.0f) * (kSpacingBase + gap_) * cubeScale_;
+        float y = (row - 1.0f) * (kSpacingBase + gap_) * cubeScale_;
+        float z = (layer - 1.0f) * (kSpacingBase + gap_) * cubeScale_;
 
         cubiePositions[i * 3] = x;
         cubiePositions[i * 3 + 1] = y;

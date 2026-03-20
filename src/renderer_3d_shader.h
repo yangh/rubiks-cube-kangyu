@@ -15,9 +15,13 @@ public:
     void setColorProvider(const ColorProvider* provider) override;
     void setAnimator(const CubeAnimator* animator) override;
     void setCube(const RubiksCube* cube) override;
+    void setScale(float scale) override { cubeScale_ = scale; }
+    float getScale() const override { return cubeScale_; }
+    void setGap(float gap) override { gap_ = gap; }
+    float getGap() const override { return gap_; }
 
-    float gap_ = 0.001f;
-    float cubeScale_ = 0.6f;
+    float gap_ = 0.03f;
+    float cubeScale_ = 0.55f;
 
 private:
     const RubiksCube* cube_ = nullptr;
@@ -27,8 +31,8 @@ private:
 
     Shader cubieShader_;
 
-    float cubieSize_ = 0.40f;
-    float cubieRadius_ = 0.04f;
+    float cubieSize_ = 0.40f;  // half-size of a single cubie
+    float cubieRadius_ = 0.04f;  // cubie corner radius
 
     void buildShaders();
     void prepareUniforms(int viewW, int viewH);

@@ -61,8 +61,8 @@ public:
     int getRendererType() const { return rendererType_; }
     void setCubeScale(float scale);
     void setGap(float gap);
-    float getCubeScale() const { return cubeScale_; }
-    float getGap() const { return gap_; }
+    float getCubeScale() const;
+    float getGap() const;
 
     ViewState viewState_;
     CubeAnimator animator_;
@@ -70,8 +70,6 @@ public:
     ColorProvider colorProvider_;
     Renderer2D renderer2D_;
     int rendererType_ = 0;
-    float cubeScale_ = 0.6f;
-    float gap_ = 0.001f;
 
     std::unique_ptr<IRenderer3D> renderer3D_;
 
