@@ -783,10 +783,8 @@ void Application::renderSettingsTab() {
         }
 
         ImGui::Spacing();
-        ImGui::Separator();
 
         // Renderer selection
-        ImGui::Text("Renderer:");
         int prevRendererType = this->renderer_->getRendererType();
         const char* rendererTypes[] = { "OpenGL", "Shader" };
         if (ImGui::Combo("Renderer", &prevRendererType, rendererTypes, IM_ARRAYSIZE(rendererTypes))) {
