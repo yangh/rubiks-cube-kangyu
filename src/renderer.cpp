@@ -156,22 +156,8 @@ void CubeRenderer::redo() {
     cube_.pushToMoveHistory(moveToRedo);
 }
 
-std::vector<Move> CubeRenderer::scramble(int numMoves) {
-    std::vector<Move> scrambleMoves = cube_.scramble(numMoves);
-    animator_.reset();
-    return scrambleMoves;
-}
-
 void CubeRenderer::resetView() {
     viewState_.reset();
-}
-
-bool CubeRenderer::isSolved() const {
-    return cube_.isSolved();
-}
-
-void CubeRenderer::dump() const {
-    cube_.dump();
 }
 
 void CubeRenderer::draw2D(ImDrawList* drawList, ImVec2 offset, float scale) {

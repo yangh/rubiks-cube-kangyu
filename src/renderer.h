@@ -47,15 +47,9 @@ public:
     void setCustomColors(const ColorConfig& config);
     void undo();  // Undo the last move
     void redo();  // Redo the last undone move
-    std::vector<Move> scramble(int numMoves = 20);  // Scramble the cube
     bool isAnimating() const { return animator_.isAnimating(); }
     float animationProgress() const { return animator_.progress(); }
     void resetView();  // Reset 3D view parameters to defaults
-    bool isSolved() const;
-    void dump() const;  // Dump cube state to console
-    const std::vector<Move>& getMoveHistory() const { return cube_.getMoveHistory(); }
-    const std::vector<Move>& getRedoHistory() const { return cube_.getRedoHistory(); }
-    bool canRedo() const { return cube_.canRedo(); }
 
     void switchRenderer(int type);
     int getRendererType() const { return rendererType_; }

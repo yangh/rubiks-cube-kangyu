@@ -37,7 +37,7 @@ int Application::run() {
     // Dump initial cube state if enabled
     if (this->enableDump_) {
         std::cout << "\n=== Initial Cube State ===" << std::endl;
-        this->renderer_->dump();
+        this->cube_.dump();
     }
 
     // Main loop
@@ -473,8 +473,8 @@ void Application::renderMovesTab() {
         ImGui::Separator();
 
         // Undo, Redo, and Copy buttons (grouped together)
-        bool canUndo = !this->renderer_->getMoveHistory().empty();
-        bool canRedo = this->renderer_->canRedo();
+        bool canUndo = !this->cube_.getMoveHistory().empty();
+        bool canRedo = this->cube_.canRedo();
 
         // Undo button
         if (canUndo) {
@@ -501,7 +501,7 @@ void Application::renderMovesTab() {
         // Copy button
         if (canUndo) {
             if (ImGui::Button("Copy", ImVec2(100, 0))) {
-                const std::vector<Move>& history = this->renderer_->getMoveHistory();
+                const std::vector<Move>& history = this->cube_.getMoveHistory();
                 glfwSetClipboardString(this->window_, buildMoveHistoryString().c_str());
             }
         } else {
@@ -510,14 +510,14 @@ void Application::renderMovesTab() {
 
         ImGui::Spacing();
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-            "Total moves: %zu", this->renderer_->getMoveHistory().size());
+            "Total moves: %zu", this->cube_.getMoveHistory().size());
         ImGui::TextColored(ImVec4(0.7f, 0.7f, 0.7f, 1.0f),
-            "Redo available: %zu", this->renderer_->getRedoHistory().size());
+            "Redo available: %zu", this->cube_.getRedoHistory().size());
 
         ImGui::Separator();
 
         // Display move history as auto-wrapped text
-        const std::vector<Move>& history = this->renderer_->getMoveHistory();
+        const std::vector<Move>& history = this->cube_.getMoveHistory();
         if (!history.empty()) {
             std::string historyStr = buildMoveHistoryString();
             ImGui::BeginChild("MoveHistory", ImVec2(0, 120), true);
@@ -532,7 +532,7 @@ void Application::renderMovesTab() {
         ImGui::Spacing();
 
         // Cube status
-        const char* status = this->renderer_->isSolved() ? "Solved" : "Unsolved";
+        const char* status = this->cube_.isSolved() ? "Solved" : "Unsolved";
         ImGui::TextColored(ImVec4(0, 1, 0, 1), "Cube status: %s", status);
 
         ImGui::EndTabItem();
@@ -936,7 +936,8 @@ void Application::scrambleCube() {
     bool oldAnimation = this->renderer_->animator_.enableAnimation;
     this->renderer_->animator_.enableAnimation = false;
 
-    std::vector<Move> scrambleMoves = this->renderer_->scramble(20);
+    this->cube_.scramble(20);
+    this->renderer_->animator_.reset();
 
     this->renderer_->animator_.enableAnimation = oldAnimation;
 }
@@ -961,7 +962,7 @@ void Application::toggleFullscreen() {
 
 std::string Application::buildMoveHistoryString() const {
     std::string result;
-    const std::vector<Move>& history = this->renderer_->getMoveHistory();
+    const std::vector<Move>& history = this->cube_.getMoveHistory();
     for (size_t i = 0; i < history.size(); ++i) {
         if (i > 0) result += " ";
         result += moveToString(history[i]);
