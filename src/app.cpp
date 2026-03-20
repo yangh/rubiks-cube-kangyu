@@ -273,6 +273,9 @@ void Application::initApp() {
     this->renderer_->animator_.animationSpeed = config.getAnimationSpeed();
     this->renderer_->animator_.easingType = static_cast<EasingType>(config.getEasingType());
 
+    // Load renderer type and switch to it
+    this->renderer_->switchRenderer(config.getRendererType());
+
     if (!config.isUsingDefaults()) {
         std::cout << "Loaded custom configuration from: " << getConfigFilePath() << std::endl;
     }
@@ -343,20 +346,20 @@ void Application::handleKeyboardShortcuts() {
     }
 
     // Plus/Minus: adjust cube scale
-    if (ImGui::IsKeyPressed(ImGuiKey_Equal) && !io.KeyCtrl) {
-        this->renderer_->renderer3D_.cubeScale_ = std::min(2.0f, this->renderer_->renderer3D_.cubeScale_ + 0.1f);
-    }
-    if (ImGui::IsKeyPressed(ImGuiKey_Minus) && !io.KeyCtrl) {
-        this->renderer_->renderer3D_.cubeScale_ = std::max(0.2f, this->renderer_->renderer3D_.cubeScale_ - 0.1f);
-    }
+        if (ImGui::IsKeyPressed(ImGuiKey_Equal) && !io.KeyCtrl) {
+            this->renderer_->setCubeScale(std::min(2.0f, this->renderer_->getCubeScale() + 0.1f));
+        }
+        if (ImGui::IsKeyPressed(ImGuiKey_Minus) && !io.KeyCtrl) {
+            this->renderer_->setCubeScale(std::max(0.2f, this->renderer_->getCubeScale() - 0.1f));
+        }
 
-    // Ctrl+Plus/Ctrl+Minus: adjust gap
-    if (ImGui::IsKeyPressed(ImGuiKey_Equal) && io.KeyCtrl) {
-        this->renderer_->renderer3D_.gap_ = std::min(0.5f, this->renderer_->renderer3D_.gap_ + 0.05f);
-    }
-    if (ImGui::IsKeyPressed(ImGuiKey_Minus) && io.KeyCtrl) {
-        this->renderer_->renderer3D_.gap_ = std::max(0.0f, this->renderer_->renderer3D_.gap_ - 0.05f);
-    }
+        // Ctrl+Plus/Ctrl+Minus: adjust gap
+        if (ImGui::IsKeyPressed(ImGuiKey_Equal) && io.KeyCtrl) {
+            this->renderer_->setGap(std::min(0.5f, this->renderer_->getGap() + 0.05f));
+        }
+        if (ImGui::IsKeyPressed(ImGuiKey_Minus) && io.KeyCtrl) {
+            this->renderer_->setGap(std::max(0.0f, this->renderer_->getGap() - 0.05f));
+        }
 }
 
 void Application::handleMoveShortcut(ImGuiKey key, Move normalMove, Move primeMove, ImGuiIO& io) {
@@ -782,6 +785,21 @@ void Application::renderSettingsTab() {
         ImGui::Spacing();
         ImGui::Separator();
 
+        // Renderer selection
+        ImGui::Text("Renderer:");
+        int prevRendererType = this->renderer_->getRendererType();
+        const char* rendererTypes[] = { "OpenGL", "Shader" };
+        if (ImGui::Combo("Renderer", &prevRendererType, rendererTypes, IM_ARRAYSIZE(rendererTypes))) {
+            this->renderer_->switchRenderer(prevRendererType);
+            saveRendererConfig();
+        }
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("OpenGL: Fixed-pipeline renderer\nShader: GLSL 330 shader renderer (restart required for full effect)");
+        }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+
         // 2D view controls
         ImGui::Text("2D View Controls:");
         ImGui::SliderFloat("2D Scale", &this->renderer_->viewState_.scale2D, 0.3f, 3.0f, "%.2f");
@@ -906,6 +924,7 @@ void Application::saveRendererConfig() {
     config.setEnableAnimation(this->renderer_->animator_.enableAnimation);
     config.setAnimationSpeed(this->renderer_->animator_.animationSpeed);
     config.setEasingType(static_cast<int>(this->renderer_->animator_.easingType));
+    config.setRendererType(this->renderer_->getRendererType());
     config.setUsingDefaults(false);
     saveColorConfig(config);
 }

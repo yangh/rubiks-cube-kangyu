@@ -164,6 +164,11 @@ ColorConfig loadColorConfig() {
                 config.setEasingType(std::stoi(value));
             } catch (...) {}
         }
+        else if (key == "rendererType") {
+            try {
+                config.setRendererType(std::stoi(value));
+            } catch (...) {}
+        }
         // Unknown keys are silently ignored
     }
 
@@ -218,6 +223,7 @@ bool saveColorConfig(const ColorConfig& config) {
     file << "enableAnimation = " << (config.getEnableAnimation() ? "true" : "false") << "\n";
     file << "animationSpeed = " << config.getAnimationSpeed() << "\n";
     file << "easingType = " << config.getEasingType() << "\n";
+    file << "rendererType = " << config.getRendererType() << "\n";
 
     file.close();
 
@@ -229,7 +235,8 @@ ColorConfig::ColorConfig() :
     usingDefaults_(true),
     enableAnimation_(true),
     animationSpeed_(1.0f),
-    easingType_(0)
+    easingType_(0),
+    rendererType_(0)
 {
         front_ = RgbColor(DefaultColorRGB::GREEN);
         back_  = RgbColor(DefaultColorRGB::BLUE);

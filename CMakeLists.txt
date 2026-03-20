@@ -41,6 +41,7 @@ add_executable(rubiks-cube
     src/renderer.cpp
     src/renderer_2d.cpp
     src/renderer_3d_shader.cpp
+    src/renderer_3d_opengl.cpp
     src/color.cpp
     src/shader.cpp
     src/model.cpp
@@ -71,14 +72,21 @@ target_link_libraries(rubiks-cube PRIVATE ${CMAKE_DL_LIBS})
 include(FetchContent)
 
 # Download ImGui
-FetchContent_Declare(
-    ImGui
-    GIT_REPOSITORY https://github.com/ocornut/imgui.git
-    GIT_TAG v1.92.6
-    SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui
-    GIT_PROGRESS ON
-    GIT_SHALLOW 1
-)
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui/imgui.h")
+    FetchContent_Declare(
+        ImGui
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui
+    )
+else()
+    FetchContent_Declare(
+        ImGui
+        GIT_REPOSITORY https://github.com/ocornut/imgui.git
+        GIT_TAG v1.92.6
+        SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/third_party/imgui
+        GIT_PROGRESS ON
+        GIT_SHALLOW 1
+    )
+endif()
 
 FetchContent_MakeAvailable(ImGui)
 

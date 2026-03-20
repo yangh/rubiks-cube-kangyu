@@ -6,6 +6,8 @@
 #include "renderer.h"
 #include "formula.h"
 
+struct GLFWwindow;
+
 class Application {
 public:
     Application() = default;

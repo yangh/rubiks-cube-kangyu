@@ -30,6 +30,7 @@ private:
     bool enableAnimation_;
     float animationSpeed_;
     int easingType_;
+    int rendererType_;
 
 public:
     ColorConfig();
@@ -69,6 +70,9 @@ public:
     void setAnimationSpeed(float value) { animationSpeed_ = value; }
     int getEasingType() const { return easingType_; }
     void setEasingType(int value) { easingType_ = value; }
+
+    int getRendererType() const { return rendererType_; }
+    void setRendererType(int value) { rendererType_ = value; }
 
     // Set from array (for UI convenience)
     void setFront(const std::array<float, 3>& color) { front_ = RgbColor(color); }

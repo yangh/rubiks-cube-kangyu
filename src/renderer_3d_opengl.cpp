@@ -1,5 +1,6 @@
 #include "renderer_3d_opengl.h"
 #include "renderer.h"
+#include "gl_loader.h"
 #include <cmath>
 #include <iostream>
 

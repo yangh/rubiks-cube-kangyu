@@ -5,8 +5,9 @@
 #include "animator.h"
 #include "config.h"
 #include "renderer_2d.h"
-#include "renderer_3d_shader.h"
+#include "renderer_3d.h"
 #include <imgui.h>
+#include <memory>
 
 struct ViewState {
     float rotationX = 30.0f;
@@ -56,12 +57,23 @@ public:
     const std::vector<Move>& getRedoHistory() const { return cube_.getRedoHistory(); }
     bool canRedo() const { return cube_.canRedo(); }
 
+    void switchRenderer(int type);
+    int getRendererType() const { return rendererType_; }
+    void setCubeScale(float scale);
+    void setGap(float gap);
+    float getCubeScale() const { return cubeScale_; }
+    float getGap() const { return gap_; }
+
     ViewState viewState_;
     CubeAnimator animator_;
 
     ColorProvider colorProvider_;
     Renderer2D renderer2D_;
-    Renderer3DShader renderer3D_;
+    int rendererType_ = 0;
+    float cubeScale_ = 0.6f;
+    float gap_ = 0.001f;
+
+    std::unique_ptr<IRenderer3D> renderer3D_;
 
 private:
     RubiksCube& cube_;

@@ -1,4 +1,6 @@
 #include "renderer.h"
+#include "renderer_3d_opengl.h"
+#include "renderer_3d_shader.h"
 #include <cmath>
 #include <iostream>
 
@@ -63,11 +65,43 @@ CubeRenderer::CubeRenderer(RubiksCube& cube)
     animator_.setCubeGetter([this]() -> const RubiksCube& {
         return cube_;
     });
-    
-    renderer3D_.setViewState(&viewState_);
-    renderer3D_.setColorProvider(&colorProvider_);
-    renderer3D_.setAnimator(&animator_);
-    renderer3D_.setCube(&cube_);
+
+    switchRenderer(0);
+}
+
+void CubeRenderer::switchRenderer(int type) {
+    rendererType_ = type;
+    if (type == 1) {
+        auto r = std::make_unique<Renderer3DShader>();
+        r->setViewState(&viewState_);
+        r->setColorProvider(&colorProvider_);
+        r->setAnimator(&animator_);
+        r->setCube(&cube_);
+        static_cast<Renderer3DShader*>(r.get())->cubeScale_ = cubeScale_;
+        static_cast<Renderer3DShader*>(r.get())->gap_ = gap_;
+        renderer3D_ = std::move(r);
+    } else {
+        auto r = std::make_unique<Renderer3DOpenGL>();
+        r->setViewState(&viewState_);
+        r->setColorProvider(&colorProvider_);
+        r->setAnimator(&animator_);
+        r->setCube(&cube_);
+        renderer3D_ = std::move(r);
+    }
+}
+
+void CubeRenderer::setCubeScale(float scale) {
+    cubeScale_ = scale;
+    if (rendererType_ == 1 && renderer3D_) {
+        static_cast<Renderer3DShader*>(renderer3D_.get())->cubeScale_ = scale;
+    }
+}
+
+void CubeRenderer::setGap(float gap) {
+    gap_ = gap;
+    if (rendererType_ == 1 && renderer3D_) {
+        static_cast<Renderer3DShader*>(renderer3D_.get())->gap_ = gap;
+    }
 }
 
 void CubeRenderer::setCustomColors(const ColorConfig& config) {
@@ -141,7 +175,7 @@ void CubeRenderer::draw2D(ImDrawList* drawList, ImVec2 offset, float scale) {
 }
 
 void CubeRenderer::render3DOverlay(int windowWidth, int windowHeight, float sidebarWidth) {
-    renderer3D_.render(windowWidth, windowHeight, sidebarWidth);
+    renderer3D_->render(windowWidth, windowHeight, sidebarWidth);
 }
 
 void CubeRenderer::updateAnimation(float deltaTime) {
