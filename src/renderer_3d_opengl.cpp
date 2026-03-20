@@ -302,6 +302,9 @@ void Renderer3DOpenGL::render(int windowWidth, int windowHeight, float sidebarWi
         return;
     }
 
+    GL_LOADER.glUseProgram(0);
+    GL_LOADER.glDisableVertexAttribArray(0);
+
     // Setup viewport and scissor
     int viewX = 10;
     int viewY = 10;
