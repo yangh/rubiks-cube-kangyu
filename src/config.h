@@ -1,27 +1,12 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <array>
 #include <string>
 #include "color.h"
 
 enum class RendererType {
     OpenGL = 0,
     Shader = 1
-};
-
-struct RgbColor {
-    float r;
-    float g;
-    float b;
-
-    RgbColor() : r(0.0f), g(0.0f), b(0.0f) {}
-    RgbColor(float red, float green, float blue) : r(red), g(green), b(blue) {}
-    RgbColor(ColorRGB a) : r(a[0]), g(a[1]), b(a[2]) {}
-
-    ColorRGB toArray() const {
-        return {r, g, b};
-    }
 };
 
 class CubeConfig {
@@ -41,15 +26,13 @@ private:
 public:
     CubeConfig();
 
-    // Getters for renderer compatibility
-    ColorRGB getFrontColor() const { return front_.toArray(); }
-    ColorRGB getBackColor()  const { return back_.toArray(); }
-    ColorRGB getLeftColor()  const { return left_.toArray(); }
-    ColorRGB getRightColor() const { return right_.toArray(); }
-    ColorRGB getUpColor()    const { return up_.toArray(); }
-    ColorRGB getDownColor()  const { return down_.toArray(); }
+    RgbColor getFrontColor() const { return front_; }
+    RgbColor getBackColor()  const { return back_; }
+    RgbColor getLeftColor()  const { return left_; }
+    RgbColor getRightColor() const { return right_; }
+    RgbColor getUpColor()    const { return up_; }
+    RgbColor getDownColor()  const { return down_; }
 
-    // Getters for individual colors
     const RgbColor& front() const { return front_; }
     const RgbColor& back()  const { return back_; }
     const RgbColor& left()  const { return left_; }
@@ -57,7 +40,6 @@ public:
     const RgbColor& up()    const { return up_; }
     const RgbColor& down()  const { return down_; }
 
-    // Setters for individual colors
     void setFront(const RgbColor& color) { front_ = color; }
     void setBack(const RgbColor& color)  { back_ = color; }
     void setLeft(const RgbColor& color)  { left_ = color; }
@@ -65,11 +47,9 @@ public:
     void setUp(const RgbColor& color)    { up_ = color; }
     void setDown(const RgbColor& color)  { down_ = color; }
 
-    // Check if using default colors
     bool isUsingDefaults() const { return usingDefaults_; }
     void setUsingDefaults(bool value) { usingDefaults_ = value; }
 
-    // Animation settings
     bool getEnableAnimation() const { return enableAnimation_; }
     void setEnableAnimation(bool value) { enableAnimation_ = value; }
     float getAnimationSpeed() const { return animationSpeed_; }
@@ -79,14 +59,6 @@ public:
 
     RendererType getRendererType() const { return rendererType_; }
     void setRendererType(RendererType value) { rendererType_ = value; }
-
-    // Set from array (for UI convenience)
-    void setFront(const ColorRGB& color) { front_ = RgbColor(color); }
-    void setBack(const ColorRGB& color)  { back_  = RgbColor(color); }
-    void setLeft(const ColorRGB& color)  { left_  = RgbColor(color); }
-    void setRight(const ColorRGB& color) { right_ = RgbColor(color); }
-    void setUp(const ColorRGB& color)    { up_    = RgbColor(color); }
-    void setDown(const ColorRGB& color)  { down_  = RgbColor(color); }
 };
 
 // Load cube configuration from ~/.rubiks-cube/config.ini

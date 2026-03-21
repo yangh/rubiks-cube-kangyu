@@ -34,12 +34,12 @@ void ViewState::reset() {
     scale2D = 0.8f;
 }
 
-static ColorRGB rotateAroundAxis(const ColorRGB& pos, 
+static RgbColor rotateAroundAxis(const RgbColor& pos, 
                                               const RotationAxis& axis, float angle) {
     float rad = angle * M_PI / 180.0f;
     float c = cosf(rad);
     float s = sinf(rad);
-    float x = pos[0], y = pos[1], z = pos[2];
+    float x = pos.r, y = pos.g, z = pos.b;
     
     if (axis.x != 0) {
         float sign = axis.x > 0 ? 1.0f : -1.0f;

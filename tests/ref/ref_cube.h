@@ -46,6 +46,9 @@ enum class Face : uint8_t {
     DOWN = 5
 };
 
+// Face type for getting face colors
+typedef std::array<Color, 9> FaceColor;
+
 class RubiksCube {
 public:
     RubiksCube();

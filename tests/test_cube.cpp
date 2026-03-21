@@ -415,15 +415,15 @@ void testColorConversion() {
 
     auto white = colorToRgb(Color::WHITE);
     assertTest("White RGB is (1, 1, 1)",
-               white[0] == 1.0f && white[1] == 1.0f && white[2] == 1.0f);
+               white.r == 1.0f && white.g == 1.0f && white.b == 1.0f);
 
     auto red = colorToRgb(Color::RED);
     assertTest("Red RGB is (1, 0, 0)",
-               red[0] == 1.0f && red[1] == 0.0f && red[2] == 0.0f);
+               red.r == 1.0f && red.g == 0.0f && red.b == 0.0f);
 
     auto yellow = colorToRgb(Color::YELLOW);
     assertTest("Yellow RGB is (1, 1, 0)",
-               yellow[0] == 1.0f && yellow[1] == 1.0f && yellow[2] == 0.0f);
+               yellow.r == 1.0f && yellow.g == 1.0f && yellow.b == 0.0f);
 }
 
 // Test 9: Move string conversion

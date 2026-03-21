@@ -399,7 +399,7 @@ void Renderer3DOpenGL::render(int windowWidth, int windowHeight, float sidebarWi
                     const auto& face = getCubeFace(renderCube, si.faceIdx);
                     Color c = face[si.colorIdx];
                     auto rgb = colorProvider_->getFaceColorRgb(c);
-                    glColor3f(rgb[0], rgb[1], rgb[2]);
+                    glColor3f(rgb.r, rgb.g, rgb.b);
                     
                     // Draw sticker from pre-built template (FIX #1 & #2: single batch call)
                     glVertexPointer(3, GL_FLOAT, 0, &stickerTemplates_[si.templateIdx].vertices[0]);

@@ -89,7 +89,7 @@ static bool parseColorValue(const std::string& value, RgbColor& color) {
     if (!(iss >> r >> g >> b)) {
         return false;
     }
-    color = RgbColor(r, g, b);
+    color = RgbColor{r, g, b};
     return true;
 }
 
@@ -233,10 +233,10 @@ CubeConfig::CubeConfig() :
     easingType_(0),
     rendererType_(RendererType::OpenGL)
 {
-        front_ = RgbColor(DefaultColorRGB::GREEN);
-        back_  = RgbColor(DefaultColorRGB::BLUE);
-        left_  = RgbColor(DefaultColorRGB::ORANGE);
-        right_ = RgbColor(DefaultColorRGB::RED);
-        up_    = RgbColor(DefaultColorRGB::WHITE);
-        down_  = RgbColor(DefaultColorRGB::YELLOW);
+        front_ = DefaultColorRGB::GREEN;
+        back_  = DefaultColorRGB::BLUE;
+        left_  = DefaultColorRGB::ORANGE;
+        right_ = DefaultColorRGB::RED;
+        up_    = DefaultColorRGB::WHITE;
+        down_  = DefaultColorRGB::YELLOW;
 }

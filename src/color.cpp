@@ -1,7 +1,7 @@
 #include "color.h"
 #include "config.h"
 
-ColorRGB colorToRgb(Color color) {
+RgbColor colorToRgb(Color color) {
     switch (color) {
         case Color::WHITE:  return DefaultColorRGB::WHITE;
         case Color::YELLOW: return DefaultColorRGB::YELLOW;
@@ -50,7 +50,7 @@ void ColorProvider::resetToDefaults() {
     useCustomColors = false;
 }
 
-ColorRGB ColorProvider::getRgbForColor(Color color) const {
+RgbColor ColorProvider::getRgbForColor(Color color) const {
     if (!useCustomColors) {
         return colorToRgb(color);
     }
@@ -67,13 +67,13 @@ ColorRGB ColorProvider::getRgbForColor(Color color) const {
 }
 
 uint32_t ColorProvider::getFaceColor(Color color) const {
-    ColorRGB rgb = getRgbForColor(color);
+    RgbColor rgb = getRgbForColor(color);
     return static_cast<uint32_t>(255) << 24
-         | static_cast<uint32_t>(rgb[2] * 255) << 16
-         | static_cast<uint32_t>(rgb[1] * 255) << 8
-         | static_cast<uint32_t>(rgb[0] * 255);
+         | static_cast<uint32_t>(rgb.b * 255) << 16
+         | static_cast<uint32_t>(rgb.g * 255) << 8
+         | static_cast<uint32_t>(rgb.r * 255);
 }
 
-ColorRGB ColorProvider::getFaceColorRgb(Color color) const {
+RgbColor ColorProvider::getFaceColorRgb(Color color) const {
     return getRgbForColor(color);
 }

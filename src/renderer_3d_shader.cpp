@@ -128,9 +128,9 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
                     int idx = sm.localRow * 3 + sm.localCol;
                     auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
                     int si = sm.stickerOffset + idx;
-                    stickerColors[si * 3 + 0] = rgb[0];
-                    stickerColors[si * 3 + 1] = rgb[1];
-                    stickerColors[si * 3 + 2] = rgb[2];
+                    stickerColors[si * 3 + 0] = rgb.r;
+                    stickerColors[si * 3 + 1] = rgb.g;
+                    stickerColors[si * 3 + 2] = rgb.b;
                 }
 
                 cubeIndex++;
