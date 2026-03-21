@@ -4,6 +4,11 @@
 #include <array>
 #include <string>
 
+enum class RendererType {
+    OpenGL = 0,
+    Shader = 1
+};
+
 struct RgbColor {
     float r;
     float g;
@@ -30,7 +35,7 @@ private:
     bool enableAnimation_;
     float animationSpeed_;
     int easingType_;
-    int rendererType_;
+    RendererType rendererType_;
 
 public:
     ColorConfig();
@@ -71,8 +76,8 @@ public:
     int getEasingType() const { return easingType_; }
     void setEasingType(int value) { easingType_ = value; }
 
-    int getRendererType() const { return rendererType_; }
-    void setRendererType(int value) { rendererType_ = value; }
+    RendererType getRendererType() const { return rendererType_; }
+    void setRendererType(RendererType value) { rendererType_ = value; }
 
     // Set from array (for UI convenience)
     void setFront(const std::array<float, 3>& color) { front_ = RgbColor(color); }

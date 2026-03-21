@@ -798,10 +798,11 @@ void Application::renderSettingsTab() {
         ImGui::Spacing();
 
         // Renderer selection
-        int prevRendererType = this->renderer_->getRendererType();
+        RendererType prevRendererType = this->renderer_->getRendererType();
         const char* rendererTypes[] = { "OpenGL", "Shader" };
-        if (ImGui::Combo("Renderer", &prevRendererType, rendererTypes, IM_ARRAYSIZE(rendererTypes))) {
-            this->renderer_->switchRenderer(prevRendererType);
+        int comboIndex = static_cast<int>(prevRendererType);
+        if (ImGui::Combo("Renderer", &comboIndex, rendererTypes, IM_ARRAYSIZE(rendererTypes))) {
+            this->renderer_->switchRenderer(static_cast<RendererType>(comboIndex));
             saveRendererConfig();
         }
         if (ImGui::IsItemHovered()) {

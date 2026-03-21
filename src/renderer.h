@@ -49,8 +49,8 @@ public:
     float animationProgress() const { return animator_.progress(); }
     void resetView();  // Reset 3D view parameters to defaults
 
-    void switchRenderer(int type);
-    int getRendererType() const { return rendererType_; }
+    void switchRenderer(RendererType type);
+    RendererType getRendererType() const { return rendererType_; }
     void setCubeScale(float scale);
     void setGap(float gap);
     float getCubeScale() const;
@@ -61,7 +61,7 @@ public:
 
     ColorProvider colorProvider_;
     Renderer2D renderer2D_;
-    int rendererType_ = 0;
+    RendererType rendererType_ = RendererType::OpenGL;
 
     std::unique_ptr<IRenderer3D> renderer3D_;
 

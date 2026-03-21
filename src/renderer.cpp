@@ -66,12 +66,12 @@ CubeRenderer::CubeRenderer(RubiksCube& cube)
         return cube_;
     });
 
-    switchRenderer(0);
+    switchRenderer(RendererType::OpenGL);
 }
 
-void CubeRenderer::switchRenderer(int type) {
+void CubeRenderer::switchRenderer(RendererType type) {
     rendererType_ = type;
-    if (type == 1) {
+    if (type == RendererType::Shader) {
         auto r = std::make_unique<Renderer3DShader>();
         r->setViewState(&viewState_);
         r->setColorProvider(&colorProvider_);

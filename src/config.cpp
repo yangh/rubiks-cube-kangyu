@@ -1,5 +1,6 @@
 #include "config.h"
 #include "color.h"
+#include "renderer.h"
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -166,7 +167,7 @@ ColorConfig loadColorConfig() {
         }
         else if (key == "rendererType") {
             try {
-                config.setRendererType(std::stoi(value));
+                config.setRendererType(static_cast<RendererType>(std::stoi(value)));
             } catch (...) {}
         }
         // Unknown keys are silently ignored
@@ -223,7 +224,7 @@ bool saveColorConfig(const ColorConfig& config) {
     file << "enableAnimation = " << (config.getEnableAnimation() ? "true" : "false") << "\n";
     file << "animationSpeed = " << config.getAnimationSpeed() << "\n";
     file << "easingType = " << config.getEasingType() << "\n";
-    file << "rendererType = " << config.getRendererType() << "\n";
+    file << "rendererType = " << static_cast<int>(config.getRendererType()) << "\n";
 
     file.close();
 
@@ -236,7 +237,7 @@ ColorConfig::ColorConfig() :
     enableAnimation_(true),
     animationSpeed_(1.0f),
     easingType_(0),
-    rendererType_(0)
+    rendererType_(RendererType::OpenGL)
 {
         front_ = RgbColor(DefaultColorRGB::GREEN);
         back_  = RgbColor(DefaultColorRGB::BLUE);
