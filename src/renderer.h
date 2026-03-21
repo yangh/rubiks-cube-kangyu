@@ -45,8 +45,6 @@ public:
 
     // Apply color configuration to the renderer
     void setCustomColors(const ColorConfig& config);
-    void undo();  // Undo the last move
-    void redo();  // Redo the last undone move
     bool isAnimating() const { return animator_.isAnimating(); }
     float animationProgress() const { return animator_.progress(); }
     void resetView();  // Reset 3D view parameters to defaults

@@ -129,33 +129,6 @@ void CubeRenderer::reset() {
     animator_.reset();
 }
 
-void CubeRenderer::undo() {
-    if (cube_.getMoveHistory().empty()) {
-        return;
-    }
-
-    Move lastMove = cube_.getMoveHistory().back();
-    Move inverseMove = getInverseMove(lastMove);
-
-    executeMove(inverseMove, false);
-
-    cube_.popMoveHistory();
-    cube_.pushToRedoHistory(lastMove);
-}
-
-void CubeRenderer::redo() {
-    if (cube_.getRedoHistory().empty()) {
-        return;
-    }
-
-    Move moveToRedo = cube_.getRedoHistory().back();
-
-    executeMove(moveToRedo, false);
-
-    cube_.popRedoHistory();
-    cube_.pushToMoveHistory(moveToRedo);
-}
-
 void CubeRenderer::resetView() {
     viewState_.reset();
 }

@@ -327,12 +327,20 @@ void Application::handleKeyboardShortcuts() {
 
     // Ctrl+Z: undo
     if (ImGui::IsKeyPressed(ImGuiKey_Z) && io.KeyCtrl) {
-        this->renderer_->undo();
+        if (this->cube_.canUndo()) {
+            Move lastMove = this->cube_.getLastMove();
+            this->renderer_->executeMove(getInverseMove(lastMove), false);
+            this->cube_.undo();
+        }
     }
 
     // Ctrl+R: redo
     if (ImGui::IsKeyPressed(ImGuiKey_R) && io.KeyCtrl) {
-        this->renderer_->redo();
+        if (this->cube_.canRedo()) {
+            Move moveToRedo = this->cube_.getLastRedo();
+            this->renderer_->executeMove(moveToRedo, false);
+            this->cube_.redo();
+        }
     }
 
     // F11: toggle fullscreen
@@ -473,13 +481,16 @@ void Application::renderMovesTab() {
         ImGui::Separator();
 
         // Undo, Redo, and Copy buttons (grouped together)
-        bool canUndo = !this->cube_.getMoveHistory().empty();
+        bool canUndo = this->cube_.canUndo();
         bool canRedo = this->cube_.canRedo();
 
         // Undo button
         if (canUndo) {
             if (ImGui::Button("Undo", ImVec2(100, 0))) {
-                this->renderer_->undo();
+                Move lastMove = this->cube_.getLastMove();
+                Move inverseMove = getInverseMove(lastMove);
+                this->renderer_->animator_.queueMove(inverseMove, false);
+                this->cube_.undo();
             }
         } else {
             drawDisabledButton("Undo", ImVec2(100, 0));
@@ -490,7 +501,9 @@ void Application::renderMovesTab() {
         // Redo button
         if (canRedo) {
             if (ImGui::Button("Redo", ImVec2(100, 0))) {
-                this->renderer_->redo();
+                Move moveToRedo = this->cube_.getRedoHistory().back();
+                this->renderer_->animator_.queueMove(moveToRedo, false);
+                this->cube_.redo();
             }
         } else {
             drawDisabledButton("Redo", ImVec2(100, 0));

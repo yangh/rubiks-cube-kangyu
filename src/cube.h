@@ -30,10 +30,15 @@ public:
     void popRedoHistory();
     void pushToRedoHistory(Move move);
 
-    // Note: undo/redo logic is handled by CubeRenderer for animation support
+    Move getLastMove() { return moveHistory_.back(); }
+    Move getLastRedo() { return redoHistory_.back(); }
     const std::vector<Move>& getMoveHistory() const { return moveHistory_; }
     const std::vector<Move>& getRedoHistory() const { return redoHistory_; }
+    bool canUndo() const { return !moveHistory_.empty(); }
     bool canRedo() const { return !redoHistory_.empty(); }
+
+    void undo();
+    void redo();
 
     bool isSolved() const;
     bool isValidColorConfiguration() const;

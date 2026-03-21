@@ -71,6 +71,24 @@ void RubiksCube::pushToRedoHistory(Move move) {
     redoHistory_.push_back(move);
 }
 
+void RubiksCube::undo() {
+    if (moveHistory_.empty()) {
+        return;
+    }
+    Move lastMove = moveHistory_.back();
+    moveHistory_.pop_back();
+    redoHistory_.push_back(lastMove);
+}
+
+void RubiksCube::redo() {
+    if (redoHistory_.empty()) {
+        return;
+    }
+    Move moveToRedo = redoHistory_.back();
+    redoHistory_.pop_back();
+    moveHistory_.push_back(moveToRedo);
+}
+
 void RubiksCube::reset() {
     front_ = fillFaceColor(Color::GREEN);
     back_  = fillFaceColor(Color::BLUE);
