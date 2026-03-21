@@ -79,8 +79,8 @@ static std::string trim(const std::string& str) {
 }
 
 // Parse RGB color from value string (handles "r, g, b" or "r g b")
-static bool parseColorValue(const std::string& value, RgbColor& color) {
-    std::string v = value;
+static bool parseColorValue(const std::string& iniValue, RgbColor& color) {
+    std::string v = iniValue;
     // Replace commas with spaces for uniform parsing
     std::replace(v.begin(), v.end(), ',', ' ');
     

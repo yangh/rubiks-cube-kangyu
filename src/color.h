@@ -24,7 +24,7 @@ struct RgbColor {
 // Color utility functions
 RgbColor colorToRgb(Color color);
 std::string colorToString(Color color);
-bool isOppositeColor(Color a, Color b);
+bool isOppositeColor(Color color1, Color color2);
 
 // DefaultColorRGB namespace
 namespace DefaultColorRGB {

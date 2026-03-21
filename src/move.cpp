@@ -54,8 +54,8 @@ const MoveInfo& getMoveInfo(Move move) {
     return unknown;
 }
 
-bool charToBaseMove(char c, Move& outMove) {
-    switch (c) {
+bool charToBaseMove(char moveChar, Move& outMove) {
+    switch (moveChar) {
         case 'U': outMove = Move::U; return true;
         case 'D': outMove = Move::D; return true;
         case 'L': outMove = Move::L; return true;
