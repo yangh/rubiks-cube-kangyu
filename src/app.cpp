@@ -595,6 +595,7 @@ void Application::renderFormulasTab() {
                     formulaStr += moveToString(selectedItem->moves[i]);
                 }
                 snprintf(this->formulaInput_, sizeof(this->formulaInput_), "%s", formulaStr.c_str());
+                this->formulaParsedMoves_ = parseMoveSequence(this->formulaInput_);
                 this->formulaInputDirty_ = false;
             }
 
@@ -611,15 +612,14 @@ void Application::renderFormulasTab() {
         }
 
         // Display move count
-        std::vector<Move> parsedMoves = parseMoveSequence(this->formulaInput_);
         // Show step progress if in step-by-step mode
         if (this->isStepByStepMode_) {
             ImGui::TextColored(ImVec4(0.0f, 1.0f, 0.5f, 1.0f),
                 "Total moves: %zu (Step: %d/%zu)",
-                parsedMoves.size(), this->currentStepIndex_, this->stepByStepMoves_.size());
+                this->formulaParsedMoves_.size(), this->currentStepIndex_, this->stepByStepMoves_.size());
         } else {
             ImGui::TextColored(ImVec4(0.6f, 0.6f, 0.6f, 1.0f),
-                "Total moves: %zu", parsedMoves.size());
+                "Total moves: %zu", this->formulaParsedMoves_.size());
         }
 
         // Display loop count if formula has loop syntax
@@ -634,21 +634,17 @@ void Application::renderFormulasTab() {
         ImGui::Spacing();
 
         // Execute buttons
-        std::vector<Move> movesFromInput = parseMoveSequence(this->formulaInput_);
-        bool hasFormula = !movesFromInput.empty();
+        bool hasFormula = !this->formulaParsedMoves_.empty();
 
         if (hasFormula) {
             // Execute button - automatically loops if formula has loop syntax
             if (ImGui::Button("Execute", ImVec2(180, 0))) {
                 resetStepByStepMode();
 
-                // Parse moves from input
-                std::vector<Move> moves = parseMoveSequence(this->formulaInput_);
-
                 // Execute formula loopCount times if formula has loop syntax, otherwise execute once
                 int loopCount = (selectedItem != nullptr && selectedItem->loopCount > 0) ? selectedItem->loopCount : 1;
                 for (int i = 0; i < loopCount; ++i) {
-                    for (const Move& move : moves) {
+                    for (const Move& move : this->formulaParsedMoves_) {
                         this->renderer_->executeMove(move);
                     }
                 }
@@ -661,8 +657,7 @@ void Application::renderFormulasTab() {
                 resetStepByStepMode();
 
                 // Parse and execute moves in reverse order with inverse moves
-                std::vector<Move> moves = parseMoveSequence(this->formulaInput_);
-                for (auto it = moves.rbegin(); it != moves.rend(); ++it) {
+                for (auto it = this->formulaParsedMoves_.rbegin(); it != this->formulaParsedMoves_.rend(); ++it) {
                     this->renderer_->executeMove(getInverseMove(*it));
                 }
             }
@@ -675,7 +670,7 @@ void Application::renderFormulasTab() {
                 if (ImGui::Button("Step", ImVec2(180, 0))) {
                     // Start step-by-step mode if not already active
                     if (!this->isStepByStepMode_) {
-                        this->stepByStepMoves_ = parseMoveSequence(this->formulaInput_);
+                        this->stepByStepMoves_ = this->formulaParsedMoves_;
                         this->currentStepIndex_ = 0;
                         this->isStepByStepMode_ = true;
                     }

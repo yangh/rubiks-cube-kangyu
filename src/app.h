@@ -68,6 +68,7 @@ private:
 
     char formulaInput_[1024] = "";
     bool formulaInputDirty_ = true;
+    std::vector<Move> formulaParsedMoves_;
 
     bool enableDump_ = false;
     bool showAboutDialog_ = false;

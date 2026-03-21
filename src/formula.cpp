@@ -37,16 +37,19 @@ void FormulaManager::loadFormulas() {
         if (!files_[selectedFile_].items.empty()) {
             selectedItemIndex_ = 0;
         }
+
+        std::vector<std::string> names;
+        for (const auto &pair : files_)
+        {
+            names.push_back(pair.first);
+        }
+        std::sort(names.begin(), names.end());
+        fileNamesSorted_ = names;
     }
 }
 
 std::vector<std::string> FormulaManager::getFileNames() const {
-    std::vector<std::string> names;
-    for (const auto& pair : files_) {
-        names.push_back(pair.first);
-    }
-    std::sort(names.begin(), names.end());
-    return names;
+    return fileNamesSorted_;
 }
 
 const std::vector<FormulaItem>* FormulaManager::getFileItems(const std::string& filename) const {

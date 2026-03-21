@@ -62,6 +62,7 @@ private:
 
     // Map of filename to file data
     std::map<std::string, FormulaFile> files_;
+    std::vector<std::string> fileNamesSorted_;
 
     // Currently selected file name
     std::string selectedFile_;
