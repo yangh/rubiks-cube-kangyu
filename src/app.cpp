@@ -265,16 +265,8 @@ void Application::initApp() {
     this->renderer_ = std::make_unique<CubeRenderer>(this->cube_);
 
     // Load color configuration from file
-    ColorConfig config = loadColorConfig();
-    this->renderer_->setCustomColors(config);
-
-    // Load animation settings from config
-    this->renderer_->animator_.enableAnimation = config.getEnableAnimation();
-    this->renderer_->animator_.animationSpeed = config.getAnimationSpeed();
-    this->renderer_->animator_.easingType = static_cast<EasingType>(config.getEasingType());
-
-    // Load renderer type and switch to it
-    this->renderer_->switchRenderer(config.getRendererType());
+    CubeConfig config = loadCubeConfig();
+    this->renderer_->setCustomConfig(config);
 
     if (!config.isUsingDefaults()) {
         std::cout << "Loaded custom configuration from: " << getConfigFilePath() << std::endl;
@@ -926,7 +918,7 @@ void Application::resetStepByStepMode() {
 }
 
 void Application::saveRendererConfig() {
-    ColorConfig config;
+    CubeConfig config;
     config.setFront(this->renderer_->colorProvider_.customFront);
     config.setBack(this->renderer_->colorProvider_.customBack);
     config.setLeft(this->renderer_->colorProvider_.customLeft);
@@ -938,7 +930,7 @@ void Application::saveRendererConfig() {
     config.setEasingType(static_cast<int>(this->renderer_->animator_.easingType));
     config.setRendererType(this->renderer_->getRendererType());
     config.setUsingDefaults(false);
-    saveColorConfig(config);
+    saveCubeConfig(config);
 }
 
 void Application::resetCube() {

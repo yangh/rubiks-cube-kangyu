@@ -23,7 +23,7 @@ struct RgbColor {
     }
 };
 
-class ColorConfig {
+class CubeConfig {
 private:
     RgbColor front_;
     RgbColor back_;
@@ -38,7 +38,7 @@ private:
     RendererType rendererType_;
 
 public:
-    ColorConfig();
+    CubeConfig();
 
     // Getters for renderer compatibility
     std::array<float, 3> getFrontColor() const { return front_.toArray(); }
@@ -88,16 +88,13 @@ public:
     void setDown(const std::array<float, 3>& color)  { down_  = RgbColor(color); }
 };
 
-// Get default color configuration
-ColorConfig getDefaultColorConfig();
-
-// Load color configuration from ~/.rubiks-cube/config.ini
+// Load cube configuration from ~/.rubiks-cube/config.ini
 // Returns default configuration if file doesn't exist or is invalid
-ColorConfig loadColorConfig();
+CubeConfig loadCubeConfig();
 
-// Save color configuration to ~/.rubiks-cube/config.ini
+// Save cube configuration to ~/.rubiks-cube/config.ini
 // Returns true on success, false on failure
-bool saveColorConfig(const ColorConfig& config);
+bool saveCubeConfig(const CubeConfig& config);
 
 // Get config file path (for informational purposes)
 std::string getConfigFilePath();

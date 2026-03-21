@@ -38,7 +38,7 @@ class ColorProvider {
 public:
     ColorProvider();
     
-    void setCustomColors(const ColorConfig& config);
+    void setCustomColors(const CubeConfig& config);
     void resetToDefaults();
     
     uint32_t getFaceColor(Color color) const;

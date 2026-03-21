@@ -33,7 +33,7 @@ bool isOppositeColor(Color a, Color b) {
 
 ColorProvider::ColorProvider() = default;
 
-void ColorProvider::setCustomColors(const ColorConfig& config) {
+void ColorProvider::setCustomColors(const CubeConfig& config) {
     customFront = config.getFrontColor();
     customBack  = config.getBackColor();
     customLeft  = config.getLeftColor();

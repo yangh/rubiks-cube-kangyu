@@ -15,12 +15,6 @@
 #define mkdir(path, mode) _mkdir(path)
 #endif
 
-// Get default color configuration
-ColorConfig getDefaultColorConfig() {
-    ColorConfig config;
-    return config;  // Constructor already sets default colors
-}
-
 // Get config directory path
 static std::string getConfigDirPath() {
     const char* homeDir = getenv("HOME");
@@ -100,8 +94,8 @@ static bool parseColorValue(const std::string& value, RgbColor& color) {
 }
 
 // Load color configuration from INI file
-ColorConfig loadColorConfig() {
-    ColorConfig config = getDefaultColorConfig();
+CubeConfig loadCubeConfig() {
+    CubeConfig config;
     std::string configPath = getConfigFilePath();
 
     if (configPath.empty()) {
@@ -183,7 +177,7 @@ ColorConfig loadColorConfig() {
 }
 
 // Save color configuration to INI file
-bool saveColorConfig(const ColorConfig& config) {
+bool saveCubeConfig(const CubeConfig& config) {
     std::string configDir = getConfigDirPath();
     if (configDir.empty()) {
         std::cerr << "Error: Could not determine config directory" << std::endl;
@@ -232,7 +226,7 @@ bool saveColorConfig(const ColorConfig& config) {
     return true;
 }
 
-ColorConfig::ColorConfig() :
+CubeConfig::CubeConfig() :
     usingDefaults_(true),
     enableAnimation_(true),
     animationSpeed_(1.0f),

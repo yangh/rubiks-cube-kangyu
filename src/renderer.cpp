@@ -108,8 +108,18 @@ float CubeRenderer::getGap() const {
     return renderer3D_ ? renderer3D_->getGap() : 0.03f;
 }
 
-void CubeRenderer::setCustomColors(const ColorConfig& config) {
+void CubeRenderer::setCustomConfig(const CubeConfig& config) {
+    // Load custom colors
     colorProvider_.setCustomColors(config);
+
+    // Load animation settings from config
+    animator_.enableAnimation = config.getEnableAnimation();
+    animator_.animationSpeed = config.getAnimationSpeed();
+    animator_.easingType = static_cast<EasingType>(config.getEasingType());
+
+    // Load renderer type and switch to it
+    switchRenderer(config.getRendererType());
+
 }
 
 void CubeRenderer::executeMove(Move move) {

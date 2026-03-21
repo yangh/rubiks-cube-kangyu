@@ -44,7 +44,7 @@ public:
     void reset();
 
     // Apply color configuration to the renderer
-    void setCustomColors(const ColorConfig& config);
+    void setCustomConfig(const CubeConfig& config);
     bool isAnimating() const { return animator_.isAnimating(); }
     float animationProgress() const { return animator_.progress(); }
     void resetView();  // Reset 3D view parameters to defaults
