@@ -50,7 +50,6 @@ private:
     bool isAnimating_ = false;
     float animationProgress_ = 0.0f;
     Move currentMove_ = Move::U;
-    float rotationAngle_ = 90.0f;
     std::queue<Move> moveQueue_;
     RubiksCube preAnimationCube_;
     bool recordCurrentMoveHistory_ = true;

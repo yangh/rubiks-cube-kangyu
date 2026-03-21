@@ -1,6 +1,4 @@
 #include "config.h"
-#include "color.h"
-#include "renderer.h"
 #include <cstdlib>
 #include <fstream>
 #include <iostream>

@@ -49,7 +49,7 @@ private:
     void addColorPicker(const char* id, const char* label, RgbColor& color);
     void drawDisabledButton(const char* label, ImVec2 size);
     void addMoveButton(const char* label, Move move, ImVec2 size = ImVec2(40, 0));
-    void addMoveButtonPair(const char* label, Move normalMove, Move primeMove, ImVec2 size = ImVec2(40, 0));
+    void addMoveButtonPair(Move normalMove, ImVec2 size = ImVec2(40, 0));
 
     GLFWwindow* window_ = nullptr;
     RubiksCube cube_;

@@ -55,26 +55,6 @@ void RubiksCube::executeMove(Move move, bool recordHistory) {
     }
 }
 
-void RubiksCube::popMoveHistory() {
-    if (!moveHistory_.empty()) {
-        moveHistory_.pop_back();
-    }
-}
-
-void RubiksCube::pushToMoveHistory(Move move) {
-    moveHistory_.push_back(move);
-}
-
-void RubiksCube::popRedoHistory() {
-    if (!redoHistory_.empty()) {
-        redoHistory_.pop_back();
-    }
-}
-
-void RubiksCube::pushToRedoHistory(Move move) {
-    redoHistory_.push_back(move);
-}
-
 void RubiksCube::undo() {
     if (moveHistory_.empty()) {
         return;

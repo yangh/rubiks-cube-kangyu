@@ -1,7 +1,6 @@
 #define GLFW_INCLUDE_NONE
 #include "app.h"
 #include "config.h"
-#include "animator.h"
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <iostream>
@@ -419,55 +418,31 @@ void Application::renderMovesTab() {
         // Move buttons (3 rows: 6 buttons each)
 
         // Row 1: R, L, M, X
-        if (ImGui::Button("R", ImVec2(40, 0))) this->renderer_->executeMove(Move::R);
-        ImGui::SameLine();
-        if (ImGui::Button("R'", ImVec2(40, 0))) this->renderer_->executeMove(Move::RP);
+        addMoveButtonPair(Move::R);
         ImGui::SameLine(0, 20);
-        if (ImGui::Button("L", ImVec2(40, 0))) this->renderer_->executeMove(Move::L);
-        ImGui::SameLine();
-        if (ImGui::Button("L'", ImVec2(40, 0))) this->renderer_->executeMove(Move::LP);
+        addMoveButtonPair(Move::L);
         ImGui::SameLine(0, 20);
-        if (ImGui::Button("M", ImVec2(40, 0))) this->renderer_->executeMove(Move::M);
-        ImGui::SameLine();
-        if (ImGui::Button("M'", ImVec2(40, 0))) this->renderer_->executeMove(Move::MP);
+        addMoveButtonPair(Move::M);
         ImGui::SameLine(0, 20);
-        if (ImGui::Button("X", ImVec2(40, 0))) this->renderer_->executeMove(Move::X);
-        ImGui::SameLine();
-        if (ImGui::Button("X'", ImVec2(40, 0))) this->renderer_->executeMove(Move::XP);
+        addMoveButtonPair(Move::X);
 
         // Row 2: U, D, E, Y
-        if (ImGui::Button("U", ImVec2(40, 0))) this->renderer_->executeMove(Move::U);
-        ImGui::SameLine();
-        if (ImGui::Button("U'", ImVec2(40, 0))) this->renderer_->executeMove(Move::UP);
+        addMoveButtonPair(Move::U);
         ImGui::SameLine(0, 20);
-        if (ImGui::Button("D", ImVec2(40, 0))) this->renderer_->executeMove(Move::D);
-        ImGui::SameLine();
-        if (ImGui::Button("D'", ImVec2(40, 0))) this->renderer_->executeMove(Move::DP);
+        addMoveButtonPair(Move::D);
         ImGui::SameLine(0, 20);
-        if (ImGui::Button("E", ImVec2(40, 0))) this->renderer_->executeMove(Move::E);
-        ImGui::SameLine();
-        if (ImGui::Button("E'", ImVec2(40, 0))) this->renderer_->executeMove(Move::EP);
+        addMoveButtonPair(Move::E);
         ImGui::SameLine(0, 20);
-        if (ImGui::Button("Y", ImVec2(40, 0))) this->renderer_->executeMove(Move::Y);
-        ImGui::SameLine();
-        if (ImGui::Button("Y'", ImVec2(40, 0))) this->renderer_->executeMove(Move::YP);
+        addMoveButtonPair(Move::Y);
 
         // Row 3: F, B, S, Z
-        if (ImGui::Button("F", ImVec2(40, 0))) this->renderer_->executeMove(Move::F);
-        ImGui::SameLine();
-        if (ImGui::Button("F'", ImVec2(40, 0))) this->renderer_->executeMove(Move::FP);
+        addMoveButtonPair(Move::F);
         ImGui::SameLine(0, 20);
-        if (ImGui::Button("B", ImVec2(40, 0))) this->renderer_->executeMove(Move::B);
-        ImGui::SameLine();
-        if (ImGui::Button("B'", ImVec2(40, 0))) this->renderer_->executeMove(Move::BP);
+        addMoveButtonPair(Move::B);
         ImGui::SameLine(0, 20);
-        if (ImGui::Button("S", ImVec2(40, 0))) this->renderer_->executeMove(Move::S);
-        ImGui::SameLine();
-        if (ImGui::Button("S'", ImVec2(40, 0))) this->renderer_->executeMove(Move::SP);
+        addMoveButtonPair(Move::S);
         ImGui::SameLine(0, 20);
-        if (ImGui::Button("Z", ImVec2(40, 0))) this->renderer_->executeMove(Move::Z);
-        ImGui::SameLine();
-        if (ImGui::Button("Z'", ImVec2(40, 0))) this->renderer_->executeMove(Move::ZP);
+        addMoveButtonPair(Move::Z);
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -493,8 +468,8 @@ void Application::renderMovesTab() {
         // Redo button
         if (canRedo) {
             if (ImGui::Button("Redo", ImVec2(100, 0))) {
-                Move moveToRedo = this->cube_.getRedoHistory().back();
-                this->renderer_->animator_.queueMove(moveToRedo, false);
+                Move moveToRedo = this->cube_.getLastRedo();
+                this->renderer_->executeMove(moveToRedo, false);
                 this->cube_.redo();
             }
         } else {
@@ -999,9 +974,10 @@ void Application::addMoveButton(const char* label, Move move, ImVec2 size) {
     }
 }
 
-void Application::addMoveButtonPair(const char* label, Move normalMove, Move primeMove, ImVec2 size) {
-    std::string normalLabel = std::string(label);
-    std::string primeLabel = std::string(label) + "'";
+void Application::addMoveButtonPair(Move normalMove, ImVec2 size) {
+    Move primeMove = getInverseMove(normalMove);
+    std::string normalLabel = moveToString(normalMove);
+    std::string primeLabel = moveToString(primeMove);
     
     addMoveButton(normalLabel.c_str(), normalMove, size);
     ImGui::SameLine();

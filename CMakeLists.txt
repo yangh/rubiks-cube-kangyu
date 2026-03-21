@@ -34,19 +34,18 @@ add_subdirectory(third_party)
 # Create main executable
 add_executable(rubiks-cube
     src/main.cpp
-    src/app.cpp
-    src/cube.cpp
-    src/move.cpp
     src/animator.cpp
-    src/renderer.cpp
-    src/renderer_2d.cpp
-    src/renderer_3d_shader.cpp
-    src/renderer_3d_opengl.cpp
+    src/app.cpp
     src/color.cpp
-    src/shader.cpp
-    src/model.cpp
-    src/formula.cpp
     src/config.cpp
+    src/cube.cpp
+    src/formula.cpp
+    src/move.cpp
+    src/renderer_2d.cpp
+    src/renderer_3d_opengl.cpp
+    src/renderer_3d_shader.cpp
+    src/renderer.cpp
+    src/shader.cpp
 )
 
 # Link libraries for main executable

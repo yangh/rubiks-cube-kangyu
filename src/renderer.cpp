@@ -34,25 +34,6 @@ void ViewState::reset() {
     scale2D = 0.8f;
 }
 
-static RgbColor rotateAroundAxis(const RgbColor& pos, 
-                                              const RotationAxis& axis, float angle) {
-    float rad = angle * M_PI / 180.0f;
-    float c = cosf(rad);
-    float s = sinf(rad);
-    float x = pos.r, y = pos.g, z = pos.b;
-    
-    if (axis.x != 0) {
-        float sign = axis.x > 0 ? 1.0f : -1.0f;
-        return {x, y * c - sign * z * s, sign * y * s + z * c};
-    } else if (axis.y != 0) {
-        float sign = axis.y > 0 ? 1.0f : -1.0f;
-        return {x * c + sign * z * s, y, -sign * x * s + z * c};
-    } else {
-        float sign = axis.z > 0 ? 1.0f : -1.0f;
-        return {x * c - sign * y * s, sign * x * s + y * c, z};
-    }
-}
-
 CubeRenderer::CubeRenderer(RubiksCube& cube)
     : cube_(cube), animator_()
 {

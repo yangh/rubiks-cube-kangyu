@@ -28,10 +28,6 @@ public:
 
     void executeMove(Move move);
     void executeMove(Move move, bool recordHistory);
-    void popMoveHistory();
-    void pushToMoveHistory(Move move);
-    void popRedoHistory();
-    void pushToRedoHistory(Move move);
 
     Move getLastMove() { return moveHistory_.back(); }
     Move getLastRedo() { return redoHistory_.back(); }
