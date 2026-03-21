@@ -100,7 +100,7 @@ void updateGlobalCounters(int passed, int failed) {
 
 
 // Compare faces between our cube and ref cube
-bool facesEqual(const std::array<Color, 9>& ourFace, const std::array<ref::Color, 9>& refFace) {
+bool facesEqual(const FaceColor& ourFace, const std::array<ref::Color, 9>& refFace) {
     for (int i = 0; i < 9; ++i) {
         if (toRefColor(ourFace[i]) != refFace[i]) {
             return false;

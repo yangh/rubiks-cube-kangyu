@@ -60,7 +60,7 @@ private:
     
     // Render helpers
     void renderCircleCanvas();
-    static std::array<Color, 9> getCubeFace(const RubiksCube& cube, int faceIdx);
+    static FaceColor getCubeFace(const RubiksCube& cube, int faceIdx);
 };
 
 #endif // RENDERER_3D_OPENGL_H

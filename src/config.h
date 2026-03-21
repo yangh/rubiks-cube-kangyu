@@ -3,6 +3,7 @@
 
 #include <array>
 #include <string>
+#include "color.h"
 
 enum class RendererType {
     OpenGL = 0,
@@ -16,9 +17,9 @@ struct RgbColor {
 
     RgbColor() : r(0.0f), g(0.0f), b(0.0f) {}
     RgbColor(float red, float green, float blue) : r(red), g(green), b(blue) {}
-    RgbColor(std::array<float, 3> a) : r(a[0]), g(a[1]), b(a[2]) {}
+    RgbColor(ColorRGB a) : r(a[0]), g(a[1]), b(a[2]) {}
 
-    std::array<float, 3> toArray() const {
+    ColorRGB toArray() const {
         return {r, g, b};
     }
 };
@@ -41,12 +42,12 @@ public:
     CubeConfig();
 
     // Getters for renderer compatibility
-    std::array<float, 3> getFrontColor() const { return front_.toArray(); }
-    std::array<float, 3> getBackColor()  const { return back_.toArray(); }
-    std::array<float, 3> getLeftColor()  const { return left_.toArray(); }
-    std::array<float, 3> getRightColor() const { return right_.toArray(); }
-    std::array<float, 3> getUpColor()    const { return up_.toArray(); }
-    std::array<float, 3> getDownColor()  const { return down_.toArray(); }
+    ColorRGB getFrontColor() const { return front_.toArray(); }
+    ColorRGB getBackColor()  const { return back_.toArray(); }
+    ColorRGB getLeftColor()  const { return left_.toArray(); }
+    ColorRGB getRightColor() const { return right_.toArray(); }
+    ColorRGB getUpColor()    const { return up_.toArray(); }
+    ColorRGB getDownColor()  const { return down_.toArray(); }
 
     // Getters for individual colors
     const RgbColor& front() const { return front_; }
@@ -80,12 +81,12 @@ public:
     void setRendererType(RendererType value) { rendererType_ = value; }
 
     // Set from array (for UI convenience)
-    void setFront(const std::array<float, 3>& color) { front_ = RgbColor(color); }
-    void setBack(const std::array<float, 3>& color)  { back_  = RgbColor(color); }
-    void setLeft(const std::array<float, 3>& color)  { left_  = RgbColor(color); }
-    void setRight(const std::array<float, 3>& color) { right_ = RgbColor(color); }
-    void setUp(const std::array<float, 3>& color)    { up_    = RgbColor(color); }
-    void setDown(const std::array<float, 3>& color)  { down_  = RgbColor(color); }
+    void setFront(const ColorRGB& color) { front_ = RgbColor(color); }
+    void setBack(const ColorRGB& color)  { back_  = RgbColor(color); }
+    void setLeft(const ColorRGB& color)  { left_  = RgbColor(color); }
+    void setRight(const ColorRGB& color) { right_ = RgbColor(color); }
+    void setUp(const ColorRGB& color)    { up_    = RgbColor(color); }
+    void setDown(const ColorRGB& color)  { down_  = RgbColor(color); }
 };
 
 // Load cube configuration from ~/.rubiks-cube/config.ini

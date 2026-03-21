@@ -1,6 +1,10 @@
 #include "cube.h"
 #include <iostream>
 
+FaceColor fillFaceColor(Color color) {
+    return {color, color, color, color, color, color, color, color, color};
+}
+
 void RubiksCube::executeMove(Move move) {
     executeMove(move, true);
 }
@@ -109,7 +113,7 @@ std::vector<Move> RubiksCube::scramble(int numMoves) {
 }
 
 void RubiksCube::dump() const {
-    auto printRow = [](const std::array<Color, 9>& face, int row) {
+    auto printRow = [](const FaceColor& face, int row) {
         for (int col = 0; col < 3; ++col) {
             std::cout << colorToString(face[row * 3 + col]) << " ";
         }
@@ -176,7 +180,7 @@ static inline void shiftColToBack(std::array<Color, 9>& dst, const std::array<Co
 }
 
 void RubiksCube::rotateRowX(bool prime, int row = 0) {
-    std::array<Color, 9> temp = front_;
+    FaceColor temp = front_;
 
     if (prime) {
         shiftRow(front_, left_, row);
@@ -206,7 +210,7 @@ void RubiksCube::rotateDown(bool prime) {
 }
 
 void RubiksCube::rotateColY(bool prime, int col = 0) {
-    std::array<Color, 9> temp = up_;
+    FaceColor temp = up_;
 
     if (prime) {
         shiftColFromBack(up_, back_, col);
@@ -238,7 +242,7 @@ void RubiksCube::rotateRight(bool prime) {
 void RubiksCube::rotateFront(bool prime) {
     rotateFaceClockwise(front_, prime);
 
-    std::array<Color, 9> temp = up_;
+    FaceColor temp = up_;
     if (prime) {
         up_   [6] = right_[0];  up_   [7] = right_[3];  up_   [8] = right_[6];
         right_[0] = down_ [2];  right_[3] = down_ [1];  right_[6] = down_ [0];
@@ -255,7 +259,7 @@ void RubiksCube::rotateFront(bool prime) {
 void RubiksCube::rotateBack(bool prime) {
     rotateFaceClockwise(back_, prime);
 
-    std::array<Color, 9> temp = up_;
+    FaceColor temp = up_;
     if (prime) {
         up_   [0] = left_ [6];  up_   [1] = left_ [3];  up_   [2] = left_ [0];
         left_ [0] = down_ [6];  left_ [3] = down_ [7];  left_ [6] = down_ [8];
@@ -270,7 +274,7 @@ void RubiksCube::rotateBack(bool prime) {
 }
 
 void RubiksCube::rotateStanding(bool prime) {
-    std::array<Color, 9> temp = up_;
+    FaceColor temp = up_;
     if (prime) {
         up_   [5] = right_[7];  up_   [4] = right_[4];  up_   [3] = right_[1];
         right_[7] = down_ [3];  right_[4] = down_ [4];  right_[1] = down_ [5];
@@ -284,8 +288,8 @@ void RubiksCube::rotateStanding(bool prime) {
     }
 }
 
-void RubiksCube::rotateFaceClockwise(std::array<Color, 9>& face, bool prime) {
-    std::array<Color, 9> temp = face;
+void RubiksCube::rotateFaceClockwise(FaceColor& face, bool prime) {
+    FaceColor temp = face;
     if (prime) {
         face[0] = temp[2]; face[1] = temp[5]; face[2] = temp[8];
         face[3] = temp[1]; face[4] = temp[4]; face[5] = temp[7];
@@ -334,7 +338,7 @@ void RubiksCube::rotateZ(bool prime) {
 }
 
 bool RubiksCube::isSolved() const {
-    auto checkFace = [](const std::array<Color, 9>& face) -> bool {
+    auto checkFace = [](const FaceColor& face) -> bool {
         const Color first = face[0];
         for (int i = 1; i < 9; ++i) {
             if (face[i] != first) return false;
@@ -352,7 +356,7 @@ bool RubiksCube::isValidColorConfiguration() const {
 }
 
 std::string RubiksCube::getValidationError() const {
-    struct EdgeDef { const std::array<Color, 9>* f1; int i1; const std::array<Color, 9>* f2; int i2; const char* name; };
+    struct EdgeDef { const FaceColor* f1; int i1; const FaceColor* f2; int i2; const char* name; };
     EdgeDef edges[12] = {
         {&up_,    7, &front_, 1, "UF"}, {&up_,    3, &left_,  1, "UL"},
         {&up_,    5, &right_, 1, "UR"}, {&up_,    1, &back_,  1, "UB"},
@@ -369,7 +373,7 @@ std::string RubiksCube::getValidationError() const {
         }
     }
     
-    struct CornerDef { const std::array<Color, 9>* f1; int i1; const std::array<Color, 9>* f2; int i2; const std::array<Color, 9>* f3; int i3; const char* name; };
+    struct CornerDef { const FaceColor* f1; int i1; const FaceColor* f2; int i2; const FaceColor* f3; int i3; const char* name; };
     CornerDef corners[8] = {
         {&up_,   6, &front_, 0, &left_,  2, "UFL"},
         {&up_,   8, &front_, 2, &right_, 0, "UFR"},

@@ -228,7 +228,7 @@ void Renderer3DOpenGL::buildCircleCanvas() {
     circleLineGeom_.vertices = std::move(lineVerts);
 }
 
-std::array<Color, 9> Renderer3DOpenGL::getCubeFace(const RubiksCube& cube, int faceIdx) {
+FaceColor Renderer3DOpenGL::getCubeFace(const RubiksCube& cube, int faceIdx) {
     // Helper to look up face color array from face index
     switch (faceIdx) {
         case 0: return cube.getFront();

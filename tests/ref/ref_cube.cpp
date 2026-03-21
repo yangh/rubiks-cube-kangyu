@@ -12,12 +12,12 @@ RubiksCube::RubiksCube()
 {
 }
 
-std::array<Color, 9> RubiksCube::fillFaceColor(Color color) {
+FaceColor RubiksCube::fillFaceColor(Color color) {
     return {color, color, color, color, color, color, color, color, color};
 }
 
-void RubiksCube::rotateFace(std::array<Color, 9>& face, bool clockwise) {
-    std::array<Color, 9> temp = face;
+void RubiksCube::rotateFace(FaceColor& face, bool clockwise) {
+    FaceColor temp = face;
     if (clockwise) {
         // 0 1 2    3 4 5    6 7 8
         // 0->6, 1->3, 2->0
@@ -224,14 +224,14 @@ void RubiksCube::s(bool prime) {
     // Correct implementation with proper edge rotation
     if (prime) {
         // S' (counter-clockwise from front): UL->DL->DR->UR->UL
-        std::array<Color, 9> temp = up_;
+        FaceColor temp = up_;
         up_[5] = right_[7]; up_[4] = right_[4]; up_[3] = right_[1];
         right_[7] = down_[3]; right_[4] = down_[4]; right_[1] = down_[5];
         down_[3] = left_[1]; down_[4] = left_[4]; down_[5] = left_[7];
         left_[1] = temp[5]; left_[4] = temp[4]; left_[7] = temp[3];
     } else {
         // S (clockwise from front): DL->UL->UR->DR->DL
-        std::array<Color, 9> temp = up_;
+        FaceColor temp = up_;
         up_[3] = left_[7]; up_[4] = left_[4]; up_[5] = left_[1];
         left_[1] = down_[3]; left_[4] = down_[4]; left_[7] = down_[5];
         down_[5] = right_[1]; down_[4] = right_[4]; down_[3] = right_[7];
@@ -317,7 +317,7 @@ void RubiksCube::executeMove(Move move) {
 }
 
 bool RubiksCube::isSolved() const {
-    auto checkFace = [](const std::array<Color, 9>& face) -> bool {
+    auto checkFace = [](const FaceColor& face) -> bool {
         const Color first = face[0];
         for (int i = 1; i < 9; ++i) {
             if (face[i] != first) return false;
@@ -330,7 +330,7 @@ bool RubiksCube::isSolved() const {
            checkFace(up_) && checkFace(down_);
 }
 
-std::array<Color, 9> RubiksCube::getFace(Face face) const {
+FaceColor RubiksCube::getFace(Face face) const {
     switch (face) {
         case Face::FRONT: return front_;
         case Face::BACK:  return back_;

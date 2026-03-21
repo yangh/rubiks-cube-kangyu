@@ -83,9 +83,9 @@ int main() {
     {
         RubiksCube cube;
         cube.executeMove(Move::R);  // Scramble first
-        std::array<Color, 9> frontBefore = cube.getFront();
+        FaceColor frontBefore = cube.getFront();
         cube.executeMove(Move::X);
-        std::array<Color, 9> frontAfter = cube.getFront();
+        FaceColor frontAfter = cube.getFront();
         
         bool changed = false;
         for (int i = 0; i < 9; ++i) {
@@ -101,9 +101,9 @@ int main() {
     {
         RubiksCube cube;
         cube.executeMove(Move::R);  // Scramble first
-        std::array<Color, 9> frontBefore = cube.getFront();
+        FaceColor frontBefore = cube.getFront();
         cube.executeMove(Move::Y);
-        std::array<Color, 9> frontAfter = cube.getFront();
+        FaceColor frontAfter = cube.getFront();
         
         bool changed = false;
         for (int i = 0; i < 9; ++i) {
@@ -119,9 +119,9 @@ int main() {
     {
         RubiksCube cube;
         cube.executeMove(Move::R);  // Scramble first
-        std::array<Color, 9> frontBefore = cube.getFront();
+        FaceColor frontBefore = cube.getFront();
         cube.executeMove(Move::Z);
-        std::array<Color, 9> frontAfter = cube.getFront();
+        FaceColor frontAfter = cube.getFront();
         
         bool changed = false;
         for (int i = 0; i < 9; ++i) {

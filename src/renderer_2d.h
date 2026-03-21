@@ -13,7 +13,7 @@ public:
               const RubiksCube& cube, const ColorProvider& colors);
     
 private:
-    void drawFace(ImDrawList* drawList, const std::array<Color, 9>& face,
+    void drawFace(ImDrawList* drawList, const FaceColor& face,
                  ImVec2 offset, float size, float gap,
                  const ColorProvider& colors);
 };

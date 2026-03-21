@@ -21,7 +21,7 @@ public:
     float getGap() const override { return gap_; }
 
     float gap_ = 0.03f;
-    float cubeScale_ = 0.55f;
+    float cubeScale_ = 0.6f;
 
 private:
     const RubiksCube* cube_ = nullptr;
@@ -38,7 +38,7 @@ private:
     void prepareUniforms(int viewW, int viewH);
     void renderFullScreenQuad();
 
-    static std::array<Color, 9> getCubeFace(const RubiksCube& cube, int faceIdx);
+    static FaceColor getCubeFace(const RubiksCube& cube, int faceIdx);
 };
 
 #endif // RENDERER_3D_SHADER_H

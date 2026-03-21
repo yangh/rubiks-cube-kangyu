@@ -53,7 +53,7 @@ void Renderer3DShader::setCube(const RubiksCube* cube) {
     cube_ = cube;
 }
 
-std::array<Color, 9> Renderer3DShader::getCubeFace(const RubiksCube& cube, int faceIdx) {
+FaceColor Renderer3DShader::getCubeFace(const RubiksCube& cube, int faceIdx) {
     switch (faceIdx) {
         case 0: return cube.getFront();
         case 1: return cube.getBack();

@@ -28,7 +28,7 @@ void assertTest(const std::string& testName, bool condition, const std::string& 
 }
 
 // Helper to check if a face is all one color
-bool isFaceSingleColor(const std::array<Color, 9>& face, Color color) {
+bool isFaceSingleColor(const FaceColor& face, Color color) {
     for (int i = 0; i < 9; i++) {
         if (face[i] != color) return false;
     }

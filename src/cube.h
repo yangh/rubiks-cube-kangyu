@@ -4,6 +4,9 @@
 #include "color.h"
 #include "move.h"
 
+typedef std::array<Color, 9> FaceColor;
+FaceColor fillFaceColor(Color color);
+
 enum class Face {
     FRONT,
     BACK,
@@ -44,20 +47,20 @@ public:
     bool isValidColorConfiguration() const;
     std::string getValidationError() const;
 
-    std::array<Color, 9> getFront() const { return front_; }
-    std::array<Color, 9> getBack()  const { return back_;  }
-    std::array<Color, 9> getLeft()  const { return left_;  }
-    std::array<Color, 9> getRight() const { return right_; }
-    std::array<Color, 9> getUp()    const { return up_;    }
-    std::array<Color, 9> getDown()  const { return down_;  }
+    FaceColor getFront() const { return front_; }
+    FaceColor getBack()  const { return back_;  }
+    FaceColor getLeft()  const { return left_;  }
+    FaceColor getRight() const { return right_; }
+    FaceColor getUp()    const { return up_;    }
+    FaceColor getDown()  const { return down_;  }
 
 private:
-    std::array<Color, 9> front_;
-    std::array<Color, 9> back_;
-    std::array<Color, 9> left_;
-    std::array<Color, 9> right_;
-    std::array<Color, 9> up_;
-    std::array<Color, 9> down_;
+    FaceColor front_;
+    FaceColor back_;
+    FaceColor left_;
+    FaceColor right_;
+    FaceColor up_;
+    FaceColor down_;
     std::vector<Move> moveHistory_;
     std::vector<Move> redoHistory_;
 
@@ -75,7 +78,7 @@ private:
     void rotateX(bool prime);
     void rotateY(bool prime);
     void rotateZ(bool prime);
-    void rotateFaceClockwise(std::array<Color, 9>& face, bool prime);
+    void rotateFaceClockwise(FaceColor& face, bool prime);
 };
 
 #endif // CUBE_H

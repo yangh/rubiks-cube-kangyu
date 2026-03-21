@@ -34,7 +34,7 @@ void ViewState::reset() {
     scale2D = 0.8f;
 }
 
-static std::array<float, 3> rotateAroundAxis(const std::array<float, 3>& pos, 
+static ColorRGB rotateAroundAxis(const ColorRGB& pos, 
                                               const RotationAxis& axis, float angle) {
     float rad = angle * M_PI / 180.0f;
     float c = cosf(rad);

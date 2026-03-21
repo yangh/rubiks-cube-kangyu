@@ -57,7 +57,7 @@ ref::Move toRefMove(Move move) {
 }
 
 // Check if two faces are equal
-bool facesEqual(const std::array<Color, 9>& f1, const std::array<ref::Color, 9>& f2) {
+bool facesEqual(const FaceColor& f1, const std::array<ref::Color, 9>& f2) {
     for (int i = 0; i < 9; ++i) {
         if (toRefColor(f1[i]) != f2[i]) {
             return false;
@@ -68,7 +68,7 @@ bool facesEqual(const std::array<Color, 9>& f1, const std::array<ref::Color, 9>&
 
 // Print a face comparison
 void printFaceMismatch(const std::string& faceName,
-                    const std::array<Color, 9>& ourFace,
+                    const FaceColor& ourFace,
                     const std::array<ref::Color, 9>& refFace) {
     std::cout << "    " << faceName << " face mismatch:" << std::endl;
     std::cout << "      Our:  ";

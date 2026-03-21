@@ -59,26 +59,26 @@ public:
     bool isSolved() const;
 
     // Get face colors (for comparison with our cube)
-    std::array<Color, 9> getFace(Face face) const;
+    FaceColor getFace(Face face) const;
 
     // Reset to solved state
     void reset();
 
 private:
     // Helper to fill a face with a single color
-    static std::array<Color, 9> fillFaceColor(Color color);
+    static FaceColor fillFaceColor(Color color);
 
 private:
     // Face colors (same representation as our cube)
-    std::array<Color, 9> front_;
-    std::array<Color, 9> back_;
-    std::array<Color, 9> left_;
-    std::array<Color, 9> right_;
-    std::array<Color, 9> up_;
-    std::array<Color, 9> down_;
+    FaceColor front_;
+    FaceColor back_;
+    FaceColor left_;
+    FaceColor right_;
+    FaceColor up_;
+    FaceColor down_;
 
     // Helper: rotate a face 90 degrees
-    void rotateFace(std::array<Color, 9>& face, bool clockwise);
+    void rotateFace(FaceColor& face, bool clockwise);
 
     // Individual move implementations
     void u(bool prime);

@@ -27,7 +27,7 @@ void Renderer2D::draw(ImDrawList* drawList, ImVec2 offset, float scale,
             stickerSize, gap, colors);
 }
 
-void Renderer2D::drawFace(ImDrawList* drawList, const std::array<Color, 9>& face,
+void Renderer2D::drawFace(ImDrawList* drawList, const FaceColor& face,
                           ImVec2 offset, float size, float gap,
                           const ColorProvider& colors) {
     float totalSize = size * 3.0f + gap * 2.0f;

@@ -1,10 +1,7 @@
 #include "color.h"
+#include "config.h"
 
-std::array<Color, 9> fillFaceColor(Color color) {
-    return {color, color, color, color, color, color, color, color, color};
-}
-
-std::array<float, 3> colorToRgb(Color color) {
+ColorRGB colorToRgb(Color color) {
     switch (color) {
         case Color::WHITE:  return DefaultColorRGB::WHITE;
         case Color::YELLOW: return DefaultColorRGB::YELLOW;
@@ -53,7 +50,7 @@ void ColorProvider::resetToDefaults() {
     useCustomColors = false;
 }
 
-std::array<float, 3> ColorProvider::getRgbForColor(Color color) const {
+ColorRGB ColorProvider::getRgbForColor(Color color) const {
     if (!useCustomColors) {
         return colorToRgb(color);
     }
@@ -70,13 +67,13 @@ std::array<float, 3> ColorProvider::getRgbForColor(Color color) const {
 }
 
 uint32_t ColorProvider::getFaceColor(Color color) const {
-    std::array<float, 3> rgb = getRgbForColor(color);
+    ColorRGB rgb = getRgbForColor(color);
     return static_cast<uint32_t>(255) << 24
          | static_cast<uint32_t>(rgb[2] * 255) << 16
          | static_cast<uint32_t>(rgb[1] * 255) << 8
          | static_cast<uint32_t>(rgb[0] * 255);
 }
 
-std::array<float, 3> ColorProvider::getFaceColorRgb(Color color) const {
+ColorRGB ColorProvider::getFaceColorRgb(Color color) const {
     return getRgbForColor(color);
 }
