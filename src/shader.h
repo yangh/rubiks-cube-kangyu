@@ -1,9 +1,16 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include "gl_loader.h"
+#include <imgui_impl_opengl3_loader.h>
 #include <string>
 #include <unordered_map>
+
+extern "C" {
+extern void glUniform1f(GLint location, GLfloat v0);
+extern void glUniform2f(GLint location, GLfloat v0, GLfloat v1);
+extern void glUniform3f(GLint location, GLfloat v0, GLfloat v1, GLfloat v2);
+extern void glUniformMatrix3fv(GLint location, GLsizei count, GLboolean transpose, const GLfloat *value);
+}
 
 class Shader {
 public:

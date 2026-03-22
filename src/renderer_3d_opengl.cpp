@@ -1,8 +1,13 @@
 #include "renderer_3d_opengl.h"
 #include "renderer.h"
-#include "gl_loader.h"
+#include <GL/gl.h>
 #include <cmath>
 #include <iostream>
+
+extern "C" {
+extern void glUseProgram(GLuint program);
+extern void glDisableVertexAttribArray(GLuint index);
+}
 
 // Face direction definitions: offset and normal for 6 faces
 static const struct { float offset; float nx; float ny; float nz; } kFaceDirs[6] = {
@@ -301,8 +306,8 @@ void Renderer3DOpenGL::render(int windowWidth, int windowHeight, float sidebarWi
         return;
     }
 
-    GL_LOADER.glUseProgram(0);
-    GL_LOADER.glDisableVertexAttribArray(0);
+    glUseProgram(0);
+    glDisableVertexAttribArray(0);
 
     // Setup viewport and scissor
     int viewX = 10;

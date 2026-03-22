@@ -1,12 +1,12 @@
 #define GLFW_INCLUDE_NONE
 #include "app.h"
 #include "config.h"
+#include <GLFW/glfw3.h>
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
+#include <GL/gl.h>
 #include <iostream>
 #include <cmath>
-
-#include "gl_loader.h"
 
 Application::~Application() {
     renderer_.reset();
@@ -196,12 +196,6 @@ bool Application::initGlfw() {
     }
 
     glfwMakeContextCurrent(this->window_);
-
-    if (!GL_LOADER.load(this->window_)) {
-        std::cerr << "Failed to initialize OpenGL functions" << std::endl;
-        glfwTerminate();
-        return false;
-    }
 
     glfwSwapInterval(1);
     glEnable(GL_MULTISAMPLE);

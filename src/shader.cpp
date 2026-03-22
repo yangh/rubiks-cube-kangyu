@@ -10,7 +10,7 @@ Shader::~Shader() {
 
 void Shader::clear() {
     if (program_ != 0) {
-        GL_LOADER.glDeleteProgram(program_);
+        glDeleteProgram(program_);
         program_ = 0;
     }
     uniformCache_.clear();
@@ -18,25 +18,25 @@ void Shader::clear() {
 
 bool Shader::compileShaderFromString(GLenum type, const char* source) {
     if (program_ == 0) {
-        program_ = GL_LOADER.glCreateProgram();
+        program_ = glCreateProgram();
     }
 
-    GLuint shader = GL_LOADER.glCreateShader(type);
-    GL_LOADER.glShaderSource(shader, 1, &source, nullptr);
-    GL_LOADER.glCompileShader(shader);
+    GLuint shader = glCreateShader(type);
+    glShaderSource(shader, 1, &source, nullptr);
+    glCompileShader(shader);
 
     GLint success;
-    GL_LOADER.glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
     if (!success) {
         char infoLog[512];
-        GL_LOADER.glGetShaderInfoLog(shader, 512, nullptr, infoLog);
+        glGetShaderInfoLog(shader, 512, nullptr, infoLog);
         std::cerr << "Shader compilation failed: " << infoLog << std::endl;
-        GL_LOADER.glDeleteShader(shader);
+        glDeleteShader(shader);
         return false;
     }
 
-    GL_LOADER.glAttachShader(program_, shader);
-    GL_LOADER.glDeleteShader(shader);
+    glAttachShader(program_, shader);
+    glDeleteShader(shader);
     return true;
 }
 
@@ -46,13 +46,13 @@ bool Shader::linkProgram() {
         return false;
     }
 
-    GL_LOADER.glLinkProgram(program_);
+    glLinkProgram(program_);
 
     GLint success;
-    GL_LOADER.glGetProgramiv(program_, GL_LINK_STATUS, &success);
+    glGetProgramiv(program_, GL_LINK_STATUS, &success);
     if (!success) {
         char infoLog[512];
-        GL_LOADER.glGetProgramInfoLog(program_, 512, nullptr, infoLog);
+        glGetProgramInfoLog(program_, 512, nullptr, infoLog);
         std::cerr << "Shader program linking failed: " << infoLog << std::endl;
         return false;
     }
@@ -62,12 +62,12 @@ bool Shader::linkProgram() {
 
 void Shader::use() {
     if (program_ != 0) {
-        GL_LOADER.glUseProgram(program_);
+        glUseProgram(program_);
     }
 }
 
 void Shader::unuse() {
-    GL_LOADER.glUseProgram(0);
+    glUseProgram(0);
 }
 
 GLint Shader::getUniformLocation(const char* name) {
@@ -76,31 +76,31 @@ GLint Shader::getUniformLocation(const char* name) {
         return it->second;
     }
 
-    GLint loc = GL_LOADER.glGetUniformLocation(program_, name);
+    GLint loc = glGetUniformLocation(program_, name);
     uniformCache_[name] = loc;
     return loc;
 }
 
 void Shader::setInt(const char* name, int value) {
-    GL_LOADER.glUniform1i(getUniformLocation(name), value);
+    glUniform1i(getUniformLocation(name), value);
 }
 
 void Shader::setFloat(const char* name, float value) {
-    GL_LOADER.glUniform1f(getUniformLocation(name), value);
+    glUniform1f(getUniformLocation(name), value);
 }
 
 void Shader::setVec3(const char* name, float x, float y, float z) {
-    GL_LOADER.glUniform3f(getUniformLocation(name), x, y, z);
+    glUniform3f(getUniformLocation(name), x, y, z);
 }
 
 void Shader::setVec2(const char* name, float x, float y) {
-    GL_LOADER.glUniform2f(getUniformLocation(name), x, y);
+    glUniform2f(getUniformLocation(name), x, y);
 }
 
 void Shader::setMat4(const char* name, const float* value) {
-    GL_LOADER.glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, value);
+    glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, value);
 }
 
 void Shader::setMat3(const char* name, const float* value) {
-    GL_LOADER.glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, value);
+    glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, value);
 }

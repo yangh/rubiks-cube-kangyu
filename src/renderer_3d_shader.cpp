@@ -8,6 +8,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+extern "C" {
+extern void glDrawArrays(GLenum mode, GLint first, GLsizei count);
+extern void glDepthFunc(GLenum func);
+}
+
+#ifndef GL_DEPTH_BUFFER_BIT
+#define GL_DEPTH_BUFFER_BIT 0x00000100
+#endif
+#ifndef GL_LESS
+#define GL_LESS 0x0201
+#endif
+
 static const float kFaceNormal[6][3] = {
     { 0.0f,  0.0f,  1.0f },
     { 0.0f,  0.0f, -1.0f },
@@ -232,14 +244,14 @@ void Renderer3DShader::render(int windowWidth, int windowHeight, float sidebarWi
 
     prepareUniforms(viewW, viewH);
 
-    GL_LOADER.glEnableVertexAttribArray(0);
-    GL_LOADER.glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
 
     glEnable(GL_DEPTH_TEST);
     cubieShader_.use();
     renderFullScreenQuad();
 
-    GL_LOADER.glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(0);
     glDisable(GL_DEPTH_TEST);
 
     glViewport(0, 0, windowWidth, windowHeight);
