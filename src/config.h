@@ -26,19 +26,12 @@ private:
 public:
     CubeConfig();
 
-    RgbColor getFrontColor() const { return front_; }
-    RgbColor getBackColor()  const { return back_; }
-    RgbColor getLeftColor()  const { return left_; }
-    RgbColor getRightColor() const { return right_; }
-    RgbColor getUpColor()    const { return up_; }
-    RgbColor getDownColor()  const { return down_; }
-
-    const RgbColor& front() const { return front_; }
-    const RgbColor& back()  const { return back_; }
-    const RgbColor& left()  const { return left_; }
-    const RgbColor& right() const { return right_; }
-    const RgbColor& up()    const { return up_; }
-    const RgbColor& down()  const { return down_; }
+    RgbColor front() const { return front_; }
+    RgbColor back()  const { return back_; }
+    RgbColor left()  const { return left_; }
+    RgbColor right() const { return right_; }
+    RgbColor up()    const { return up_; }
+    RgbColor down()  const { return down_; }
 
     void setFront(const RgbColor& color) { front_ = color; }
     void setBack(const RgbColor& color)  { back_ = color; }

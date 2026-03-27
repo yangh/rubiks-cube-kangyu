@@ -48,17 +48,33 @@ public:
     
     uint32_t getFaceColor(Color color) const;
     RgbColor getFaceColorRgb(Color color) const;
-    
-    RgbColor customFront = DefaultColorRGB::GREEN;
-    RgbColor customBack  = DefaultColorRGB::BLUE;
-    RgbColor customLeft  = DefaultColorRGB::ORANGE;
-    RgbColor customRight = DefaultColorRGB::RED;
-    RgbColor customUp    = DefaultColorRGB::WHITE;
-    RgbColor customDown  = DefaultColorRGB::YELLOW;
-    bool useCustomColors = false;
+
+    RgbColor& front() { return customFront_; }
+    RgbColor& back()  { return customBack_; }
+    RgbColor& left()  { return customLeft_; }
+    RgbColor& right() { return customRight_; }
+    RgbColor& up()    { return customUp_; }
+    RgbColor& down()  { return customDown_; }
+    const RgbColor& front() const { return customFront_; }
+    const RgbColor& back()  const { return customBack_; }
+    const RgbColor& left()  const { return customLeft_; }
+    const RgbColor& right() const { return customRight_; }
+    const RgbColor& up()    const { return customUp_; }
+    const RgbColor& down()  const { return customDown_; }
+
+    bool useCustomColors() const { return useCustomColors_; }
+    void setUseCustomColors(bool v) { useCustomColors_ = v; }
 
 private:
     RgbColor getRgbForColor(Color color) const;
+
+    RgbColor customFront_ = DefaultColorRGB::GREEN;
+    RgbColor customBack_  = DefaultColorRGB::BLUE;
+    RgbColor customLeft_  = DefaultColorRGB::ORANGE;
+    RgbColor customRight_ = DefaultColorRGB::RED;
+    RgbColor customUp_    = DefaultColorRGB::WHITE;
+    RgbColor customDown_  = DefaultColorRGB::YELLOW;
+    bool useCustomColors_ = false;
 };
 
 #endif // COLOR_H

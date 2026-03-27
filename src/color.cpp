@@ -34,37 +34,37 @@ bool isOppositeColor(Color a, Color b) {
 ColorProvider::ColorProvider() = default;
 
 void ColorProvider::setCustomColors(const CubeConfig& config) {
-    customFront = config.getFrontColor();
-    customBack  = config.getBackColor();
-    customLeft  = config.getLeftColor();
-    customRight = config.getRightColor();
-    customUp    = config.getUpColor();
-    customDown  = config.getDownColor();
-    useCustomColors = !config.isUsingDefaults();
+    customFront_ = config.front();
+    customBack_  = config.back();
+    customLeft_  = config.left();
+    customRight_ = config.right();
+    customUp_    = config.up();
+    customDown_  = config.down();
+    useCustomColors_ = !config.isUsingDefaults();
 }
 
 void ColorProvider::resetToDefaults() {
-    customFront = DefaultColorRGB::GREEN;
-    customBack  = DefaultColorRGB::BLUE;
-    customLeft  = DefaultColorRGB::ORANGE;
-    customRight = DefaultColorRGB::RED;
-    customUp    = DefaultColorRGB::WHITE;
-    customDown  = DefaultColorRGB::YELLOW;
-    useCustomColors = false;
+    customFront_ = DefaultColorRGB::GREEN;
+    customBack_  = DefaultColorRGB::BLUE;
+    customLeft_  = DefaultColorRGB::ORANGE;
+    customRight_ = DefaultColorRGB::RED;
+    customUp_    = DefaultColorRGB::WHITE;
+    customDown_  = DefaultColorRGB::YELLOW;
+    useCustomColors_ = false;
 }
 
 RgbColor ColorProvider::getRgbForColor(Color color) const {
-    if (!useCustomColors) {
+    if (!useCustomColors_) {
         return colorToRgb(color);
     }
     
     switch (color) {
-        case Color::GREEN:  return customFront;
-        case Color::BLUE:   return customBack;
-        case Color::ORANGE: return customLeft;
-        case Color::RED:    return customRight;
-        case Color::WHITE:  return customUp;
-        case Color::YELLOW: return customDown;
+        case Color::GREEN:  return customFront_;
+        case Color::BLUE:   return customBack_;
+        case Color::ORANGE: return customLeft_;
+        case Color::RED:    return customRight_;
+        case Color::WHITE:  return customUp_;
+        case Color::YELLOW: return customDown_;
         default:            return colorToRgb(color);
     }
 }

@@ -788,12 +788,12 @@ void Application::renderSettingsTab() {
         ImGui::Text("Custom Colors:");
 
         // Color pickers for each face
-        addColorPicker("##FrontColor", "Front (Green):", this->renderer_->colorProvider_.customFront);
-        addColorPicker("##BackColor", "Back (Blue):", this->renderer_->colorProvider_.customBack);
-        addColorPicker("##LeftColor", "Left (Orange):", this->renderer_->colorProvider_.customLeft);
-        addColorPicker("##RightColor", "Right (Red):", this->renderer_->colorProvider_.customRight);
-        addColorPicker("##UpColor", "Up (White):", this->renderer_->colorProvider_.customUp);
-        addColorPicker("##DownColor", "Down (Yellow):", this->renderer_->colorProvider_.customDown);
+        addColorPicker("##FrontColor", "Front (Green):", this->renderer_->colorProvider_.front());
+        addColorPicker("##BackColor", "Back (Blue):", this->renderer_->colorProvider_.back());
+        addColorPicker("##LeftColor", "Left (Orange):", this->renderer_->colorProvider_.left());
+        addColorPicker("##RightColor", "Right (Red):", this->renderer_->colorProvider_.right());
+        addColorPicker("##UpColor", "Up (White):", this->renderer_->colorProvider_.up());
+        addColorPicker("##DownColor", "Down (Yellow):", this->renderer_->colorProvider_.down());
 
         ImGui::Spacing();
 
@@ -883,12 +883,12 @@ void Application::resetStepByStepMode() {
 
 void Application::saveRendererConfig() {
     CubeConfig config;
-    config.setFront(this->renderer_->colorProvider_.customFront);
-    config.setBack(this->renderer_->colorProvider_.customBack);
-    config.setLeft(this->renderer_->colorProvider_.customLeft);
-    config.setRight(this->renderer_->colorProvider_.customRight);
-    config.setUp(this->renderer_->colorProvider_.customUp);
-    config.setDown(this->renderer_->colorProvider_.customDown);
+    config.setFront(this->renderer_->colorProvider_.front());
+    config.setBack(this->renderer_->colorProvider_.back());
+    config.setLeft(this->renderer_->colorProvider_.left());
+    config.setRight(this->renderer_->colorProvider_.right());
+    config.setUp(this->renderer_->colorProvider_.up());
+    config.setDown(this->renderer_->colorProvider_.down());
     config.setEnableAnimation(this->renderer_->animator_.enableAnimation);
     config.setAnimationSpeed(this->renderer_->animator_.animationSpeed);
     config.setEasingType(static_cast<int>(this->renderer_->animator_.easingType));
@@ -942,7 +942,7 @@ std::string Application::buildMoveHistoryString() const {
 
 void Application::addColorPicker(const char* id, const char* label, RgbColor& color) {
     if (ImGui::ColorEdit3(id, &color.r)) {
-        this->renderer_->colorProvider_.useCustomColors = true;
+        this->renderer_->colorProvider_.setUseCustomColors(true);
         saveRendererConfig();
     }
     ImGui::SameLine();

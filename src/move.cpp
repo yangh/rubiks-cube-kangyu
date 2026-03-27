@@ -205,8 +205,19 @@ std::vector<Move> generateRandomMoves(int numMoves) {
     std::mt19937 gen(rd());
     std::uniform_int_distribution<> dis(0, numBasicMoves - 1);
 
+    MoveFamily lastFamily = MoveFamily::NONE;
+
     for (int i = 0; i < numMoves; ++i) {
-        moves.push_back(basicMoves[dis(gen)]);
+        Move move;
+        MoveFamily family;
+        // Reject consecutive moves from the same face family
+        do {
+            move = basicMoves[dis(gen)];
+            family = getMoveFamily(move);
+        } while (family == lastFamily && numBasicMoves > 1);
+
+        moves.push_back(move);
+        lastFamily = family;
     }
 
     return moves;
