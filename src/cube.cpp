@@ -129,7 +129,7 @@ void RubiksCube::dump() const {
 // Inline helpers replacing old macros — type-safe and debuggable
 
 // Copy a horizontal row (3 cells) from src to dst: indices [row*3, row*3+1, row*3+2]
-static inline void shiftRow(std::array<Color, 9>& dst, const std::array<Color, 9>& src, int row) {
+static inline void shiftRow(FaceColor& dst, const FaceColor& src, int row) {
     int base = row * 3;
     dst[base]     = src[base];
     dst[base + 1] = src[base + 1];
@@ -137,7 +137,7 @@ static inline void shiftRow(std::array<Color, 9>& dst, const std::array<Color, 9
 }
 
 // Copy a vertical column (3 cells) from src to dst: indices [0+col, 3+col, 6+col]
-static inline void shiftCol(std::array<Color, 9>& dst, const std::array<Color, 9>& src, int col) {
+static inline void shiftCol(FaceColor& dst, const FaceColor& src, int col) {
     dst[col]     = src[col];
     dst[3 + col] = src[3 + col];
     dst[6 + col] = src[6 + col];
@@ -145,7 +145,7 @@ static inline void shiftCol(std::array<Color, 9>& dst, const std::array<Color, 9
 
 // Copy a vertical column from src to dst, but reverse the order (back face mirroring)
 // dst[0+col] = src[8-col], dst[3+col] = src[5-col], dst[6+col] = src[2-col]
-static inline void shiftColFromBack(std::array<Color, 9>& dst, const std::array<Color, 9>& src, int col) {
+static inline void shiftColFromBack(FaceColor& dst, const FaceColor& src, int col) {
     dst[col]     = src[8 - col];
     dst[3 + col] = src[5 - col];
     dst[6 + col] = src[2 - col];
@@ -153,7 +153,7 @@ static inline void shiftColFromBack(std::array<Color, 9>& dst, const std::array<
 
 // Copy a vertical column to dst in reversed order (back face mirroring)
 // dst[8-col] = src[0+col], dst[5-col] = src[3+col], dst[2-col] = src[6+col]
-static inline void shiftColToBack(std::array<Color, 9>& dst, const std::array<Color, 9>& src, int col) {
+static inline void shiftColToBack(FaceColor& dst, const FaceColor& src, int col) {
     dst[8 - col] = src[col];
     dst[5 - col] = src[3 + col];
     dst[2 - col] = src[6 + col];
