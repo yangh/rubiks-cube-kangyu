@@ -63,3 +63,4 @@ cmake_install.cmake
 # Generated GLSL headers
 *.glsl.h
 
+build2/

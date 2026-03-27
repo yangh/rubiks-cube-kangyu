@@ -19,13 +19,16 @@ std::string colorToString(Color color) {
     return (idx >= 0 && idx < 6) ? names[idx] : "?";
 }
 
-bool isOppositeColor(Color color1, Color color2) {
-    return (color1 == Color::WHITE  && color2 == Color::YELLOW)  ||
-           (color1 == Color::YELLOW && color2 == Color::WHITE)   ||
-           (color1 == Color::RED    && color2 == Color::ORANGE)  ||
-           (color1 == Color::ORANGE && color2 == Color::RED)     ||
-           (color1 == Color::GREEN  && color2 == Color::BLUE)    ||
-           (color1 == Color::BLUE   && color2 == Color::GREEN);
+bool isOppositeColor(Color a, Color b) {
+    static const Color opposite[] = {
+        Color::YELLOW,  // WHITE → opposite is YELLOW
+        Color::WHITE,   // YELLOW → opposite is WHITE
+        Color::ORANGE,  // RED → opposite is ORANGE
+        Color::RED,     // ORANGE → opposite is RED
+        Color::BLUE,    // GREEN → opposite is BLUE
+        Color::GREEN    // BLUE → opposite is GREEN
+    };
+    return opposite[static_cast<int>(a)] == b;
 }
 
 ColorProvider::ColorProvider() = default;
