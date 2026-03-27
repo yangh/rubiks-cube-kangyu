@@ -142,39 +142,52 @@ void RubiksCube::dump() const {
     std::cout << std::endl;
 }
 
-#define shiftLeftOnY(a, b, row) \
-    a[0 + row * 3] = b[0 + row * 3]; \
-    a[1 + row * 3] = b[1 + row * 3]; \
-    a[2 + row * 3] = b[2 + row * 3];
+// Inline helpers replacing old macros — type-safe and debuggable
 
-#define shiftLeftOnX(a, b, col) \
-    a[0 + col] = b[0 + col]; \
-    a[3 + col] = b[3 + col]; \
-    a[6 + col] = b[6 + col];
+// Copy a horizontal row (3 cells) from src to dst: indices [row*3, row*3+1, row*3+2]
+static inline void shiftRow(std::array<Color, 9>& dst, const std::array<Color, 9>& src, int row) {
+    int base = row * 3;
+    dst[base]     = src[base];
+    dst[base + 1] = src[base + 1];
+    dst[base + 2] = src[base + 2];
+}
 
-#define shiftLeftOnXfromBack(a, b, col) \
-    a[0 + col] = b[8 - col]; \
-    a[3 + col] = b[5 - col]; \
-    a[6 + col] = b[2 - col];
+// Copy a vertical column (3 cells) from src to dst: indices [0+col, 3+col, 6+col]
+static inline void shiftCol(std::array<Color, 9>& dst, const std::array<Color, 9>& src, int col) {
+    dst[col]     = src[col];
+    dst[3 + col] = src[3 + col];
+    dst[6 + col] = src[6 + col];
+}
 
-#define shiftLeftOnXtoBack(a, b, col) \
-    a[8 - col] = b[0 + col]; \
-    a[5 - col] = b[3 + col]; \
-    a[2 - col] = b[6 + col];
+// Copy a vertical column from src to dst, but reverse the order (back face mirroring)
+// dst[0+col] = src[8-col], dst[3+col] = src[5-col], dst[6+col] = src[2-col]
+static inline void shiftColFromBack(std::array<Color, 9>& dst, const std::array<Color, 9>& src, int col) {
+    dst[col]     = src[8 - col];
+    dst[3 + col] = src[5 - col];
+    dst[6 + col] = src[2 - col];
+}
+
+// Copy a vertical column to dst in reversed order (back face mirroring)
+// dst[8-col] = src[0+col], dst[5-col] = src[3+col], dst[2-col] = src[6+col]
+static inline void shiftColToBack(std::array<Color, 9>& dst, const std::array<Color, 9>& src, int col) {
+    dst[8 - col] = src[col];
+    dst[5 - col] = src[3 + col];
+    dst[2 - col] = src[6 + col];
+}
 
 void RubiksCube::rotateRowX(bool prime, int row = 0) {
     std::array<Color, 9> temp = front_;
 
     if (prime) {
-        shiftLeftOnY(front_, left_, row);
-        shiftLeftOnY(left_,  back_, row);
-        shiftLeftOnY(back_, right_, row);
-        shiftLeftOnY(right_, temp, row);
+        shiftRow(front_, left_, row);
+        shiftRow(left_,  back_, row);
+        shiftRow(back_, right_, row);
+        shiftRow(right_, temp, row);
     } else {
-        shiftLeftOnY(front_, right_, row);
-        shiftLeftOnY(right_, back_, row);
-        shiftLeftOnY(back_, left_, row);
-        shiftLeftOnY(left_,  temp, row);
+        shiftRow(front_, right_, row);
+        shiftRow(right_, back_, row);
+        shiftRow(back_, left_, row);
+        shiftRow(left_,  temp, row);
     }
 }
 
@@ -196,15 +209,15 @@ void RubiksCube::rotateColY(bool prime, int col = 0) {
     std::array<Color, 9> temp = up_;
 
     if (prime) {
-        shiftLeftOnXfromBack(up_, back_, col);
-        shiftLeftOnXtoBack(back_, down_, col);
-        shiftLeftOnX(down_, front_, col);
-        shiftLeftOnX(front_, temp, col);
+        shiftColFromBack(up_, back_, col);
+        shiftColToBack(back_, down_, col);
+        shiftCol(down_, front_, col);
+        shiftCol(front_, temp, col);
     } else {
-        shiftLeftOnX(up_, front_, col);
-        shiftLeftOnX(front_, down_, col);
-        shiftLeftOnXfromBack(down_, back_, col);
-        shiftLeftOnXtoBack(back_, temp, col);
+        shiftCol(up_, front_, col);
+        shiftCol(front_, down_, col);
+        shiftColFromBack(down_, back_, col);
+        shiftColToBack(back_, temp, col);
     }
 }
 
