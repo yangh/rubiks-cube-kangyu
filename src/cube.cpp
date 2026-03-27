@@ -327,8 +327,8 @@ bool RubiksCube::isSolved() const {
     };
 
     return checkFace(front_) && checkFace(back_) &&
-           checkFace(left_) && checkFace(right_) &&
-           checkFace(up_) && checkFace(down_);
+           checkFace(left_)  && checkFace(right_) &&
+           checkFace(up_)    && checkFace(down_);
 }
 
 bool RubiksCube::isValidColorConfiguration() const {

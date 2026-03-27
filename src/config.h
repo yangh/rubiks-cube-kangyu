@@ -50,12 +50,12 @@ public:
     bool isUsingDefaults() const { return usingDefaults_; }
     void setUsingDefaults(bool value) { usingDefaults_ = value; }
 
-    bool getEnableAnimation() const { return enableAnimation_; }
-    void setEnableAnimation(bool value) { enableAnimation_ = value; }
+    bool  getEnableAnimation() const { return enableAnimation_; }
+    void  setEnableAnimation(bool value) { enableAnimation_ = value; }
     float getAnimationSpeed() const { return animationSpeed_; }
-    void setAnimationSpeed(float value) { animationSpeed_ = value; }
-    int getEasingType() const { return easingType_; }
-    void setEasingType(int value) { easingType_ = value; }
+    void  setAnimationSpeed(float value) { animationSpeed_ = value; }
+    int   getEasingType() const { return easingType_; }
+    void  setEasingType(int value) { easingType_ = value; }
 
     RendererType getRendererType() const { return rendererType_; }
     void setRendererType(RendererType value) { rendererType_ = value; }
