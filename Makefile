@@ -1,8 +1,16 @@
-all:
-	cmake -B build
-	cmake --build build -j $(nproc)
-	./build/rubiks-cube
-test:
-	cmake -B build
-	make -C build test
+.PHONY: all run test clean
 
+all:
+	cmake -S . -B build
+	cmake --build build -j $(nproc)
+
+run: all
+	./build/rubiks-cube
+
+test:
+	cmake -S . -B build
+	cmake --build build -j $(nproc)
+	cd build && ctest --output-on-failure
+
+clean:
+	rm -rf build

@@ -149,8 +149,7 @@ bool FormulaManager::parseFormulaFile(const std::string& filePath, FormulaFile& 
             item.moves = parseMoveSequence(movesStr);
         } else {
             // Format: just "moves", use "Formula N" as name
-            static int formulaCounter = 1;
-            item.name = "Formula " + std::to_string(formulaCounter++);
+            item.name = "Formula " + std::to_string(static_cast<int>(outFile.items.size()) + 1);
 
             // Check for loop syntax: "* number" at the end
             size_t starPos = line.rfind('*');

@@ -2,8 +2,6 @@
 #include <cmath>
 #include <iostream>
 
-extern bool g_enableDump;
-
 const char* getEasingTypeName(EasingType type) {
     switch (type) {
         case EasingType::SmoothStep:    return "Smoothstep";
@@ -32,19 +30,18 @@ static float applyEasing(EasingType type, float t) {
     }
 }
 
-CubeAnimator::CubeAnimator() 
+CubeAnimator::CubeAnimator()
     : preAnimationCube_() {
 }
 
 void CubeAnimator::queueMove(Move move, bool recordHistory) {
-    moveQueue_.push(move);
-    recordCurrentMoveHistory_ = recordHistory;
-    
+    moveQueue_.push({move, recordHistory});
+
     if (!isAnimating_ && moveQueue_.size() == 1) {
         startNextAnimation();
     }
-    
-    if (g_enableDump) {
+
+    if (enableDump) {
         std::cout << "\n=== Queued " << moveToStringFast(move) << " ===" << std::endl;
     }
 }
@@ -53,19 +50,19 @@ void CubeAnimator::update(float deltaTime) {
     if (isAnimating_) {
         const float ANIMATION_DURATION = 0.2f / animationSpeed;
         animationProgress_ += deltaTime / ANIMATION_DURATION;
-        
+
         if (animationProgress_ >= 1.0f) {
             animationProgress_ = 1.0f;
             isAnimating_ = false;
-            
+
             if (moveCompleteCallback_) {
-                moveCompleteCallback_(currentMove_, recordCurrentMoveHistory_);
+                moveCompleteCallback_(currentMove_.move, currentMove_.recordHistory);
             }
-            
-            if (g_enableDump) {
-                std::cout << "\n=== Completed " << moveToStringFast(currentMove_) << " ===" << std::endl;
+
+            if (enableDump) {
+                std::cout << "\n=== Completed " << moveToStringFast(currentMove_.move) << " ===" << std::endl;
             }
-            
+
             startNextAnimation();
         }
     }
@@ -81,14 +78,14 @@ void CubeAnimator::reset() {
 
 bool CubeAnimator::isCubeInAnimatingSlice(int cubeIndex) const {
     if (!isAnimating_) return false;
-    return MoveLookup::isInSlice(cubeIndex, getAnimationSlice(currentMove_));
+    return MoveLookup::isInSlice(cubeIndex, getAnimationSlice(currentMove_.move));
 }
 
 float CubeAnimator::getCurrentAngle() const {
     if (!isAnimating_) return 0.0f;
-    
+
     float easeProgress = applyEasing(easingType, animationProgress_);
-    float baseAngle = isDoubleMove(currentMove_) ? 180.0f : 90.0f;
+    float baseAngle = isDoubleMove(currentMove_.move) ? 180.0f : 90.0f;
     return baseAngle * easeProgress;
 }
 
@@ -101,22 +98,22 @@ void CubeAnimator::startNextAnimation() {
         isAnimating_ = false;
         return;
     }
-    
+
     if (!enableAnimation) {
         while (!moveQueue_.empty()) {
-            Move move = moveQueue_.front();
+            PendingMove pm = moveQueue_.front();
             moveQueue_.pop();
             if (moveCompleteCallback_) {
-                moveCompleteCallback_(move, recordCurrentMoveHistory_);
+                moveCompleteCallback_(pm.move, pm.recordHistory);
             }
-            if (g_enableDump) {
-                std::cout << "\n=== Completed " << moveToStringFast(move) << " ===" << std::endl;
+            if (enableDump) {
+                std::cout << "\n=== Completed " << moveToStringFast(pm.move) << " ===" << std::endl;
             }
         }
         isAnimating_ = false;
         return;
     }
-    
+
     isAnimating_ = true;
     animationProgress_ = 0.0f;
     currentMove_ = moveQueue_.front();
@@ -124,8 +121,8 @@ void CubeAnimator::startNextAnimation() {
     if (cubeGetter_) {
         preAnimationCube_ = cubeGetter_();
     }
-    
-    if (g_enableDump) {
-        std::cout << "\n=== Starting " << moveToStringFast(currentMove_) << " ===" << std::endl;
+
+    if (enableDump) {
+        std::cout << "\n=== Starting " << moveToStringFast(currentMove_.move) << " ===" << std::endl;
     }
 }

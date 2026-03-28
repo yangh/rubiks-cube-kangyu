@@ -85,7 +85,7 @@ std::vector<float> Renderer3DOpenGL::fanToTriangles(const std::vector<float>& fa
 }
 
 std::vector<float> Renderer3DOpenGL::transformFaceTo3D(const std::vector<float>& xyTris,
-                                                        float offset, float nx, float ny, float nz) {
+                                                        float offset, float /*nx*/, float ny, float nz) {
     std::vector<float> out;
     out.reserve(xyTris.size());
     
@@ -204,7 +204,6 @@ void Renderer3DOpenGL::buildCircleCanvas() {
     float radius = 1.5f;
     float yOffset = -1.6f;
     int segments = 64;
-    float r = 0.3f, g = 0.35f, b = 0.45f, a = 0.3f;
     
     // Circle fill (converted from TRIANGLE_FAN to TRIANGLES for batch rendering)
     // FIX #1: Pre-compute all circle vertices
@@ -231,19 +230,6 @@ void Renderer3DOpenGL::buildCircleCanvas() {
     }
     circleLineGeom_.vertexCount = lineVerts.size() / 3;
     circleLineGeom_.vertices = std::move(lineVerts);
-}
-
-FaceColor Renderer3DOpenGL::getCubeFace(const RubiksCube& cube, int faceIdx) {
-    // Helper to look up face color array from face index
-    switch (faceIdx) {
-        case 0: return cube.getFront();
-        case 1: return cube.getBack();
-        case 2: return cube.getUp();
-        case 3: return cube.getDown();
-        case 4: return cube.getRight();
-        case 5: return cube.getLeft();
-        default: return cube.getFront();
-    }
 }
 
 void Renderer3DOpenGL::buildGeometry() {
@@ -401,7 +387,7 @@ void Renderer3DOpenGL::render(int windowWidth, int windowHeight, float sidebarWi
                 
                 for (const StickerInfo& si : stickerInfos_[cubeIndex]) {
                     // Look up sticker color from the correct cube state
-                    const auto& face = getCubeFace(renderCube, si.faceIdx);
+                    const auto& face = IRenderer3D::getCubeFace(renderCube, si.faceIdx);
                     Color c = face[si.colorIdx];
                     auto rgb = colorProvider_->getFaceColorRgb(c);
                     glColor3f(rgb.r, rgb.g, rgb.b);

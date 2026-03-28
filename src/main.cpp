@@ -3,9 +3,6 @@
 
 #include "app.h"
 
-// Global flag to enable/disable cube dump (used by renderer and animator)
-bool g_enableDump = false;
-
 void showHelp(const char* programName) {
     std::cout << "Rubik's Cube Simulator\n\n";
     std::cout << "Usage: " << programName << " [OPTIONS]\n\n";

@@ -175,37 +175,7 @@ void testFormulaInverseMoves(const std::string& formulaDir) {
 
             // Apply inverse moves in reverse order
             for (auto it = item.moves.rbegin(); it != item.moves.rend(); ++it) {
-                Move inverseMove;
-                switch (*it) {
-                    case Move::U:  inverseMove = Move::UP; break;
-                    case Move::UP: inverseMove = Move::U; break;
-                    case Move::D:  inverseMove = Move::DP; break;
-                    case Move::DP: inverseMove = Move::D; break;
-                    case Move::L:  inverseMove = Move::LP; break;
-                    case Move::LP: inverseMove = Move::L; break;
-                    case Move::R:  inverseMove = Move::RP; break;
-                    case Move::RP: inverseMove = Move::R; break;
-                    case Move::F:  inverseMove = Move::FP; break;
-                    case Move::FP: inverseMove = Move::F; break;
-                    case Move::B:  inverseMove = Move::BP; break;
-                    case Move::BP: inverseMove = Move::B; break;
-                    case Move::M:  inverseMove = Move::MP; break;
-                    case Move::MP: inverseMove = Move::M; break;
-                    case Move::E:  inverseMove = Move::EP; break;
-                    case Move::EP: inverseMove = Move::E; break;
-                    case Move::S:  inverseMove = Move::SP; break;
-                    case Move::SP: inverseMove = Move::S; break;
-                    // Double moves are self-inverse
-                    case Move::U2: inverseMove = Move::U2; break;
-                    case Move::D2: inverseMove = Move::D2; break;
-                    case Move::L2: inverseMove = Move::L2; break;
-                    case Move::R2: inverseMove = Move::R2; break;
-                    case Move::F2: inverseMove = Move::F2; break;
-                    case Move::B2: inverseMove = Move::B2; break;
-                    case Move::M2: inverseMove = Move::M2; break;
-                    case Move::E2: inverseMove = Move::E2; break;
-                    case Move::S2: inverseMove = Move::S2; break;
-                }
+                Move inverseMove = getInverseMove(*it);
                 testCube.executeMove(inverseMove);
             }
 
@@ -260,39 +230,23 @@ void testLoopFormulas(const std::string& formulaDir) {
         }
 
         for (const FormulaItem& item : *items) {
-            // For formulas with loop count > 0, verify state is consistent when applied multiple times
             if (item.loopCount > 0) {
-                std::vector<RubiksCube> cubes;
-                int numCubes = item.loopCount;
-
-                cubes.reserve(numCubes);
-                for (int i = 0; i < numCubes; ++i) {
-                    cubes.emplace_back();
+                RubiksCube loopCube;
+                for (int i = 0; i < item.loopCount; ++i) {
                     for (Move move : item.moves) {
-                        cubes[i].executeMove(move);
+                        loopCube.executeMove(move);
                     }
                 }
+                bool restoresSolved = loopCube.isSolved();
 
-                // Check all cubes have same state
-                bool allMatch = true;
-                for (int i = 1; i < numCubes; ++i) {
-                    bool match = (cubes[0].getFront() == cubes[i].getFront()) &&
-                                 (cubes[0].getBack() == cubes[i].getBack()) &&
-                                 (cubes[0].getLeft() == cubes[i].getLeft()) &&
-                                 (cubes[0].getRight() == cubes[i].getRight()) &&
-                                 (cubes[0].getUp() == cubes[i].getUp()) &&
-                                 (cubes[0].getDown() == cubes[i].getDown());
-                    if (!match) allMatch = false;
-                }
-
-                if (allMatch) {
+                if (restoresSolved) {
                     loopTestsPassed++;
                 } else {
                     loopTestsFailed++;
                 }
 
                 std::string testName = filename + ":" + item.name + " x" + std::to_string(item.loopCount);
-                printTestResult(testName, allMatch);
+                printTestResult(testName, restoresSolved);
             } else {
                 // For formulas without loop count, just verify moves can be applied
                 RubiksCube cube1;

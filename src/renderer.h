@@ -32,22 +32,18 @@ public:
     explicit CubeRenderer(RubiksCube& cube);
     ~CubeRenderer() = default;
 
-    // Render 2D unfolded cube net view
     void draw2D(ImDrawList* drawList, ImVec2 offset, float scale);
-
-    // Render 3D overlay (called after ImGui rendering)
     void render3DOverlay(int windowWidth, int windowHeight, float sidebarWidth);
 
     void executeMove(Move move);
-    void executeMove(Move move, bool recordHistory);  // For animated undo/redo
+    void executeMove(Move move, bool recordHistory);
     void updateAnimation(float deltaTime);
     void reset();
 
-    // Apply color configuration to the renderer
     void setCustomConfig(const CubeConfig& config);
-    bool isAnimating() const { return animator_.isAnimating(); }
-    float animationProgress() const { return animator_.progress(); }
-    void resetView();  // Reset 3D view parameters to defaults
+    bool isAnimating() const;
+    float animationProgress() const;
+    void resetView();
 
     void switchRenderer(RendererType type);
     RendererType getRendererType() const { return rendererType_; }
@@ -56,17 +52,25 @@ public:
     float getCubeScale() const;
     float getGap() const;
 
-    ViewState viewState_;
-    CubeAnimator animator_;
+    ViewState& viewState() { return viewState_; }
+    const ViewState& viewState() const { return viewState_; }
 
-    ColorProvider colorProvider_;
-    Renderer2D renderer2D_;
-    RendererType rendererType_ = RendererType::OpenGL;
+    ColorProvider& colorProvider() { return colorProvider_; }
+    const ColorProvider& colorProvider() const { return colorProvider_; }
 
-    std::unique_ptr<IRenderer3D> renderer3D_;
+    CubeAnimator& animator() { return animator_; }
+    const CubeAnimator& animator() const { return animator_; }
+
+    Renderer2D& renderer2D() { return renderer2D_; }
 
 private:
     RubiksCube& cube_;
+    CubeAnimator animator_;
+    ViewState viewState_;
+    ColorProvider colorProvider_;
+    Renderer2D renderer2D_;
+    RendererType rendererType_ = RendererType::OpenGL;
+    std::unique_ptr<IRenderer3D> renderer3D_;
 };
 
 #endif // RENDERER_H

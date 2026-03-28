@@ -1,11 +1,11 @@
 #ifndef RENDERER_3D_H
 #define RENDERER_3D_H
 
-// Forward declarations
+#include "cube.h"
+
 struct ViewState;
 class ColorProvider;
 class CubeAnimator;
-class RubiksCube;
 
 class IRenderer3D {
 public:
@@ -30,6 +30,18 @@ public:
     virtual float getScale() const = 0;
     virtual void setGap(float gap) = 0;
     virtual float getGap() const = 0;
+
+    static FaceColor getCubeFace(const RubiksCube& cube, int faceIdx) {
+        switch (faceIdx) {
+            case 0: return cube.getFront();
+            case 1: return cube.getBack();
+            case 2: return cube.getUp();
+            case 3: return cube.getDown();
+            case 4: return cube.getRight();
+            case 5: return cube.getLeft();
+            default: return cube.getFront();
+        }
+    }
 };
 
 #endif // RENDERER_3D_H

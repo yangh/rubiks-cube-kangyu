@@ -4,8 +4,6 @@
 #include <cmath>
 #include <iostream>
 
-extern bool g_enableDump;
-
 void ViewState::lerpRotation(float& current, float target, float deltaTime) {
     float diff = target - current;
 
@@ -39,7 +37,7 @@ CubeRenderer::CubeRenderer(RubiksCube& cube)
 {
     animator_.setMoveCompleteCallback([this](Move move, bool recordHistory) {
         cube_.executeMove(move, recordHistory);
-        if (g_enableDump) {
+        if (animator_.enableDump) {
             cube_.dump();
         }
     });
@@ -110,7 +108,7 @@ void CubeRenderer::executeMove(Move move) {
 void CubeRenderer::executeMove(Move move, bool recordHistory) {
     animator_.queueMove(move, recordHistory);
 
-    if (g_enableDump) {
+    if (animator_.enableDump) {
         std::cout << "\n=== Queued " << moveToString(move) << " ===" << std::endl;
     }
 }

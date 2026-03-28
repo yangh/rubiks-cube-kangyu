@@ -82,25 +82,31 @@ GLint Shader::getUniformLocation(const char* name) {
 }
 
 void Shader::setInt(const char* name, int value) {
-    glUniform1i(getUniformLocation(name), value);
+    GLint loc = getUniformLocation(name);
+    if (loc >= 0) glUniform1i(loc, value);
 }
 
 void Shader::setFloat(const char* name, float value) {
-    glUniform1f(getUniformLocation(name), value);
+    GLint loc = getUniformLocation(name);
+    if (loc >= 0) glUniform1f(loc, value);
 }
 
 void Shader::setVec3(const char* name, float x, float y, float z) {
-    glUniform3f(getUniformLocation(name), x, y, z);
+    GLint loc = getUniformLocation(name);
+    if (loc >= 0) glUniform3f(loc, x, y, z);
 }
 
 void Shader::setVec2(const char* name, float x, float y) {
-    glUniform2f(getUniformLocation(name), x, y);
+    GLint loc = getUniformLocation(name);
+    if (loc >= 0) glUniform2f(loc, x, y);
 }
 
 void Shader::setMat4(const char* name, const float* value) {
-    glUniformMatrix4fv(getUniformLocation(name), 1, GL_FALSE, value);
+    GLint loc = getUniformLocation(name);
+    if (loc >= 0) glUniformMatrix4fv(loc, 1, GL_FALSE, value);
 }
 
 void Shader::setMat3(const char* name, const float* value) {
-    glUniformMatrix3fv(getUniformLocation(name), 1, GL_FALSE, value);
+    GLint loc = getUniformLocation(name);
+    if (loc >= 0) glUniformMatrix3fv(loc, 1, GL_FALSE, value);
 }

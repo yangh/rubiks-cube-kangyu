@@ -38,15 +38,20 @@ Renderer3DShader::~Renderer3DShader() {
 }
 
 void Renderer3DShader::buildShaders() {
+    shaderValid_ = false;
     if (!cubieShader_.compileShaderFromString(GL_VERTEX_SHADER, cubieVertShader)) {
         std::cerr << "Failed to compile cubie vertex shader" << std::endl;
+        return;
     }
     if (!cubieShader_.compileShaderFromString(GL_FRAGMENT_SHADER, cubieFragShader)) {
         std::cerr << "Failed to compile cubie fragment shader" << std::endl;
+        return;
     }
     if (!cubieShader_.linkProgram()) {
         std::cerr << "Failed to link cubie shader program" << std::endl;
+        return;
     }
+    shaderValid_ = true;
 }
 
 void Renderer3DShader::setViewState(const ViewState* state) {
@@ -63,18 +68,6 @@ void Renderer3DShader::setAnimator(const CubeAnimator* animator) {
 
 void Renderer3DShader::setCube(const RubiksCube* cube) {
     cube_ = cube;
-}
-
-FaceColor Renderer3DShader::getCubeFace(const RubiksCube& cube, int faceIdx) {
-    switch (faceIdx) {
-        case 0: return cube.getFront();
-        case 1: return cube.getBack();
-        case 2: return cube.getUp();
-        case 3: return cube.getDown();
-        case 4: return cube.getRight();
-        case 5: return cube.getLeft();
-        default: return cube.getFront();
-    }
 }
 
 void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
@@ -136,7 +129,7 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
                 for (int f = 0; f < 6; f++) {
                     if (!isExterior[f]) continue;
                     auto& sm = stickers[f];
-                    auto face = getCubeFace(renderCube, sm.faceIdx);
+                    auto face = IRenderer3D::getCubeFace(renderCube, sm.faceIdx);
                     int idx = sm.localRow * 3 + sm.localCol;
                     auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
                     int si = sm.stickerOffset + idx;
@@ -223,7 +216,7 @@ void Renderer3DShader::renderFullScreenQuad() {
 }
 
 void Renderer3DShader::render(int windowWidth, int windowHeight, float sidebarWidth) {
-    if (!viewState_ || !colorProvider_ || !animator_ || !cube_) {
+    if (!shaderValid_ || !viewState_ || !colorProvider_ || !animator_ || !cube_) {
         return;
     }
 

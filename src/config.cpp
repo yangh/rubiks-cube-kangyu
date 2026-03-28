@@ -87,7 +87,11 @@ static bool parseColorValue(const std::string& iniValue, RgbColor& color) {
     if (!(iss >> r >> g >> b)) {
         return false;
     }
-    color = RgbColor{r, g, b};
+    color = RgbColor{
+        std::max(0.0f, std::min(1.0f, r)),
+        std::max(0.0f, std::min(1.0f, g)),
+        std::max(0.0f, std::min(1.0f, b))
+    };
     return true;
 }
 
@@ -150,17 +154,39 @@ CubeConfig loadCubeConfig() {
         else if (key == "animationSpeed") {
             try {
                 config.setAnimationSpeed(std::stof(value));
-            } catch (...) {}
+            } catch (const std::invalid_argument&) {
+                std::cerr << "Warning: Invalid animationSpeed value: " << value << std::endl;
+            } catch (const std::out_of_range&) {
+                std::cerr << "Warning: animationSpeed out of range: " << value << std::endl;
+            }
         }
         else if (key == "easingType") {
             try {
-                config.setEasingType(std::stoi(value));
-            } catch (...) {}
+                int val = std::stoi(value);
+                if (val < 0 || val > 2) {
+                    std::cerr << "Warning: easingType out of range [0,2]: " << val << std::endl;
+                } else {
+                    config.setEasingType(val);
+                }
+            } catch (const std::invalid_argument&) {
+                std::cerr << "Warning: Invalid easingType value: " << value << std::endl;
+            } catch (const std::out_of_range&) {
+                std::cerr << "Warning: easingType out of range: " << value << std::endl;
+            }
         }
         else if (key == "rendererType") {
             try {
-                config.setRendererType(static_cast<RendererType>(std::stoi(value)));
-            } catch (...) {}
+                int val = std::stoi(value);
+                if (val < 0 || val > 1) {
+                    std::cerr << "Warning: rendererType out of range [0,1]: " << val << std::endl;
+                } else {
+                    config.setRendererType(static_cast<RendererType>(val));
+                }
+            } catch (const std::invalid_argument&) {
+                std::cerr << "Warning: Invalid rendererType value: " << value << std::endl;
+            } catch (const std::out_of_range&) {
+                std::cerr << "Warning: rendererType out of range: " << value << std::endl;
+            }
         }
         // Unknown keys are silently ignored
     }

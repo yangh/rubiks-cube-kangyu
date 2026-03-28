@@ -3,6 +3,7 @@
 
 #include "color.h"
 #include "move.h"
+#include <cassert>
 
 typedef std::array<Color, 9> FaceColor;
 FaceColor fillFaceColor(Color color);
@@ -29,8 +30,8 @@ public:
     void executeMove(Move move);
     void executeMove(Move move, bool recordHistory);
 
-    Move getLastMove() { return moveHistory_.back(); }
-    Move getLastRedo() { return redoHistory_.back(); }
+    Move getLastMove() const { assert(!moveHistory_.empty()); return moveHistory_.back(); }
+    Move getLastRedo() const { assert(!redoHistory_.empty()); return redoHistory_.back(); }
     const std::vector<Move>& getMoveHistory() const { return moveHistory_; }
     const std::vector<Move>& getRedoHistory() const { return redoHistory_; }
     bool canUndo() const { return !moveHistory_.empty(); }

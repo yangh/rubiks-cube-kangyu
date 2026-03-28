@@ -86,16 +86,16 @@ int Application::run() {
         if (ImGui::IsWindowHovered()) {
             // Left mouse button: rotate around X and Y axes
             if (ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
-                this->renderer_->viewState_.targetRotationY += io.MouseDelta.x * 0.2f;
-                this->renderer_->viewState_.targetRotationX += io.MouseDelta.y * 0.2f;
+                this->renderer_->viewState().targetRotationY += io.MouseDelta.x * 0.2f;
+                this->renderer_->viewState().targetRotationX += io.MouseDelta.y * 0.2f;
             }
             // Right mouse button: rotate around Z axis
             if (ImGui::IsMouseDown(ImGuiMouseButton_Right)) {
-                this->renderer_->viewState_.targetRotationZ += io.MouseDelta.x * 0.3f;
+                this->renderer_->viewState().targetRotationZ += io.MouseDelta.x * 0.3f;
             }
             // Mouse wheel: also rotate around Z axis
             if (io.MouseWheel != 0.0f) {
-                this->renderer_->viewState_.targetRotationZ += io.MouseWheel * 15.0f;
+                this->renderer_->viewState().targetRotationZ += io.MouseWheel * 15.0f;
             }
         }
 
@@ -128,13 +128,13 @@ int Application::run() {
 
         // Handle mouse wheel for 2D view zoom
         if (ImGui::IsWindowHovered() && io.MouseWheel != 0.0f) {
-            this->renderer_->viewState_.scale2D += io.MouseWheel * 0.2f;
+            this->renderer_->viewState().scale2D += io.MouseWheel * 0.2f;
             // Clamp scale2D between 0.3f and 3.0f
-            this->renderer_->viewState_.scale2D = fmaxf(0.3f, fminf(3.0f, this->renderer_->viewState_.scale2D));
+            this->renderer_->viewState().scale2D = fmaxf(0.3f, fminf(3.0f, this->renderer_->viewState().scale2D));
         }
 
         // Draw 2D unfolded cube
-        this->renderer_->draw2D(drawList, center, this->renderer_->viewState_.scale2D);
+        this->renderer_->draw2D(drawList, center, this->renderer_->viewState().scale2D);
 
         ImGui::Dummy(size);
         ImGui::End();
@@ -257,7 +257,8 @@ void Application::loadFonts() {
 void Application::initApp() {
     this->renderer_ = std::make_unique<CubeRenderer>(this->cube_);
 
-    // Load color configuration from file
+    this->renderer_->animator().enableDump = enableDump_;
+
     CubeConfig config = loadCubeConfig();
     this->renderer_->setCustomConfig(config);
 
@@ -290,14 +291,14 @@ void Application::handleKeyboardShortcuts() {
     // Spacebar: reset view to default angles
     if (ImGui::IsKeyPressed(ImGuiKey_Space)) {
         this->renderer_->resetView();
-        this->renderer_->viewState_.celebrationMode = false;
+        this->renderer_->viewState().celebrationMode = false;
     }
 
     // ESC: reset cube to solved state
     if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
         resetStepByStepMode();
         resetCube();
-        this->renderer_->viewState_.celebrationMode = false;
+        this->renderer_->viewState().celebrationMode = false;
     }
 
     // Ctrl+S: scramble cube
@@ -335,7 +336,7 @@ void Application::handleKeyboardShortcuts() {
 
     // Ctrl+P: toggle celebration mode
     if (ImGui::IsKeyPressed(ImGuiKey_P) && io.KeyCtrl) {
-        this->renderer_->viewState_.celebrationMode = !this->renderer_->viewState_.celebrationMode;
+        this->renderer_->viewState().celebrationMode = !this->renderer_->viewState().celebrationMode;
     }
 
     // Plus/Minus: adjust cube scale
@@ -450,7 +451,7 @@ void Application::renderMovesTab() {
             if (ImGui::Button("Undo", ImVec2(100, 0))) {
                 Move lastMove = this->cube_.getLastMove();
                 Move inverseMove = getInverseMove(lastMove);
-                this->renderer_->animator_.queueMove(inverseMove, false);
+                this->renderer_->executeMove(inverseMove, false);
                 this->cube_.undo();
             }
         } else {
@@ -475,7 +476,6 @@ void Application::renderMovesTab() {
         // Copy button
         if (canUndo) {
             if (ImGui::Button("Copy", ImVec2(100, 0))) {
-                const std::vector<Move>& history = this->cube_.getMoveHistory();
                 glfwSetClipboardString(this->window_, buildMoveHistoryString().c_str());
             }
         } else {
@@ -723,18 +723,17 @@ void Application::renderSettingsTab() {
 
         // Animation section
         ImGui::Text("Animation:");
-        bool prevEnableAnim = this->renderer_->animator_.enableAnimation;
-        float prevAnimSpeed = this->renderer_->animator_.animationSpeed;
-        ImGui::Checkbox("Enable Animation", &this->renderer_->animator_.enableAnimation);
-        ImGui::SliderFloat("Speed", &this->renderer_->animator_.animationSpeed, 0.1f, 3.0f, "%.1fx", ImGuiSliderFlags_Logarithmic);
+        bool prevEnableAnim = this->renderer_->animator().enableAnimation;
+        ImGui::Checkbox("Enable Animation", &this->renderer_->animator().enableAnimation);
+        ImGui::SliderFloat("Speed", &this->renderer_->animator().animationSpeed, 0.1f, 3.0f, "%.1fx", ImGuiSliderFlags_Logarithmic);
         if (ImGui::IsItemHovered()) {
             ImGui::SetTooltip("1.0x = 200ms per move");
         }
 
-        int prevEasingType = static_cast<int>(this->renderer_->animator_.easingType);
+        int prevEasingType = static_cast<int>(this->renderer_->animator().easingType);
         const char* easingTypes[] = { "Smooth Step", "Ease-Out Cubic", "Ease-Out Back" };
         if (ImGui::Combo("Easing", &prevEasingType, easingTypes, IM_ARRAYSIZE(easingTypes))) {
-            this->renderer_->animator_.easingType = static_cast<EasingType>(prevEasingType);
+            this->renderer_->animator().easingType = static_cast<EasingType>(prevEasingType);
             saveRendererConfig();
         }
         if (ImGui::IsItemHovered()) {
@@ -747,7 +746,7 @@ void Application::renderSettingsTab() {
         }
 
         // Also save when checkbox changes
-        if (this->renderer_->animator_.enableAnimation != prevEnableAnim) {
+        if (this->renderer_->animator().enableAnimation != prevEnableAnim) {
             saveRendererConfig();
         }
 
@@ -770,16 +769,16 @@ void Application::renderSettingsTab() {
 
         // 2D view controls
         ImGui::Text("2D View Controls:");
-        ImGui::SliderFloat("2D Scale", &this->renderer_->viewState_.scale2D, 0.3f, 3.0f, "%.2f");
+        ImGui::SliderFloat("2D Scale", &this->renderer_->viewState().scale2D, 0.3f, 3.0f, "%.2f");
 
         ImGui::Spacing();
 
         // 3D view controls
         ImGui::Text("3D View Controls:");
-        ImGui::SliderFloat("Rotation X", &this->renderer_->viewState_.rotationX, -180.0f, 180.0f);
-        ImGui::SliderFloat("Rotation Y", &this->renderer_->viewState_.rotationY, -180.0f, 180.0f);
-        ImGui::SliderFloat("Rotation Z", &this->renderer_->viewState_.rotationZ, -180.0f, 180.0f);
-        ImGui::SliderFloat("3D Scale", &this->renderer_->viewState_.scale3D, 2.0f, 7.0f, "%.2f");
+        ImGui::SliderFloat("Rotation X", &this->renderer_->viewState().rotationX, -180.0f, 180.0f);
+        ImGui::SliderFloat("Rotation Y", &this->renderer_->viewState().rotationY, -180.0f, 180.0f);
+        ImGui::SliderFloat("Rotation Z", &this->renderer_->viewState().rotationZ, -180.0f, 180.0f);
+        ImGui::SliderFloat("3D Scale", &this->renderer_->viewState().scale3D, 2.0f, 7.0f, "%.2f");
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -788,12 +787,12 @@ void Application::renderSettingsTab() {
         ImGui::Text("Custom Colors:");
 
         // Color pickers for each face
-        addColorPicker("##FrontColor", "Front (Green):", this->renderer_->colorProvider_.front());
-        addColorPicker("##BackColor", "Back (Blue):", this->renderer_->colorProvider_.back());
-        addColorPicker("##LeftColor", "Left (Orange):", this->renderer_->colorProvider_.left());
-        addColorPicker("##RightColor", "Right (Red):", this->renderer_->colorProvider_.right());
-        addColorPicker("##UpColor", "Up (White):", this->renderer_->colorProvider_.up());
-        addColorPicker("##DownColor", "Down (Yellow):", this->renderer_->colorProvider_.down());
+        addColorPicker("##FrontColor", "Front (Green):", this->renderer_->colorProvider().front());
+        addColorPicker("##BackColor", "Back (Blue):", this->renderer_->colorProvider().back());
+        addColorPicker("##LeftColor", "Left (Orange):", this->renderer_->colorProvider().left());
+        addColorPicker("##RightColor", "Right (Red):", this->renderer_->colorProvider().right());
+        addColorPicker("##UpColor", "Up (White):", this->renderer_->colorProvider().up());
+        addColorPicker("##DownColor", "Down (Yellow):", this->renderer_->colorProvider().down());
 
         ImGui::Spacing();
 
@@ -804,7 +803,7 @@ void Application::renderSettingsTab() {
         }
         ImGui::SameLine();
         if (ImGui::Button("Reset to Defaults", ImVec2(180, 0))) {
-            this->renderer_->colorProvider_.resetToDefaults();
+            this->renderer_->colorProvider().resetToDefaults();
             // Remove config file to restore defaults on next startup
             std::string configPath = getConfigFilePath();
             if (!configPath.empty()) {
@@ -883,15 +882,15 @@ void Application::resetStepByStepMode() {
 
 void Application::saveRendererConfig() {
     CubeConfig config;
-    config.setFront(this->renderer_->colorProvider_.front());
-    config.setBack(this->renderer_->colorProvider_.back());
-    config.setLeft(this->renderer_->colorProvider_.left());
-    config.setRight(this->renderer_->colorProvider_.right());
-    config.setUp(this->renderer_->colorProvider_.up());
-    config.setDown(this->renderer_->colorProvider_.down());
-    config.setEnableAnimation(this->renderer_->animator_.enableAnimation);
-    config.setAnimationSpeed(this->renderer_->animator_.animationSpeed);
-    config.setEasingType(static_cast<int>(this->renderer_->animator_.easingType));
+    config.setFront(this->renderer_->colorProvider().front());
+    config.setBack(this->renderer_->colorProvider().back());
+    config.setLeft(this->renderer_->colorProvider().left());
+    config.setRight(this->renderer_->colorProvider().right());
+    config.setUp(this->renderer_->colorProvider().up());
+    config.setDown(this->renderer_->colorProvider().down());
+    config.setEnableAnimation(this->renderer_->animator().enableAnimation);
+    config.setAnimationSpeed(this->renderer_->animator().animationSpeed);
+    config.setEasingType(static_cast<int>(this->renderer_->animator().easingType));
     config.setRendererType(this->renderer_->getRendererType());
     config.setUsingDefaults(false);
     saveCubeConfig(config);
@@ -903,13 +902,13 @@ void Application::resetCube() {
 }
 
 void Application::scrambleCube() {
-    bool oldAnimation = this->renderer_->animator_.enableAnimation;
-    this->renderer_->animator_.enableAnimation = false;
+    bool oldAnimation = this->renderer_->animator().enableAnimation;
+    this->renderer_->animator().enableAnimation = false;
 
     this->cube_.scramble(20);
-    this->renderer_->animator_.reset();
+    this->renderer_->animator().reset();
 
-    this->renderer_->animator_.enableAnimation = oldAnimation;
+    this->renderer_->animator().enableAnimation = oldAnimation;
 }
 
 void Application::toggleFullscreen() {
@@ -942,7 +941,7 @@ std::string Application::buildMoveHistoryString() const {
 
 void Application::addColorPicker(const char* id, const char* label, RgbColor& color) {
     if (ImGui::ColorEdit3(id, &color.r)) {
-        this->renderer_->colorProvider_.setUseCustomColors(true);
+        this->renderer_->colorProvider().setUseCustomColors(true);
         saveRendererConfig();
     }
     ImGui::SameLine();

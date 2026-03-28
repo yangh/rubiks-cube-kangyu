@@ -25,7 +25,7 @@ ref::Color toRefColor(Color color) {
     return ref::Color::WHITE; // Should not reach here
 }
 
-// Convert our Move to ref Move
+// Convert our Move to ref Move (base moves only; double moves handled by caller)
 ref::Move toRefMove(Move move) {
     switch (move) {
         case Move::U:  return ref::Move::U;
@@ -52,8 +52,20 @@ ref::Move toRefMove(Move move) {
         case Move::YP: return ref::Move::YP;
         case Move::Z:  return ref::Move::Z;
         case Move::ZP: return ref::Move::ZP;
+        case Move::U2: return ref::Move::U;
+        case Move::D2: return ref::Move::D;
+        case Move::L2: return ref::Move::L;
+        case Move::R2: return ref::Move::R;
+        case Move::F2: return ref::Move::F;
+        case Move::B2: return ref::Move::B;
+        case Move::M2: return ref::Move::M;
+        case Move::E2: return ref::Move::E;
+        case Move::S2: return ref::Move::S;
+        case Move::X2: return ref::Move::X;
+        case Move::Y2: return ref::Move::Y;
+        case Move::Z2: return ref::Move::Z;
     }
-    return ref::Move::U; // Should not reach here
+    return ref::Move::U;
 }
 
 // Check if two faces are equal

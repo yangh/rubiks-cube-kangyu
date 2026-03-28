@@ -1,13 +1,21 @@
 #include "renderer_2d.h"
 
+namespace {
+    inline constexpr float kBaseStickerSize = 30.0f;
+    inline constexpr float kBaseStickerGap = 1.0f;
+    inline constexpr float kBaseFaceGap = 3.0f;
+    inline constexpr float kCornerRadiusRatio = 0.12f;
+    inline constexpr float kFaceBackgroundAlpha = 1.0f;
+}
+
 Renderer2D::Renderer2D() {
 }
 
 void Renderer2D::draw(ImDrawList* drawList, ImVec2 offset, float scale,
                       const RubiksCube& cube, const ColorProvider& colors) {
-    float stickerSize = 30.0f * scale;
-    float gap = 1.0f * scale;
-    float gap_face = 3.0f * scale;
+    float stickerSize = kBaseStickerSize * scale;
+    float gap = kBaseStickerGap * scale;
+    float gap_face = kBaseFaceGap * scale;
     float faceSize = stickerSize * 3.0f + gap * 2.0f;
 
     float spacing = faceSize + gap_face;
@@ -33,7 +41,7 @@ void Renderer2D::drawFace(ImDrawList* drawList, const FaceColor& face,
     float totalSize = size * 3.0f + gap * 2.0f;
     float startX = offset.x - totalSize / 2.0f + size / 2.0f;
     float startY = offset.y - totalSize / 2.0f + size / 2.0f;
-    float cornerRadius = size * 0.12f;
+    float cornerRadius = size * kCornerRadiusRatio;
 
     ImVec2 faceMin(offset.x - totalSize / 2.0f, offset.y - totalSize / 2.0f);
     ImVec2 faceMax(offset.x + totalSize / 2.0f, offset.y + totalSize / 2.0f);

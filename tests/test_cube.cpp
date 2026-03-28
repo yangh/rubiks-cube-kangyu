@@ -1,6 +1,5 @@
 #include "../src/cube.h"
 #include <iostream>
-#include <cassert>
 #include <string>
 
 // Terminal color codes
@@ -37,7 +36,7 @@ bool isFaceSingleColor(const FaceColor& face, Color color) {
 
 // Test 1: Initial state should be solved
 void testInitialState() {
-    std::cout << "\\n=== Test 1: Initial State ===" << std::endl;
+    std::cout << "\n=== Test 1: Initial State ===" << std::endl;
     RubiksCube cube;
     assertTest("Initial cube is solved", cube.isSolved());
     assertTest("Front face is all green", isFaceSingleColor(cube.getFront(), Color::GREEN));
@@ -50,7 +49,7 @@ void testInitialState() {
 
 // Test 2: Inverse moves should return to original state
 void testInverseMoves() {
-    std::cout << "\\n=== Test 2: Inverse Moves ===" << std::endl;
+    std::cout << "\n=== Test 2: Inverse Moves ===" << std::endl;
 
     struct TestCase {
         std::string name;
@@ -96,7 +95,7 @@ void testInverseMoves() {
 
 // Test 3: Four moves of same face should return to original
 void testFourMoves() {
-    std::cout << "\\n=== Test 3: Four Moves ===" << std::endl;
+    std::cout << "\n=== Test 3: Four Moves ===" << std::endl;
 
     struct TestCase {
         std::string name;
@@ -143,7 +142,7 @@ void testFourMoves() {
 
 // Test 4: Reset should restore solved state
 void testReset() {
-    std::cout << "\\n=== Test 4: Reset ===" << std::endl;
+    std::cout << "\n=== Test 4: Reset ===" << std::endl;
 
     RubiksCube cube;
 
@@ -165,7 +164,7 @@ void testReset() {
 
 // Test 5: Specific move patterns
 void testMovePatterns() {
-    std::cout << "\\n=== Test 5: Move Patterns ===" << std::endl;
+    std::cout << "\n=== Test 5: Move Patterns ===" << std::endl;
 
     {
         RubiksCube cube;
@@ -215,7 +214,7 @@ void testMovePatterns() {
 
 // Test 6: Adjacent faces affect each other correctly
 void testAdjacentFaces() {
-    std::cout << "\\n=== Test 6: Adjacent Faces Interaction ===" << std::endl;
+    std::cout << "\n=== Test 6: Adjacent Faces Interaction ===" << std::endl;
 
     {
         RubiksCube cube;
@@ -376,7 +375,7 @@ void testAdjacentFaces() {
 
 // Test 7: Complex scrambling should make cube unsolved
 void testScrambling() {
-    std::cout << "\\n=== Test 7: Scrambling ===" << std::endl;
+    std::cout << "\n=== Test 7: Scrambling ===" << std::endl;
 
     {
         RubiksCube cube;
@@ -411,7 +410,7 @@ void testScrambling() {
 
 // Test 8: Color conversion
 void testColorConversion() {
-    std::cout << "\\n=== Test 8: Color to RGB ===" << std::endl;
+    std::cout << "\n=== Test 8: Color to RGB ===" << std::endl;
 
     auto white = colorToRgb(Color::WHITE);
     assertTest("White RGB is (1, 1, 1)",
@@ -428,7 +427,7 @@ void testColorConversion() {
 
 // Test 9: Move string conversion
 void testMoveToString() {
-    std::cout << "\\n=== Test 9: Move to String ===" << std::endl;
+    std::cout << "\n=== Test 9: Move to String ===" << std::endl;
 
     assertTest("U converts to 'U'", moveToString(Move::U) == "U");
     assertTest("U' converts to 'U'", moveToString(Move::UP) == "U'");
@@ -446,7 +445,7 @@ void testMoveToString() {
 
 // Test 10: Cube consistency after multiple operations
 void testCubeConsistency() {
-    std::cout << "\\n=== Test 10: Cube Consistency ===" << std::endl;
+    std::cout << "\n=== Test 10: Cube Consistency ===" << std::endl;
 
     {
         RubiksCube cube;
@@ -456,10 +455,6 @@ void testCubeConsistency() {
         cube.executeMove(Move::UP);
         cube.executeMove(Move::RP);
         cube.executeMove(Move::FP);
-
-        assertTest("Front has 9 stickers", true);
-        assertTest("Up has 9 stickers", true);
-        assertTest("Down has 9 stickers", true);
     }
 
     {
@@ -470,13 +465,6 @@ void testCubeConsistency() {
         cube.executeMove(Move::MP);
         cube.executeMove(Move::EP);
         cube.executeMove(Move::SP);
-
-        assertTest("Front has 9 stickers after slice moves", true);
-        assertTest("Up has 9 stickers after slice moves", true);
-        assertTest("Down has 9 stickers after slice moves", true);
-        assertTest("Left has 9 stickers after slice moves", true);
-        assertTest("Right has 9 stickers after slice moves", true);
-        assertTest("Back has 9 stickers after slice moves", true);
     }
 
     {
@@ -497,7 +485,7 @@ void testCubeConsistency() {
 
 // Test 11: M/E/S inverse moves should return to original state
 void testSliceInverseMoves() {
-    std::cout << "\\n=== Test 11: Slice Inverse Moves ===" << std::endl;
+    std::cout << "\n=== Test 11: Slice Inverse Moves ===" << std::endl;
 
     struct TestCase {
         std::string name;
@@ -537,7 +525,7 @@ void testSliceInverseMoves() {
 
 // Test 12: Four M/E/S moves should return to original
 void testSliceFourMoves() {
-    std::cout << "\\n=== Test 12: Slice Four Moves ===" << std::endl;
+    std::cout << "\n=== Test 12: Slice Four Moves ===" << std::endl;
 
     struct TestCase {
         std::string name;
@@ -578,7 +566,7 @@ void testSliceFourMoves() {
 
 // Test 13: M/E/S slice adjacent faces interaction
 void testSliceAdjacentFaces() {
-    std::cout << "\\n=== Test 13: Slice Adjacent Faces ===" << std::endl;
+    std::cout << "\n=== Test 13: Slice Adjacent Faces ===" << std::endl;
 
     // M move test: affects Up[1,4,7], Down[1,4,7], Front[1,4,7], Back[1,4,7]
     {
@@ -587,6 +575,8 @@ void testSliceAdjacentFaces() {
         auto downBefore = cube.getDown();
         auto frontBefore = cube.getFront();
         auto backBefore = cube.getBack();
+        auto leftBefore = cube.getLeft();
+        auto rightBefore = cube.getRight();
 
         cube.executeMove(Move::M);
 
@@ -614,8 +604,8 @@ void testSliceAdjacentFaces() {
 
         assertTest("M move affected middle column", upChanged && downChanged && frontChanged && backChanged);
         assertTest("M move left outer columns unchanged", upOuterUnchanged);
-        assertTest("M move does not affect left face", cube.getLeft() == cube.getLeft());
-        assertTest("M move does not affect right face", cube.getRight() == cube.getRight());
+        assertTest("M move does not affect left face", cube.getLeft() == leftBefore);
+        assertTest("M move does not affect right face", cube.getRight() == rightBefore);
     }
 
     // E move test: affects Front[3,4,5], Back[3,4,5], Left[3,4,5], Right[3,4,5]
@@ -625,6 +615,8 @@ void testSliceAdjacentFaces() {
         auto backBefore = cube.getBack();
         auto leftBefore = cube.getLeft();
         auto rightBefore = cube.getRight();
+        auto upBefore = cube.getUp();
+        auto downBefore = cube.getDown();
 
         cube.executeMove(Move::E);
 
@@ -642,9 +634,8 @@ void testSliceAdjacentFaces() {
                            (cube.getRight()[4] != rightBefore[4]) ||
                            (cube.getRight()[5] != rightBefore[5]);
 
-        // E should NOT affect up and down faces
-        bool upUnchanged = (cube.getUp() == cube.getUp());
-        bool downUnchanged = (cube.getDown() == cube.getDown());
+        bool upUnchanged = (cube.getUp() == upBefore);
+        bool downUnchanged = (cube.getDown() == downBefore);
 
         assertTest("E move affected middle row", frontChanged && backChanged && leftChanged && rightChanged);
         assertTest("E move does not affect up face", upUnchanged);
@@ -658,6 +649,8 @@ void testSliceAdjacentFaces() {
         auto downBefore = cube.getDown();
         auto leftBefore = cube.getLeft();
         auto rightBefore = cube.getRight();
+        auto frontBefore = cube.getFront();
+        auto backBefore = cube.getBack();
 
         cube.executeMove(Move::S);
 
@@ -675,9 +668,8 @@ void testSliceAdjacentFaces() {
                            (cube.getRight()[4] != rightBefore[4]) ||
                            (cube.getRight()[7] != rightBefore[7]);
 
-        // S should NOT affect front and back faces
-        bool frontUnchanged = (cube.getFront() == cube.getFront());
-        bool backUnchanged = (cube.getBack() == cube.getBack());
+        bool frontUnchanged = (cube.getFront() == frontBefore);
+        bool backUnchanged = (cube.getBack() == backBefore);
 
         assertTest("S move affected middle row/column", upChanged && downChanged && leftChanged && rightChanged);
         assertTest("S move does not affect front face", frontUnchanged);
@@ -687,7 +679,7 @@ void testSliceAdjacentFaces() {
 
 // Test 14: M/E/S move to string conversion
 void testSliceMoveToString() {
-    std::cout << "\\n=== Test 14: Slice Move to String ===" << std::endl;
+    std::cout << "\n=== Test 14: Slice Move to String ===" << std::endl;
 
     assertTest("M converts to 'M'", moveToString(Move::M) == "M");
     assertTest("M' converts to 'M'", moveToString(Move::MP) == "M'");
@@ -699,7 +691,7 @@ void testSliceMoveToString() {
 
 // Test 15: Complex sequence with slice moves
 void testSliceMovePatterns() {
-    std::cout << "\\n=== Test 15: Slice Move Patterns ===" << std::endl;
+    std::cout << "\n=== Test 15: Slice Move Patterns ===" << std::endl;
 
     {
         RubiksCube cube;
@@ -831,7 +823,7 @@ int main() {
     testSliceMovePatterns();
     testDoubleMoves();
 
-    std::cout << "\\n========================================" << std::endl;
+    std::cout << "\n========================================" << std::endl;
     std::cout << YELLOW << "Test Results:" << RESET << std::endl;
     std::cout << GREEN << "Passed: " << testsPassed << RESET << std::endl;
     std::cout << "Failed: " << testsFailed << RESET << std::endl;

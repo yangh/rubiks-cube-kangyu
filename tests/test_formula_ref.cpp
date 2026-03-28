@@ -383,36 +383,7 @@ void testInverseMoves(const std::string& formulaDir) {
 
             // Apply inverse moves in reverse order to both cubes
             for (auto it = item.moves.rbegin(); it != item.moves.rend(); ++it) {
-                Move inverseMove;
-                switch (*it) {
-                    case Move::U:  inverseMove = Move::UP; break;
-                    case Move::UP: inverseMove = Move::U; break;
-                    case Move::U2: inverseMove = Move::U2; break;
-                    case Move::D:  inverseMove = Move::DP; break;
-                    case Move::DP: inverseMove = Move::D; break;
-                    case Move::D2: inverseMove = Move::D2; break;
-                    case Move::L:  inverseMove = Move::LP; break;
-                    case Move::LP: inverseMove = Move::L; break;
-                    case Move::L2: inverseMove = Move::L2; break;
-                    case Move::R:  inverseMove = Move::RP; break;
-                    case Move::RP: inverseMove = Move::R; break;
-                    case Move::R2: inverseMove = Move::R2; break;
-                    case Move::F:  inverseMove = Move::FP; break;
-                    case Move::FP: inverseMove = Move::F; break;
-                    case Move::F2: inverseMove = Move::F2; break;
-                    case Move::B:  inverseMove = Move::BP; break;
-                    case Move::BP: inverseMove = Move::B; break;
-                    case Move::B2: inverseMove = Move::B2; break;
-                    case Move::M:  inverseMove = Move::MP; break;
-                    case Move::MP: inverseMove = Move::M; break;
-                    case Move::M2: inverseMove = Move::M2; break;
-                    case Move::E:  inverseMove = Move::EP; break;
-                    case Move::EP: inverseMove = Move::E; break;
-                    case Move::E2: inverseMove = Move::E2; break;
-                    case Move::S:  inverseMove = Move::SP; break;
-                    case Move::SP: inverseMove = Move::S; break;
-                    case Move::S2: inverseMove = Move::S2; break;
-                }
+                Move inverseMove = getInverseMove(*it);
                 ourCube.executeMove(inverseMove);
                 ref::Move refMove = toRefMove(inverseMove);
                 refCube.executeMove(refMove);
@@ -486,6 +457,8 @@ void testEdgeCasesVsRef() {
     std::cout << "\nEdge Cases (Both Cubes) Results:" << std::endl;
     std::cout << GREEN << "  Passed: " << edgeTestsPassed << RESET << std::endl;
     std::cout << RED << "  Failed: " << edgeTestsFailed << RESET << std::endl;
+
+    updateGlobalCounters(edgeTestsPassed, edgeTestsFailed);
 }
 
 int main() {

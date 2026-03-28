@@ -5,6 +5,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    add_compile_options(-Wall -Wextra -Wpedantic -Wshadow)
+endif()
+
 function(glsl_to_header GLSL_FILE VAR_NAME OUTPUT_NAME OUTPUT_DIR)
     file(READ ${GLSL_FILE} CONTENT)
     string(REPLACE "\\" "\\\\" CONTENT "${CONTENT}")
@@ -209,3 +213,34 @@ target_include_directories(test_color_validation
 
 # Add color validation test
 add_test(NAME color_validation COMMAND test_color_validation)
+
+# Create undo/redo test executable
+add_executable(test_undo_redo
+    tests/test_undo_redo.cpp
+    src/cube.cpp
+    src/color.cpp
+    src/move.cpp
+)
+
+target_include_directories(test_undo_redo
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+# Add undo/redo test
+add_test(NAME undo_redo COMMAND test_undo_redo)
+
+# Create config test executable
+add_executable(test_config
+    tests/test_config.cpp
+    src/color.cpp
+    src/config.cpp
+)
+
+target_include_directories(test_config
+    PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+# Add config test
+add_test(NAME config COMMAND test_config)

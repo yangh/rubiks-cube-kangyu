@@ -30,6 +30,7 @@ private:
     const CubeAnimator* animator_ = nullptr;
 
     Shader cubieShader_;
+    bool shaderValid_ = false;
 
     float cubieSize_ = 0.40f;  // half-size of a single cubie
     float cubieRadius_ = 0.04f;  // cubie corner radius
@@ -37,8 +38,6 @@ private:
     void buildShaders();
     void prepareUniforms(int viewW, int viewH);
     void renderFullScreenQuad();
-
-    static FaceColor getCubeFace(const RubiksCube& cube, int faceIdx);
 };
 
 #endif // RENDERER_3D_SHADER_H
