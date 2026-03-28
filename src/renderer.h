@@ -37,6 +37,8 @@ public:
 
     void executeMove(Move move);
     void executeMove(Move move, bool recordHistory);
+    void undoMove();
+    void redoMove();
     void updateAnimation(float deltaTime);
     void reset();
 

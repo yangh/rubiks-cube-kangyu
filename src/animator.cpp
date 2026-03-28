@@ -34,8 +34,8 @@ CubeAnimator::CubeAnimator()
     : preAnimationCube_() {
 }
 
-void CubeAnimator::queueMove(Move move, bool recordHistory) {
-    moveQueue_.push({move, recordHistory});
+void CubeAnimator::queueMove(Move move, bool recordHistory, std::function<void()> postCallback) {
+    moveQueue_.push({move, recordHistory, std::move(postCallback)});
 
     if (!isAnimating_ && moveQueue_.size() == 1) {
         startNextAnimation();
@@ -58,11 +58,14 @@ void CubeAnimator::update(float deltaTime) {
             if (moveCompleteCallback_) {
                 moveCompleteCallback_(currentMove_.move, currentMove_.recordHistory);
             }
-
+            if (currentMove_.postCallback) {
+                currentMove_.postCallback();
+            }
+            
             if (enableDump) {
                 std::cout << "\n=== Completed " << moveToStringFast(currentMove_.move) << " ===" << std::endl;
             }
-
+            
             startNextAnimation();
         }
     }
@@ -105,6 +108,9 @@ void CubeAnimator::startNextAnimation() {
             moveQueue_.pop();
             if (moveCompleteCallback_) {
                 moveCompleteCallback_(pm.move, pm.recordHistory);
+            }
+            if (pm.postCallback) {
+                pm.postCallback();
             }
             if (enableDump) {
                 std::cout << "\n=== Completed " << moveToStringFast(pm.move) << " ===" << std::endl;

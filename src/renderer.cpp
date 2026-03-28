@@ -113,6 +113,31 @@ void CubeRenderer::executeMove(Move move, bool recordHistory) {
     }
 }
 
+void CubeRenderer::undoMove() {
+    if (!cube_.canUndo()) return;
+    Move lastMove = cube_.getLastMove();
+    Move inverseMove = getInverseMove(lastMove);
+    animator_.queueMove(inverseMove, false, [this]() {
+        cube_.undo();
+    });
+
+    if (animator_.enableDump) {
+        std::cout << "\n=== Queued undo " << moveToString(lastMove) << " ===" << std::endl;
+    }
+}
+
+void CubeRenderer::redoMove() {
+    if (!cube_.canRedo()) return;
+    Move moveToRedo = cube_.getLastRedo();
+    animator_.queueMove(moveToRedo, false, [this]() {
+        cube_.redo();
+    });
+
+    if (animator_.enableDump) {
+        std::cout << "\n=== Queued redo " << moveToString(moveToRedo) << " ===" << std::endl;
+    }
+}
+
 void CubeRenderer::reset() {
     cube_.reset();
     animator_.reset();

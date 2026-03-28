@@ -16,6 +16,7 @@ const char* getEasingTypeName(EasingType type);
 struct PendingMove {
     Move move;
     bool recordHistory;
+    std::function<void()> postCallback;  // called after animation completes (optional)
 };
 
 class CubeAnimator {
@@ -25,7 +26,7 @@ public:
 
     CubeAnimator();
 
-    void queueMove(Move move, bool recordHistory = true);
+    void queueMove(Move move, bool recordHistory = true, std::function<void()> postCallback = {});
     void update(float deltaTime);
     void reset();
 
@@ -49,7 +50,7 @@ public:
 private:
     bool isAnimating_ = false;
     float animationProgress_ = 0.0f;
-    PendingMove currentMove_{Move::U, true};
+    PendingMove currentMove_{Move::U, true, {}};
     std::queue<PendingMove> moveQueue_;
     RubiksCube preAnimationCube_;
     MoveCallback moveCompleteCallback_;
