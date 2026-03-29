@@ -9,9 +9,8 @@
 #include <glm/gtc/type_ptr.hpp>
 
 extern "C" {
-extern void glDrawArraysInstanced(GLenum mode, GLint first, GLsizei count, GLsizei instanceCount);
+extern void glDrawArrays(GLenum mode, GLint first, GLsizei count);
 extern void glDepthFunc(GLenum func);
-extern void glVertexAttribDivisor(GLuint index, GLuint divisor);
 }
 
 #ifndef GL_DEPTH_BUFFER_BIT
@@ -42,17 +41,12 @@ Renderer3DShader::Renderer3DShader() {
         buildGeometry();
         cacheUniformLocations();
     }
-    std::cout << "Renderer3DShader initialized (instanced rasterization, VBO + GLSL 330)" << std::endl;
+    std::cout << "Renderer3DShader initialized (batched rasterization, VBO + GLSL 330)" << std::endl;
 }
 
 Renderer3DShader::~Renderer3DShader() {
     if (vao_) glDeleteVertexArrays(1, &vao_);
-    if (blackFaceVBO_) glDeleteBuffers(1, &blackFaceVBO_);
-    for (int i = 0; i < 6; i++) {
-        if (stickerVBOs_[i]) glDeleteBuffers(1, &stickerVBOs_[i]);
-    }
-    if (instanceVBO_) glDeleteBuffers(1, &instanceVBO_);
-    if (colorVBO_) glDeleteBuffers(1, &colorVBO_);
+    if (batchVBO_) glDeleteBuffers(1, &batchVBO_);
 }
 
 void Renderer3DShader::buildShaders() {
@@ -73,6 +67,7 @@ void Renderer3DShader::buildShaders() {
 }
 
 void Renderer3DShader::cacheUniformLocations() {
+    loc_.model = rastShader_.getLocation("uModel");
     loc_.view = rastShader_.getLocation("uView");
     loc_.projection = rastShader_.getLocation("uProjection");
     loc_.cameraPos = rastShader_.getLocation("uCameraPos");
@@ -169,19 +164,16 @@ void Renderer3DShader::buildBlackFaces() {
     auto face2d = buildRoundedRect2D(faceSize, faceRadius);
     auto faceTris = fanToTriangles(face2d);
 
-    std::vector<float> allVerts;
+    blackFaceLocalVerts_.clear();
     blackFaceVertexCount_ = 0;
 
     for (int f = 0; f < 6; f++) {
         auto transformed = transformFaceTo3D(faceTris,
             kFaceDirs[f].offset, kFaceDirs[f].nx, kFaceDirs[f].ny, kFaceDirs[f].nz);
         auto withNormals = addNormals(transformed, kFaceDirs[f].nx, kFaceDirs[f].ny, kFaceDirs[f].nz);
-        allVerts.insert(allVerts.end(), withNormals.begin(), withNormals.end());
+        blackFaceLocalVerts_.insert(blackFaceLocalVerts_.end(), withNormals.begin(), withNormals.end());
         blackFaceVertexCount_ += static_cast<int>(withNormals.size() / 6);
     }
-
-    glBindBuffer(GL_ARRAY_BUFFER, blackFaceVBO_);
-    glBufferData(GL_ARRAY_BUFFER, allVerts.size() * sizeof(float), allVerts.data(), GL_STATIC_DRAW);
 }
 
 void Renderer3DShader::buildStickerTemplates() {
@@ -198,12 +190,8 @@ void Renderer3DShader::buildStickerTemplates() {
 
         auto transformed = transformFaceTo3D(stickerTris,
             stickerOff, kFaceDirs[f].nx, kFaceDirs[f].ny, kFaceDirs[f].nz);
-        auto withNormals = addNormals(transformed, kFaceDirs[f].nx, kFaceDirs[f].ny, kFaceDirs[f].nz);
-
-        stickerVertexCounts_[f] = static_cast<int>(withNormals.size() / 6);
-
-        glBindBuffer(GL_ARRAY_BUFFER, stickerVBOs_[f]);
-        glBufferData(GL_ARRAY_BUFFER, withNormals.size() * sizeof(float), withNormals.data(), GL_STATIC_DRAW);
+        stickerLocalVerts_[f] = addNormals(transformed, kFaceDirs[f].nx, kFaceDirs[f].ny, kFaceDirs[f].nz);
+        stickerVertexCounts_[f] = static_cast<int>(stickerLocalVerts_[f].size() / 6);
     }
 }
 
@@ -247,18 +235,34 @@ void Renderer3DShader::buildGeometry() {
     glGenVertexArrays(1, &vao_);
     glBindVertexArray(vao_);
 
-    glGenBuffers(1, &blackFaceVBO_);
-    for (int i = 0; i < 6; i++) {
-        glGenBuffers(1, &stickerVBOs_[i]);
-    }
-    glGenBuffers(1, &instanceVBO_);
-    glGenBuffers(1, &colorVBO_);
+    glGenBuffers(1, &batchVBO_);
 
     buildBlackFaces();
     buildStickerTemplates();
     buildStickerInfo();
 
     glBindVertexArray(0);
+}
+
+void Renderer3DShader::transformVerts(const float* src, int vertCount,
+                                       const glm::mat4& model, float r, float g, float b,
+                                       std::vector<float>& out) {
+    glm::mat3 normalMat(model);
+    for (int i = 0; i < vertCount; i++) {
+        float lx = src[i * 6 + 0];
+        float ly = src[i * 6 + 1];
+        float lz = src[i * 6 + 2];
+        float nx = src[i * 6 + 3];
+        float ny = src[i * 6 + 4];
+        float nz = src[i * 6 + 5];
+
+        glm::vec4 wp = model * glm::vec4(lx, ly, lz, 1.0f);
+        glm::vec3 wn = glm::normalize(normalMat * glm::vec3(nx, ny, nz));
+
+        out.push_back(wp.x); out.push_back(wp.y); out.push_back(wp.z);
+        out.push_back(wn.x); out.push_back(wn.y); out.push_back(wn.z);
+        out.push_back(r);    out.push_back(g);     out.push_back(b);
+    }
 }
 
 void Renderer3DShader::render(int windowWidth, int windowHeight, float sidebarWidth) {
@@ -315,55 +319,12 @@ void Renderer3DShader::render(int windowWidth, int windowHeight, float sidebarWi
 
     float spacing = (kCubieFace + gap_) * cubeScale_;
     float cubieSize = kCubieFace * cubeScale_;
-
     glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(cubieSize));
 
-    glm::mat4 models[27];
-    const RubiksCube* renderCubes[27];
-    for (int i = 0; i < 27; i++) {
-        int layer = i / 9;
-        int posInLayer = i % 9;
-        int row = posInLayer / 3;
-        int col = posInLayer % 3;
-
-        float xOff = (col - 1.0f) * spacing;
-        float yOff = (row - 1.0f) * spacing;
-        float zOff = (layer - 1.0f) * spacing;
-
-        bool shouldAnimate = isAnimating &&
-            MoveLookup::isInSlice(i, getAnimationSlice(animMove));
-
-        glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(xOff, yOff, zOff));
-        if (shouldAnimate) {
-            glm::mat4 R = glm::rotate(glm::mat4(1.0f), glm::radians(animAngle),
-                                       glm::vec3(animAxis.x, animAxis.y, animAxis.z));
-            models[i] = R * T * S;
-        } else {
-            models[i] = T * S;
-        }
-
-        renderCubes[i] = shouldAnimate ? &animator_->getPreAnimationCube() : cube_;
-    }
-
-    float instanceMatrices[27 * 16];
-    for (int i = 0; i < 27; i++) {
-        memcpy(&instanceMatrices[i * 16], glm::value_ptr(models[i]), 16 * sizeof(float));
-    }
-
-    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO_);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(instanceMatrices), instanceMatrices, GL_DYNAMIC_DRAW);
-
-    // Black faces: 27 instances, all black
-    float blackColors[27 * 3];
-    for (int i = 0; i < 27; i++) {
-        blackColors[i * 3 + 0] = 0.02f;
-        blackColors[i * 3 + 1] = 0.02f;
-        blackColors[i * 3 + 2] = 0.02f;
-    }
-    glBindBuffer(GL_ARRAY_BUFFER, colorVBO_);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(blackColors), blackColors, GL_DYNAMIC_DRAW);
+    glm::mat4 identity(1.0f);
 
     rastShader_.use();
+    rastShader_.setMat4("uModel", glm::value_ptr(identity));
     rastShader_.setMat4("uView", glm::value_ptr(viewMatrix));
     rastShader_.setMat4("uProjection", glm::value_ptr(projMatrix));
     rastShader_.setVec3At(loc_.cameraPos, cameraPos.x, cameraPos.y, cameraPos.z);
@@ -371,95 +332,101 @@ void Renderer3DShader::render(int windowWidth, int windowHeight, float sidebarWi
     rastShader_.setVec3At(loc_.lightPos[1], lp1.x, lp1.y, lp1.z);
     rastShader_.setVec3("uLightColor", 1.0f, 1.0f, 1.0f);
 
-    glBindVertexArray(vao_);
-
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
-    for (int c = 0; c < 4; c++) {
-        glEnableVertexAttribArray(2 + c);
-    }
-    glEnableVertexAttribArray(6);
-
-    glBindBuffer(GL_ARRAY_BUFFER, blackFaceVBO_);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-
-    glBindBuffer(GL_ARRAY_BUFFER, instanceVBO_);
-    for (int c = 0; c < 4; c++) {
-        glVertexAttribPointer(2 + c, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float),
-                              (void*)(c * 4 * sizeof(float)));
-        glVertexAttribDivisor(2 + c, 1);
-    }
-
-    glBindBuffer(GL_ARRAY_BUFFER, colorVBO_);
-    glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-    glVertexAttribDivisor(6, 1);
-
-    glDrawArraysInstanced(GL_TRIANGLES, 0, blackFaceVertexCount_, 27);
-
-    // Stickers: collect per-template instance data, then draw instanced per template
-    struct StickerInstance {
-        float matrix[16];
-        float color[3];
-    };
-
-    std::vector<StickerInstance> templateInstances[6];
+    // Phase 1: batch all black face verts (27 cubies, pre-transformed on CPU)
+    std::vector<float> blackBatch;
     for (int ci = 0; ci < 27; ci++) {
+        int layer = ci / 9;
+        int posInLayer = ci % 9;
+        int row = posInLayer / 3;
+        int col = posInLayer % 3;
+
+        bool shouldAnimate = isAnimating &&
+            MoveLookup::isInSlice(ci, getAnimationSlice(animMove));
+
+        glm::mat4 T = glm::translate(glm::mat4(1.0f),
+            glm::vec3((col - 1.0f) * spacing, (row - 1.0f) * spacing, (layer - 1.0f) * spacing));
+        glm::mat4 model;
+        if (shouldAnimate) {
+            glm::mat4 R = glm::rotate(glm::mat4(1.0f), glm::radians(animAngle),
+                                       glm::vec3(animAxis.x, animAxis.y, animAxis.z));
+            model = R * T * S;
+        } else {
+            model = T * S;
+        }
+
+        transformVerts(blackFaceLocalVerts_.data(), blackFaceVertexCount_,
+                       model, 0.02f, 0.02f, 0.02f, blackBatch);
+    }
+
+    // Phase 2: batch sticker verts per template
+    std::vector<float> stickerBatches[6];
+    int stickerBatchCounts[6] = {};
+
+    for (int ci = 0; ci < 27; ci++) {
+        int layer = ci / 9;
+        int posInLayer = ci % 9;
+        int row = posInLayer / 3;
+        int col = posInLayer % 3;
+
+        bool shouldAnimate = isAnimating &&
+            MoveLookup::isInSlice(ci, getAnimationSlice(animMove));
+
+        glm::mat4 T = glm::translate(glm::mat4(1.0f),
+            glm::vec3((col - 1.0f) * spacing, (row - 1.0f) * spacing, (layer - 1.0f) * spacing));
+        glm::mat4 model;
+        if (shouldAnimate) {
+            glm::mat4 R = glm::rotate(glm::mat4(1.0f), glm::radians(animAngle),
+                                       glm::vec3(animAxis.x, animAxis.y, animAxis.z));
+            model = R * T * S;
+        } else {
+            model = T * S;
+        }
+
+        const RubiksCube& renderCube = shouldAnimate
+            ? animator_->getPreAnimationCube() : *cube_;
+
         for (const StickerInfo& si : stickerInfos_[ci]) {
-            const FaceColor& face = IRenderer3D::getCubeFace(*renderCubes[ci], si.faceIdx);
+            const FaceColor& face = IRenderer3D::getCubeFace(renderCube, si.faceIdx);
             Color c = face[si.colorIdx];
             auto rgb = colorProvider_->getFaceColorRgb(c);
 
-            StickerInstance inst;
-            memcpy(inst.matrix, &instanceMatrices[ci * 16], 16 * sizeof(float));
-            inst.color[0] = rgb.r;
-            inst.color[1] = rgb.g;
-            inst.color[2] = rgb.b;
-            templateInstances[si.templateIdx].push_back(inst);
+            transformVerts(stickerLocalVerts_[si.templateIdx].data(),
+                           stickerVertexCounts_[si.templateIdx],
+                           model, rgb.r, rgb.g, rgb.b,
+                           stickerBatches[si.templateIdx]);
+            stickerBatchCounts[si.templateIdx] += stickerVertexCounts_[si.templateIdx];
         }
     }
 
+    // Upload and draw
+    glBindVertexArray(vao_);
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+
+    glBindBuffer(GL_ARRAY_BUFFER, batchVBO_);
+
+    GLsizei stride = 9 * sizeof(float);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (void*)0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, stride, (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, stride, (void*)(6 * sizeof(float)));
+
+    // Draw black faces (1 draw call)
+    int totalBlackVerts = 27 * blackFaceVertexCount_;
+    glBufferData(GL_ARRAY_BUFFER, blackBatch.size() * sizeof(float), blackBatch.data(), GL_DYNAMIC_DRAW);
+    glDrawArrays(GL_TRIANGLES, 0, totalBlackVerts);
+
+    // Draw stickers per template (up to 6 draw calls)
     for (int t = 0; t < 6; t++) {
-        if (templateInstances[t].empty()) continue;
-
-        int count = static_cast<int>(templateInstances[t].size());
-
-        // Upload per-instance matrices
-        float stickerMats[54 * 16];
-        float stickerColors[54 * 3];
-        for (int i = 0; i < count; i++) {
-            memcpy(&stickerMats[i * 16], templateInstances[t][i].matrix, 16 * sizeof(float));
-            stickerColors[i * 3 + 0] = templateInstances[t][i].color[0];
-            stickerColors[i * 3 + 1] = templateInstances[t][i].color[1];
-            stickerColors[i * 3 + 2] = templateInstances[t][i].color[2];
-        }
-
-        glBindBuffer(GL_ARRAY_BUFFER, instanceVBO_);
-        glBufferData(GL_ARRAY_BUFFER, count * 16 * sizeof(float), stickerMats, GL_DYNAMIC_DRAW);
-        for (int c = 0; c < 4; c++) {
-            glVertexAttribPointer(2 + c, 4, GL_FLOAT, GL_FALSE, 16 * sizeof(float),
-                                  (void*)(c * 4 * sizeof(float)));
-        }
-
-        glBindBuffer(GL_ARRAY_BUFFER, colorVBO_);
-        glBufferData(GL_ARRAY_BUFFER, count * 3 * sizeof(float), stickerColors, GL_DYNAMIC_DRAW);
-        glVertexAttribPointer(6, 3, GL_FLOAT, GL_FALSE, 0, (void*)0);
-
-        glBindBuffer(GL_ARRAY_BUFFER, stickerVBOs_[t]);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-
-        glDrawArraysInstanced(GL_TRIANGLES, 0, stickerVertexCounts_[t], count);
+        if (stickerBatchCounts[t] == 0) continue;
+        glBufferData(GL_ARRAY_BUFFER, stickerBatches[t].size() * sizeof(float),
+                     stickerBatches[t].data(), GL_DYNAMIC_DRAW);
+        glDrawArrays(GL_TRIANGLES, 0, stickerBatchCounts[t]);
     }
 
-    for (int c = 0; c < 4; c++) {
-        glDisableVertexAttribArray(2 + c);
-        glVertexAttribDivisor(2 + c, 0);
-    }
-    glDisableVertexAttribArray(6);
-    glVertexAttribDivisor(6, 0);
     glDisableVertexAttribArray(0);
     glDisableVertexAttribArray(1);
+    glDisableVertexAttribArray(2);
     glBindVertexArray(0);
 
     glDisable(GL_DEPTH_TEST);

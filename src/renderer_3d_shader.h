@@ -4,6 +4,7 @@
 #include "renderer_3d.h"
 #include "cube.h"
 #include "shader.h"
+#include <glm/glm.hpp>
 
 class Renderer3DShader : public IRenderer3D {
 public:
@@ -35,12 +36,13 @@ private:
     float cubieSize_ = 0.40f;
 
     GLuint vao_ = 0;
-    GLuint blackFaceVBO_ = 0;
+    GLuint batchVBO_ = 0;
+
     int blackFaceVertexCount_ = 0;
-    GLuint stickerVBOs_[6] = {};
+    std::vector<float> blackFaceLocalVerts_;
+
     int stickerVertexCounts_[6] = {};
-    GLuint instanceVBO_ = 0;
-    GLuint colorVBO_ = 0;
+    std::vector<float> stickerLocalVerts_[6];
 
     struct StickerInfo {
         int templateIdx;
@@ -50,6 +52,7 @@ private:
     std::vector<StickerInfo> stickerInfos_[27];
 
     struct {
+        GLint model = -1;
         GLint view = -1;
         GLint projection = -1;
         GLint cameraPos = -1;
@@ -70,6 +73,10 @@ private:
     void buildBlackFaces();
     void buildStickerTemplates();
     void buildStickerInfo();
+
+    static void transformVerts(const float* src, int vertCount,
+                               const glm::mat4& model, float r, float g, float b,
+                               std::vector<float>& out);
 };
 
 #endif // RENDERER_3D_SHADER_H
