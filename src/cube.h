@@ -4,6 +4,7 @@
 #include "color.h"
 #include "move.h"
 #include <cassert>
+#include <vector>
 
 typedef std::array<Color, 9> FaceColor;
 FaceColor fillFaceColor(Color color);

@@ -117,61 +117,32 @@ bool FormulaManager::parseFormulaFile(const std::string& filePath, FormulaFile& 
 
         FormulaItem item;
 
-        // Check if line has format "Name: moves" or just "moves"
+        std::string movesStr;
         size_t colonPos = line.find(':');
         if (colonPos != std::string::npos && colonPos > 0) {
-            // Format: "Name: moves"
             item.name = line.substr(0, colonPos);
-            // Trim name
             item.name.erase(0, item.name.find_first_not_of(" \t"));
             item.name.erase(item.name.find_last_not_of(" \t") + 1);
-
-            std::string movesStr = line.substr(colonPos + 1);
-
-            // Check for loop syntax: "* number" at the end
-            size_t starPos = movesStr.rfind('*');
-            if (starPos != std::string::npos) {
-                // Extract the loop count
-                std::string loopStr = movesStr.substr(starPos + 1);
-                // Trim whitespace
-                loopStr.erase(0, loopStr.find_first_not_of(" \t"));
-                loopStr.erase(loopStr.find_last_not_of(" \t") + 1);
-                // Remove loop syntax from moves string
-                movesStr = movesStr.substr(0, starPos);
-                // Parse loop count
-                try {
-                    item.loopCount = std::stoi(loopStr);
-                } catch (...) {
-                    item.loopCount = 0;
-                }
-            }
-
-            item.moves = parseMoveSequence(movesStr);
+            movesStr = line.substr(colonPos + 1);
         } else {
-            // Format: just "moves", use "Formula N" as name
             item.name = "Formula " + std::to_string(static_cast<int>(outFile.items.size()) + 1);
+            movesStr = line;
+        }
 
-            // Check for loop syntax: "* number" at the end
-            size_t starPos = line.rfind('*');
-            if (starPos != std::string::npos) {
-                // Extract the loop count
-                std::string loopStr = line.substr(starPos + 1);
-                // Trim whitespace
-                loopStr.erase(0, loopStr.find_first_not_of(" \t"));
-                loopStr.erase(loopStr.find_last_not_of(" \t") + 1);
-                // Remove loop syntax from moves string
-                std::string movesStr = line.substr(0, starPos);
-                // Parse loop count
-                try {
-                    item.loopCount = std::stoi(loopStr);
-                } catch (...) {
-                    item.loopCount = 0;
-                }
-                item.moves = parseMoveSequence(movesStr);
-            } else {
-                item.moves = parseMoveSequence(line);
+        size_t starPos = movesStr.rfind('*');
+        if (starPos != std::string::npos) {
+            std::string loopStr = movesStr.substr(starPos + 1);
+            loopStr.erase(0, loopStr.find_first_not_of(" \t"));
+            loopStr.erase(loopStr.find_last_not_of(" \t") + 1);
+            movesStr = movesStr.substr(0, starPos);
+            try {
+                item.loopCount = std::stoi(loopStr);
+            } catch (...) {
+                item.loopCount = 0;
             }
         }
+
+        item.moves = parseMoveSequence(movesStr);
 
         // Only add if there are valid moves
         if (!item.moves.empty()) {
