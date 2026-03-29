@@ -18,6 +18,8 @@ void showHelp(const char* programName) {
     std::cout << "  Shift+X/Y/Z         - Axis rotation (counter-clockwise)\n";
     std::cout << "  Space               - Reset view to default angles\n";
     std::cout << "  ESC                 - Reset cube to solved state\n";
+    std::cout << "  Ctrl+S              - Scramble cube\n";
+    std::cout << "  Ctrl+P              - Toggle celebration mode\n";
     std::cout << "  Ctrl+Z              - Undo last move\n";
     std::cout << "  Ctrl+R              - Redo last undone move\n";
     std::cout << "  Ctrl+Q              - Quit application\n";

@@ -129,6 +129,7 @@ cmake --build build -j
 - **Ctrl+Z**: Undo last move
 - **Ctrl+R**: Redo last undone move
 - **Ctrl+S**: Scramble cube
+- **Ctrl+P**: Toggle celebration mode
 - **Ctrl+Q**: Quit application
 - **F11**: Toggle fullscreen mode
 - **Example**: 'U' = U move, 'Shift+U' = U' move, 'X' = X axis rotation

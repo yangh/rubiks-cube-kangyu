@@ -827,6 +827,7 @@ void Application::renderShortcutsTab() {
         ImGui::TextColored(color, "  Space - Reset view to default angles");
         ImGui::TextColored(color, "  ESC - Reset cube to solved state");
         ImGui::TextColored(color, "  Ctrl+S - Scramble cube");
+        ImGui::TextColored(color, "  Ctrl+P - Toggle celebration mode");
         ImGui::TextColored(color, "  Ctrl+Z - Undo last move");
         ImGui::TextColored(color, "  Ctrl+R - Redo last undone move");
         ImGui::TextColored(color, "  Ctrl+Q - Quit application");

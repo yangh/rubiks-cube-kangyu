@@ -49,6 +49,8 @@ CubeRenderer::CubeRenderer(RubiksCube& cube)
 }
 
 void CubeRenderer::switchRenderer(RendererType type) {
+    float oldScale = renderer3D_ ? renderer3D_->getScale() : 0.6f;
+    float oldGap = renderer3D_ ? renderer3D_->getGap() : 0.03f;
     rendererType_ = type;
     if (type == RendererType::Shader) {
         auto r = std::make_unique<Renderer3DShader>();
@@ -56,6 +58,8 @@ void CubeRenderer::switchRenderer(RendererType type) {
         r->setColorProvider(&colorProvider_);
         r->setAnimator(&animator_);
         r->setCube(&cube_);
+        r->setScale(oldScale);
+        r->setGap(oldGap);
         renderer3D_ = std::move(r);
     } else {
         auto r = std::make_unique<Renderer3DOpenGL>();
@@ -63,6 +67,8 @@ void CubeRenderer::switchRenderer(RendererType type) {
         r->setColorProvider(&colorProvider_);
         r->setAnimator(&animator_);
         r->setCube(&cube_);
+        r->setScale(oldScale);
+        r->setGap(oldGap);
         renderer3D_ = std::move(r);
     }
 }
