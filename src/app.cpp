@@ -39,6 +39,13 @@ int Application::run() {
         this->cube_.dump();
     }
 
+    if (this->autoScramble_) {
+        scrambleCube();
+    }
+    if (this->autoCelebrate_ && this->renderer_) {
+        this->renderer_->viewState().celebrationMode = true;
+    }
+
     // Main loop
     float lastTime = glfwGetTime();
 

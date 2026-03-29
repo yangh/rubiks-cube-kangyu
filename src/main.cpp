@@ -7,8 +7,10 @@ void showHelp(const char* programName) {
     std::cout << "Rubik's Cube Simulator\n\n";
     std::cout << "Usage: " << programName << " [OPTIONS]\n\n";
     std::cout << "Options:\n";
-    std::cout << "  -d, --dump    Enable cube state dump to console\n";
-    std::cout << "  -h, --help    Show this help message\n\n";
+    std::cout << "  -d, --dump        Enable cube state dump to console\n";
+    std::cout << "  -s, --scramble    Auto-scramble cube on startup\n";
+    std::cout << "  -p, --celebrate   Enable celebration mode on startup\n";
+    std::cout << "  -h, --help        Show this help message\n\n";
     std::cout << "Keyboard Shortcuts:\n";
     std::cout << "  U/D/L/R/F/B/M/E/S - Execute corresponding move (clockwise)\n";
     std::cout << "  Shift+Key           - Execute prime move (counter-clockwise)\n";
@@ -27,6 +29,8 @@ int main(int argc, char* argv[]) {
     // Parse command line arguments using getopt_long
     static struct option long_options[] = {
         {"dump", no_argument, 0, 'd'},
+        {"scramble", no_argument, 0, 's'},
+        {"celebrate", no_argument, 0, 'p'},
         {"help", no_argument, 0, 'h'},
         {0, 0, 0, 0}
     };
@@ -34,11 +38,19 @@ int main(int argc, char* argv[]) {
     int opt;
     int option_index = 0;
     bool enableDump = false;
+    bool autoScramble = false;
+    bool autoCelebrate = false;
 
-    while ((opt = getopt_long(argc, argv, "dh", long_options, &option_index)) != -1) {
+    while ((opt = getopt_long(argc, argv, "dsph", long_options, &option_index)) != -1) {
         switch (opt) {
             case 'd':
                 enableDump = true;
+                break;
+            case 's':
+                autoScramble = true;
+                break;
+            case 'p':
+                autoCelebrate = true;
                 break;
             case 'h':
                 showHelp(argv[0]);
@@ -52,6 +64,8 @@ int main(int argc, char* argv[]) {
 
     Application app;
     app.setEnableDump(enableDump);
+    app.setAutoScramble(autoScramble);
+    app.setAutoCelebrate(autoCelebrate);
 
     return app.run();
 }

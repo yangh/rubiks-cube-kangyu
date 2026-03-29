@@ -20,6 +20,8 @@ public:
 
     int run();
     void setEnableDump(bool enable) { enableDump_ = enable; }
+    void setAutoScramble(bool enable) { autoScramble_ = enable; }
+    void setAutoCelebrate(bool enable) { autoCelebrate_ = enable; }
 
 private:
     bool initGlfw();
@@ -71,6 +73,8 @@ private:
     std::vector<Move> formulaParsedMoves_;
 
     bool enableDump_ = false;
+    bool autoScramble_ = false;
+    bool autoCelebrate_ = false;
     bool showAboutDialog_ = false;
     std::string lastScramble_ = "No scramble generated";
 
