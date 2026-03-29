@@ -29,33 +29,47 @@ private:
     const ColorProvider* colorProvider_ = nullptr;
     const CubeAnimator* animator_ = nullptr;
 
-    Shader cubieShader_;
+    Shader rastShader_;
     bool shaderValid_ = false;
-    bool locationsCached_ = false;
 
     float cubieSize_ = 0.40f;
-    float cubieRadius_ = 0.04f;
+
+    GLuint vao_ = 0;
+    GLuint blackFaceVBO_ = 0;
+    int blackFaceVertexCount_ = 0;
+    GLuint stickerVBOs_[6] = {};
+    int stickerVertexCounts_[6] = {};
+
+    struct StickerInfo {
+        int templateIdx;
+        int faceIdx;
+        int colorIdx;
+    };
+    std::vector<StickerInfo> stickerInfos_[27];
 
     struct {
+        GLint model = -1;
         GLint view = -1;
         GLint projection = -1;
+        GLint surfaceColor = -1;
         GLint cameraPos = -1;
         GLint lightPos[2] = {-1, -1};
         GLint lightColor = -1;
-        GLint gap = -1;
-        GLint cubieSize = -1;
-        GLint resolution = -1;
-        GLint animAngle = -1;
-        GLint animAxis = -1;
-        GLint animSliceMask[27] = {};
-        GLint cubiePositions[27] = {};
-        GLint faceColors[54] = {};
     } loc_;
 
     void buildShaders();
+    void buildGeometry();
     void cacheUniformLocations();
-    void prepareUniforms(int viewW, int viewH);
-    void renderFullScreenQuad();
+
+    static std::vector<float> buildRoundedRect2D(float size, float cornerRadius);
+    static std::vector<float> fanToTriangles(const std::vector<float>& fan2d);
+    static std::vector<float> transformFaceTo3D(const std::vector<float>& xyTris,
+                                                 float offset, float nx, float ny, float nz);
+    static std::vector<float> addNormals(const std::vector<float>& posTris,
+                                          float nx, float ny, float nz);
+    void buildBlackFaces();
+    void buildStickerTemplates();
+    void buildStickerInfo();
 };
 
 #endif // RENDERER_3D_SHADER_H

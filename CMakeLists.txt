@@ -26,6 +26,8 @@ file(MAKE_DIRECTORY ${GLSL_OUTPUT_DIR})
 
 glsl_to_header("${CMAKE_CURRENT_SOURCE_DIR}/src/shaders/cubie.vert.glsl" "cubieVertShader" "cubie.vert" ${GLSL_OUTPUT_DIR})
 glsl_to_header("${CMAKE_CURRENT_SOURCE_DIR}/src/shaders/cubie.frag.glsl" "cubieFragShader" "cubie.frag" ${GLSL_OUTPUT_DIR})
+glsl_to_header("${CMAKE_CURRENT_SOURCE_DIR}/src/shaders/cubie_rast.vert.glsl" "cubieRastVertShader" "cubie_rast.vert" ${GLSL_OUTPUT_DIR})
+glsl_to_header("${CMAKE_CURRENT_SOURCE_DIR}/src/shaders/cubie_rast.frag.glsl" "cubieRastFragShader" "cubie_rast.frag" ${GLSL_OUTPUT_DIR})
 
 # Find required packages
 find_package(OpenGL REQUIRED)

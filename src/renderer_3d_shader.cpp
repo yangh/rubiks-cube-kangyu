@@ -1,7 +1,7 @@
 #include "renderer_3d_shader.h"
 #include "renderer.h"
-#include "cubie.vert.glsl.h"
-#include "cubie.frag.glsl.h"
+#include "cubie_rast.vert.glsl.h"
+#include "cubie_rast.frag.glsl.h"
 #include <cmath>
 #include <iostream>
 #include <glm/glm.hpp>
@@ -19,221 +19,240 @@ extern void glDepthFunc(GLenum func);
 #ifndef GL_LESS
 #define GL_LESS 0x0201
 #endif
+#ifndef GL_STATIC_DRAW
+#define GL_STATIC_DRAW 0x88E4
+#endif
 
-static const float kFaceNormal[6][3] = {
-    { 0.0f,  0.0f,  1.0f },
-    { 0.0f,  0.0f, -1.0f },
-    { 0.0f,  1.0f,  0.0f },
-    { 0.0f, -1.0f,  0.0f },
-    { 1.0f,  0.0f,  0.0f },
-    {-1.0f,  0.0f,  0.0f }
+static const struct { float offset; float nx; float ny; float nz; } kFaceDirs[6] = {
+    { 0.5f,    0.0f,  0.0f,  1.0f },
+    {-0.5f,    0.0f,  0.0f, -1.0f },
+    { 0.5f,    0.0f,  1.0f,  0.0f },
+    {-0.5f,    0.0f, -1.0f,  0.0f },
+    { 0.5f,    1.0f,  0.0f,  0.0f },
+    {-0.5f,   -1.0f,  0.0f,  0.0f }
 };
 
 Renderer3DShader::Renderer3DShader() {
     buildShaders();
-    std::cout << "Renderer3DShader initialized (OpenGL 3.3 + GLSL 330)" << std::endl;
+    if (shaderValid_) {
+        buildGeometry();
+        cacheUniformLocations();
+    }
+    std::cout << "Renderer3DShader initialized (rasterization, VBO + GLSL 330)" << std::endl;
 }
 
 Renderer3DShader::~Renderer3DShader() {
+    if (vao_) glDeleteVertexArrays(1, &vao_);
+    if (blackFaceVBO_) glDeleteBuffers(1, &blackFaceVBO_);
+    for (int i = 0; i < 6; i++) {
+        if (stickerVBOs_[i]) glDeleteBuffers(1, &stickerVBOs_[i]);
+    }
 }
 
 void Renderer3DShader::buildShaders() {
     shaderValid_ = false;
-    if (!cubieShader_.compileShaderFromString(GL_VERTEX_SHADER, cubieVertShader)) {
-        std::cerr << "Failed to compile cubie vertex shader" << std::endl;
+    if (!rastShader_.compileShaderFromString(GL_VERTEX_SHADER, cubieRastVertShader)) {
+        std::cerr << "Failed to compile rasterization vertex shader" << std::endl;
         return;
     }
-    if (!cubieShader_.compileShaderFromString(GL_FRAGMENT_SHADER, cubieFragShader)) {
-        std::cerr << "Failed to compile cubie fragment shader" << std::endl;
+    if (!rastShader_.compileShaderFromString(GL_FRAGMENT_SHADER, cubieRastFragShader)) {
+        std::cerr << "Failed to compile rasterization fragment shader" << std::endl;
         return;
     }
-    if (!cubieShader_.linkProgram()) {
-        std::cerr << "Failed to link cubie shader program" << std::endl;
+    if (!rastShader_.linkProgram()) {
+        std::cerr << "Failed to link rasterization shader program" << std::endl;
         return;
     }
     shaderValid_ = true;
-    cacheUniformLocations();
 }
 
 void Renderer3DShader::cacheUniformLocations() {
-    loc_.view = cubieShader_.getLocation("view");
-    loc_.projection = cubieShader_.getLocation("projection");
-    loc_.cameraPos = cubieShader_.getLocation("cameraPos");
-    loc_.lightPos[0] = cubieShader_.getLocation("lightPos[0]");
-    loc_.lightPos[1] = cubieShader_.getLocation("lightPos[1]");
-    loc_.lightColor = cubieShader_.getLocation("lightColor");
-    loc_.gap = cubieShader_.getLocation("gap");
-    loc_.cubieSize = cubieShader_.getLocation("cubieSize");
-    loc_.resolution = cubieShader_.getLocation("resolution");
-    loc_.animAngle = cubieShader_.getLocation("animAngle");
-    loc_.animAxis = cubieShader_.getLocation("animAxis");
+    loc_.model = rastShader_.getLocation("uModel");
+    loc_.view = rastShader_.getLocation("uView");
+    loc_.projection = rastShader_.getLocation("uProjection");
+    loc_.surfaceColor = rastShader_.getLocation("uSurfaceColor");
+    loc_.cameraPos = rastShader_.getLocation("uCameraPos");
+    loc_.lightPos[0] = rastShader_.getLocation("uLightPos[0]");
+    loc_.lightPos[1] = rastShader_.getLocation("uLightPos[1]");
+    loc_.lightColor = rastShader_.getLocation("uLightColor");
+}
 
-    char name[64];
-    for (int i = 0; i < 27; i++) {
-        snprintf(name, sizeof(name), "animSliceMask[%d]", i);
-        loc_.animSliceMask[i] = cubieShader_.getLocation(name);
+void Renderer3DShader::setViewState(const ViewState* state) { viewState_ = state; }
+void Renderer3DShader::setColorProvider(const ColorProvider* provider) { colorProvider_ = provider; }
+void Renderer3DShader::setAnimator(const CubeAnimator* animator) { animator_ = animator; }
+void Renderer3DShader::setCube(const RubiksCube* cube) { cube_ = cube; }
 
-        snprintf(name, sizeof(name), "cubiePositions[%d]", i);
-        loc_.cubiePositions[i] = cubieShader_.getLocation(name);
+std::vector<float> Renderer3DShader::buildRoundedRect2D(float size, float cornerRadius) {
+    float half = size / 2.0f;
+    float inner = half - cornerRadius;
+    int segments = 16;
+
+    std::vector<float> fan;
+    fan.push_back(0.0f);
+    fan.push_back(0.0f);
+
+    auto addCorner = [&](float cx, float cy, float startAngle) {
+        for (int i = 0; i <= segments; i++) {
+            float angle = startAngle + (M_PI / 2.0f) * i / segments;
+            fan.push_back(cx + cornerRadius * cosf(angle));
+            fan.push_back(cy + cornerRadius * sinf(angle));
+        }
+    };
+
+    addCorner(inner, -inner, -M_PI / 2.0f);
+    addCorner(inner,  inner,  0.0f);
+    addCorner(-inner, inner,  M_PI / 2.0f);
+    addCorner(-inner, -inner, M_PI);
+    addCorner(inner,  -inner, -M_PI / 2.0f);
+
+    return fan;
+}
+
+std::vector<float> Renderer3DShader::fanToTriangles(const std::vector<float>& fan2d) {
+    std::vector<float> tris;
+    tris.reserve((fan2d.size() / 2 - 1) * 9);
+
+    for (size_t i = 1; i < fan2d.size() / 2 - 1; i++) {
+        int idx = i * 2;
+        tris.push_back(fan2d[0]);      tris.push_back(fan2d[1]);      tris.push_back(0.0f);
+        tris.push_back(fan2d[idx]);     tris.push_back(fan2d[idx + 1]); tris.push_back(0.0f);
+        tris.push_back(fan2d[idx + 2]); tris.push_back(fan2d[idx + 3]); tris.push_back(0.0f);
     }
-    for (int i = 0; i < 54; i++) {
-        snprintf(name, sizeof(name), "faceColors[%d]", i);
-        loc_.faceColors[i] = cubieShader_.getLocation(name);
+
+    return tris;
+}
+
+std::vector<float> Renderer3DShader::transformFaceTo3D(const std::vector<float>& xyTris,
+                                                         float offset, float, float ny, float nz) {
+    std::vector<float> out;
+    out.reserve(xyTris.size());
+
+    for (size_t i = 0; i < xyTris.size(); i += 3) {
+        float u = xyTris[i];
+        float v = xyTris[i + 1];
+
+        if (nz != 0) {
+            out.push_back(u); out.push_back(v); out.push_back(offset);
+        } else if (ny != 0) {
+            out.push_back(u); out.push_back(offset); out.push_back(v);
+        } else {
+            out.push_back(offset); out.push_back(v); out.push_back(u);
+        }
     }
 
-    locationsCached_ = true;
+    return out;
 }
 
-void Renderer3DShader::setViewState(const ViewState* state) {
-    viewState_ = state;
+std::vector<float> Renderer3DShader::addNormals(const std::vector<float>& posTris,
+                                                  float nx, float ny, float nz) {
+    size_t vertCount = posTris.size() / 3;
+    std::vector<float> result;
+    result.reserve(vertCount * 6);
+    for (size_t i = 0; i < vertCount; i++) {
+        result.push_back(posTris[i * 3]);
+        result.push_back(posTris[i * 3 + 1]);
+        result.push_back(posTris[i * 3 + 2]);
+        result.push_back(nx);
+        result.push_back(ny);
+        result.push_back(nz);
+    }
+    return result;
 }
 
-void Renderer3DShader::setColorProvider(const ColorProvider* provider) {
-    colorProvider_ = provider;
-}
+void Renderer3DShader::buildBlackFaces() {
+    float faceSize = 1.0f;
+    float faceRadius = faceSize * 0.10f;
+    auto face2d = buildRoundedRect2D(faceSize, faceRadius);
+    auto faceTris = fanToTriangles(face2d);
 
-void Renderer3DShader::setAnimator(const CubeAnimator* animator) {
-    animator_ = animator;
-}
+    std::vector<float> allVerts;
+    blackFaceVertexCount_ = 0;
 
-void Renderer3DShader::setCube(const RubiksCube* cube) {
-    cube_ = cube;
-}
-
-void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
-    if (!viewState_ || !colorProvider_ || !animator_ || !cube_ || !locationsCached_) {
-        return;
+    for (int f = 0; f < 6; f++) {
+        auto transformed = transformFaceTo3D(faceTris,
+            kFaceDirs[f].offset, kFaceDirs[f].nx, kFaceDirs[f].ny, kFaceDirs[f].nz);
+        auto withNormals = addNormals(transformed, kFaceDirs[f].nx, kFaceDirs[f].ny, kFaceDirs[f].nz);
+        allVerts.insert(allVerts.end(), withNormals.begin(), withNormals.end());
+        blackFaceVertexCount_ += static_cast<int>(withNormals.size() / 6);
     }
 
-    float animAngle = animator_->getCurrentAngle();
-    bool isAnimating = animator_->isAnimating();
-    Move animMove = animator_->currentMove();
-    RotationAxis animAxis = getRotationAxis(animMove);
+    glBindBuffer(GL_ARRAY_BUFFER, blackFaceVBO_);
+    glBufferData(GL_ARRAY_BUFFER, allVerts.size() * sizeof(float), allVerts.data(), GL_STATIC_DRAW);
+}
 
-    float cubiePositions[27 * 3];
-    float stickerColors[54 * 3];
+void Renderer3DShader::buildStickerTemplates() {
+    float stickerSize = 0.9f;
+    float stickerRadius = stickerSize * 0.10f;
+    float stickerOffsetExtra = 0.001f;
 
-    for (int i = 0; i < 27; i++) {
-        int layer = i / 9;
-        int posInLayer = i % 9;
+    auto sticker2d = buildRoundedRect2D(stickerSize, stickerRadius);
+    auto stickerTris = fanToTriangles(sticker2d);
+
+    for (int f = 0; f < 6; f++) {
+        float offset = kFaceDirs[f].offset;
+        float stickerOff = (offset > 0) ? offset + stickerOffsetExtra : offset - stickerOffsetExtra;
+
+        auto transformed = transformFaceTo3D(stickerTris,
+            stickerOff, kFaceDirs[f].nx, kFaceDirs[f].ny, kFaceDirs[f].nz);
+        auto withNormals = addNormals(transformed, kFaceDirs[f].nx, kFaceDirs[f].ny, kFaceDirs[f].nz);
+
+        stickerVertexCounts_[f] = static_cast<int>(withNormals.size() / 6);
+
+        glBindBuffer(GL_ARRAY_BUFFER, stickerVBOs_[f]);
+        glBufferData(GL_ARRAY_BUFFER, withNormals.size() * sizeof(float), withNormals.data(), GL_STATIC_DRAW);
+    }
+}
+
+void Renderer3DShader::buildStickerInfo() {
+    for (int cubeIndex = 0; cubeIndex < 27; cubeIndex++) {
+        int layer = cubeIndex / 9;
+        int posInLayer = cubeIndex % 9;
         int row = posInLayer / 3;
         int col = posInLayer % 3;
 
-        float x = (col - 1.0f) * (kSpacingBase + gap_) * cubeScale_;
-        float y = (row - 1.0f) * (kSpacingBase + gap_) * cubeScale_;
-        float z = (layer - 1.0f) * (kSpacingBase + gap_) * cubeScale_;
+        stickerInfos_[cubeIndex].clear();
 
-        cubiePositions[i * 3] = x;
-        cubiePositions[i * 3 + 1] = y;
-        cubiePositions[i * 3 + 2] = z;
-    }
-
-    int cubeIndex = 0;
-    for (int layer = 0; layer < 3; layer++) {
-        for (int row = 0; row < 3; row++) {
-            for (int col = 0; col < 3; col++) {
-                bool shouldAnimate = isAnimating &&
-                    MoveLookup::isInSlice(cubeIndex, getAnimationSlice(animMove));
-
-                const RubiksCube& renderCube = shouldAnimate
-                    ? animator_->getPreAnimationCube() : *cube_;
-
-                struct StickerMapping {
-                    int faceIdx;
-                    int stickerOffset;
-                    int localRow, localCol;
-                };
-                StickerMapping stickers[6] = {
-                    { 0,  0, 2 - row, col },
-                    { 1,  9, 2 - row, 2 - col },
-                    { 2, 18, layer, col },
-                    { 3, 27, 2 - layer, col },
-                    { 4, 36, 2 - row, 2 - layer },
-                    { 5, 45, 2 - row, layer }
-                };
-
-                bool isExterior[6] = {
-                    layer == 2, layer == 0, row == 2, row == 0, col == 2, col == 0
-                };
-
-                for (int f = 0; f < 6; f++) {
-                    if (!isExterior[f]) continue;
-                    auto& sm = stickers[f];
-                    const FaceColor& face = IRenderer3D::getCubeFace(renderCube, sm.faceIdx);
-                    int idx = sm.localRow * 3 + sm.localCol;
-                    auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
-                    int si = sm.stickerOffset + idx;
-                    stickerColors[si * 3 + 0] = rgb.r;
-                    stickerColors[si * 3 + 1] = rgb.g;
-                    stickerColors[si * 3 + 2] = rgb.b;
-                }
-
-                cubeIndex++;
-            }
+        if (layer == 2) {
+            int idx = (2 - row) * 3 + col;
+            stickerInfos_[cubeIndex].push_back({0, 0, idx});
         }
-    }
-
-    float aspect = (float)viewW / (float)viewH;
-    float fov = 45.0f;
-    float near = 0.1f;
-    float far = 100.0f;
-
-    glm::mat4 projMatrix = glm::perspective(glm::radians(fov), aspect, near, far);
-
-    float rx = viewState_->rotationX * M_PI / 180.0f;
-    float ry = viewState_->rotationY * M_PI / 180.0f;
-    float rz = viewState_->rotationZ * M_PI / 180.0f;
-
-    glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), rx, glm::vec3(1.0f, 0.0f, 0.0f));
-    glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), ry, glm::vec3(0.0f, 1.0f, 0.0f));
-    glm::mat4 rotZ = glm::rotate(glm::mat4(1.0f), rz, glm::vec3(0.0f, 0.0f, 1.0f));
-
-    glm::mat4 viewMatrix = glm::lookAt(
-        glm::vec3(0.0f, 0.0f, 6.0f),
-        glm::vec3(0.0f, 0.0f, 0.0f),
-        glm::vec3(0.0f, 1.0f, 0.0f)
-    );
-    viewMatrix = viewMatrix * rotX * rotY * rotZ;
-
-    glm::vec3 actualCamPos = glm::vec3(glm::inverse(viewMatrix)[3]);
-
-    cubieShader_.use();
-    cubieShader_.setMat4("view", glm::value_ptr(viewMatrix));
-    cubieShader_.setMat4("projection", glm::value_ptr(projMatrix));
-    cubieShader_.setVec3At(loc_.cameraPos, actualCamPos.x, actualCamPos.y, actualCamPos.z);
-
-    glm::vec3 camRight = glm::normalize(glm::vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]));
-    glm::vec3 camUp = glm::normalize(glm::vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]));
-    glm::vec3 camForward = glm::normalize(glm::vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2]));
-    float lightDist = 5.0f;
-    glm::vec3 lp0 = actualCamPos + (camRight * 0.7f + camUp * 0.8f + camForward * 0.7f) * lightDist;
-    glm::vec3 lp1 = actualCamPos + (-camRight * 0.7f + camUp * 0.8f + camForward * 0.7f) * lightDist;
-    cubieShader_.setVec3At(loc_.lightPos[0], lp0.x, lp0.y, lp0.z);
-    cubieShader_.setVec3At(loc_.lightPos[1], lp1.x, lp1.y, lp1.z);
-    cubieShader_.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-    cubieShader_.setFloatAt(loc_.gap, gap_);
-    cubieShader_.setFloatAt(loc_.cubieSize, cubieSize_ * cubeScale_);
-    cubieShader_.setVec2("resolution", (float)viewW, (float)viewH);
-    cubieShader_.setFloatAt(loc_.animAngle, isAnimating ? -animAngle : 0.0f);
-    cubieShader_.setVec3At(loc_.animAxis, animAxis.x, animAxis.y, animAxis.z);
-
-    for (int i = 0; i < 27; i++) {
-        float mask = 0.0f;
-        if (isAnimating) {
-            mask = MoveLookup::isInSlice(i, getAnimationSlice(animMove)) ? 1.0f : 0.0f;
+        if (layer == 0) {
+            int idx = (2 - row) * 3 + (2 - col);
+            stickerInfos_[cubeIndex].push_back({1, 1, idx});
         }
-        cubieShader_.setFloatAt(loc_.animSliceMask[i], mask);
-        cubieShader_.setVec3At(loc_.cubiePositions[i],
-            cubiePositions[i*3], cubiePositions[i*3+1], cubiePositions[i*3+2]);
-    }
-    for (int i = 0; i < 54; i++) {
-        cubieShader_.setVec3At(loc_.faceColors[i],
-            stickerColors[i*3], stickerColors[i*3+1], stickerColors[i*3+2]);
+        if (row == 2) {
+            int idx = layer * 3 + col;
+            stickerInfos_[cubeIndex].push_back({2, 2, idx});
+        }
+        if (row == 0) {
+            int idx = (2 - layer) * 3 + col;
+            stickerInfos_[cubeIndex].push_back({3, 3, idx});
+        }
+        if (col == 2) {
+            int idx = (2 - row) * 3 + (2 - layer);
+            stickerInfos_[cubeIndex].push_back({4, 4, idx});
+        }
+        if (col == 0) {
+            int idx = (2 - row) * 3 + layer;
+            stickerInfos_[cubeIndex].push_back({5, 5, idx});
+        }
     }
 }
 
-void Renderer3DShader::renderFullScreenQuad() {
-    glDrawArrays(GL_TRIANGLES, 0, 6);
+void Renderer3DShader::buildGeometry() {
+    glGenVertexArrays(1, &vao_);
+    glBindVertexArray(vao_);
+
+    glGenBuffers(1, &blackFaceVBO_);
+    for (int i = 0; i < 6; i++) {
+        glGenBuffers(1, &stickerVBOs_[i]);
+    }
+
+    buildBlackFaces();
+    buildStickerTemplates();
+    buildStickerInfo();
+
+    glBindVertexArray(0);
 }
 
 void Renderer3DShader::render(int windowWidth, int windowHeight, float sidebarWidth) {
@@ -253,20 +272,110 @@ void Renderer3DShader::render(int windowWidth, int windowHeight, float sidebarWi
     glDisable(GL_SCISSOR_TEST);
 
     glDisable(GL_CULL_FACE);
-    glDisable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    prepareUniforms(viewW, viewH);
+    float aspect = (float)viewW / (float)viewH;
+    glm::mat4 projMatrix = glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f);
 
+    float rx = viewState_->rotationX * M_PI / 180.0f;
+    float ry = viewState_->rotationY * M_PI / 180.0f;
+    float rz = viewState_->rotationZ * M_PI / 180.0f;
+
+    glm::mat4 rotX = glm::rotate(glm::mat4(1.0f), rx, glm::vec3(1.0f, 0.0f, 0.0f));
+    glm::mat4 rotY = glm::rotate(glm::mat4(1.0f), ry, glm::vec3(0.0f, 1.0f, 0.0f));
+    glm::mat4 rotZ = glm::rotate(glm::mat4(1.0f), rz, glm::vec3(0.0f, 0.0f, 1.0f));
+
+    glm::mat4 viewMatrix = glm::lookAt(
+        glm::vec3(0.0f, 0.0f, kCameraDist),
+        glm::vec3(0.0f, 0.0f, 0.0f),
+        glm::vec3(0.0f, 1.0f, 0.0f)
+    );
+    viewMatrix = viewMatrix * rotX * rotY * rotZ;
+
+    glm::vec3 cameraPos = glm::vec3(glm::inverse(viewMatrix)[3]);
+
+    glm::vec3 camRight   = glm::normalize(glm::vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]));
+    glm::vec3 camUp      = glm::normalize(glm::vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]));
+    glm::vec3 camForward = glm::normalize(glm::vec3(viewMatrix[0][2], viewMatrix[1][2], viewMatrix[2][2]));
+    float lightDist = 5.0f;
+    glm::vec3 lp0 = cameraPos + (camRight * 0.7f + camUp * 0.8f + camForward * 0.7f) * lightDist;
+    glm::vec3 lp1 = cameraPos + (-camRight * 0.7f + camUp * 0.8f + camForward * 0.7f) * lightDist;
+
+    float animAngle = animator_->getCurrentAngle();
+    bool isAnimating = animator_->isAnimating();
+    Move animMove = animator_->currentMove();
+    RotationAxis animAxis = getRotationAxis(animMove);
+
+    float spacing = (kSpacingBase + gap_) * cubeScale_;
+    float cubieSize = kCubieFace * cubeScale_;
+
+    rastShader_.use();
+    rastShader_.setMat4("uView", glm::value_ptr(viewMatrix));
+    rastShader_.setMat4("uProjection", glm::value_ptr(projMatrix));
+    rastShader_.setVec3At(loc_.cameraPos, cameraPos.x, cameraPos.y, cameraPos.z);
+    rastShader_.setVec3At(loc_.lightPos[0], lp0.x, lp0.y, lp0.z);
+    rastShader_.setVec3At(loc_.lightPos[1], lp1.x, lp1.y, lp1.z);
+    rastShader_.setVec3("uLightColor", 1.0f, 1.0f, 1.0f);
+
+    glBindVertexArray(vao_);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(1);
 
-    glEnable(GL_DEPTH_TEST);
-    cubieShader_.use();
-    renderFullScreenQuad();
+    int cubeIndex = 0;
+    for (int layer = 0; layer < 3; layer++) {
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 3; col++) {
+                float xOffset = (col - 1.0f) * spacing;
+                float yOffset = (row - 1.0f) * spacing;
+                float zOffset = (layer - 1.0f) * spacing;
+
+                bool shouldAnimate = isAnimating &&
+                    MoveLookup::isInSlice(cubeIndex, getAnimationSlice(animMove));
+
+                glm::mat4 S = glm::scale(glm::mat4(1.0f), glm::vec3(cubieSize));
+                glm::mat4 T = glm::translate(glm::mat4(1.0f), glm::vec3(xOffset, yOffset, zOffset));
+                glm::mat4 model;
+                if (shouldAnimate) {
+                    glm::mat4 R = glm::rotate(glm::mat4(1.0f), glm::radians(animAngle),
+                                               glm::vec3(animAxis.x, animAxis.y, animAxis.z));
+                    model = R * T * S;
+                } else {
+                    model = T * S;
+                }
+
+                rastShader_.setMat4("uModel", glm::value_ptr(model));
+
+                rastShader_.setVec3("uSurfaceColor", 0.02f, 0.02f, 0.02f);
+                glBindBuffer(GL_ARRAY_BUFFER, blackFaceVBO_);
+                glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+                glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+                glDrawArrays(GL_TRIANGLES, 0, blackFaceVertexCount_);
+
+                const RubiksCube& renderCube = shouldAnimate
+                    ? animator_->getPreAnimationCube() : *cube_;
+
+                for (const StickerInfo& si : stickerInfos_[cubeIndex]) {
+                    const FaceColor& face = IRenderer3D::getCubeFace(renderCube, si.faceIdx);
+                    Color c = face[si.colorIdx];
+                    auto rgb = colorProvider_->getFaceColorRgb(c);
+                    rastShader_.setVec3("uSurfaceColor", rgb.r, rgb.g, rgb.b);
+
+                    glBindBuffer(GL_ARRAY_BUFFER, stickerVBOs_[si.templateIdx]);
+                    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+                    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+                    glDrawArrays(GL_TRIANGLES, 0, stickerVertexCounts_[si.templateIdx]);
+                }
+
+                cubeIndex++;
+            }
+        }
+    }
 
     glDisableVertexAttribArray(0);
-    glDisable(GL_DEPTH_TEST);
+    glDisableVertexAttribArray(1);
+    glBindVertexArray(0);
 
+    glDisable(GL_DEPTH_TEST);
     glViewport(0, 0, windowWidth, windowHeight);
 }
