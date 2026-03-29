@@ -30,15 +30,6 @@ extern void glDepthFunc(GLenum func);
 static void (*pfDrawArraysInstanced)(GLenum, GLint, GLsizei, GLsizei) = nullptr;
 static void (*pfVertexAttribDivisor)(GLuint, GLuint) = nullptr;
 
-static const struct { float offset; float nx; float ny; float nz; } kFaceDirs[6] = {
-    { 0.5f,    0.0f,  0.0f,  1.0f },
-    {-0.5f,    0.0f,  0.0f, -1.0f },
-    { 0.5f,    0.0f,  1.0f,  0.0f },
-    {-0.5f,    0.0f, -1.0f,  0.0f },
-    { 0.5f,    1.0f,  0.0f,  0.0f },
-    {-0.5f,   -1.0f,  0.0f,  0.0f }
-};
-
 Renderer3DShader::Renderer3DShader() {
     buildShaders();
     if (shaderValid_) {
@@ -102,83 +93,6 @@ void Renderer3DShader::setColorProvider(const ColorProvider* provider) { colorPr
 void Renderer3DShader::setAnimator(const CubeAnimator* animator) { animator_ = animator; }
 void Renderer3DShader::setCube(const RubiksCube* cube) { cube_ = cube; }
 
-std::vector<float> Renderer3DShader::buildRoundedRect2D(float size, float cornerRadius) {
-    float half = size / 2.0f;
-    float inner = half - cornerRadius;
-    int segments = 16;
-
-    std::vector<float> fan;
-    fan.push_back(0.0f);
-    fan.push_back(0.0f);
-
-    auto addCorner = [&](float cx, float cy, float startAngle) {
-        for (int i = 0; i <= segments; i++) {
-            float angle = startAngle + (M_PI / 2.0f) * i / segments;
-            fan.push_back(cx + cornerRadius * cosf(angle));
-            fan.push_back(cy + cornerRadius * sinf(angle));
-        }
-    };
-
-    addCorner(inner, -inner, -M_PI / 2.0f);
-    addCorner(inner,  inner,  0.0f);
-    addCorner(-inner, inner,  M_PI / 2.0f);
-    addCorner(-inner, -inner, M_PI);
-    addCorner(inner,  -inner, -M_PI / 2.0f);
-
-    return fan;
-}
-
-std::vector<float> Renderer3DShader::fanToTriangles(const std::vector<float>& fan2d) {
-    std::vector<float> tris;
-    tris.reserve((fan2d.size() / 2 - 1) * 9);
-
-    for (size_t i = 1; i < fan2d.size() / 2 - 1; i++) {
-        int idx = i * 2;
-        tris.push_back(fan2d[0]);      tris.push_back(fan2d[1]);      tris.push_back(0.0f);
-        tris.push_back(fan2d[idx]);     tris.push_back(fan2d[idx + 1]); tris.push_back(0.0f);
-        tris.push_back(fan2d[idx + 2]); tris.push_back(fan2d[idx + 3]); tris.push_back(0.0f);
-    }
-
-    return tris;
-}
-
-std::vector<float> Renderer3DShader::transformFaceTo3D(const std::vector<float>& xyTris,
-                                                         float offset, float, float ny, float nz) {
-    std::vector<float> out;
-    out.reserve(xyTris.size());
-
-    for (size_t i = 0; i < xyTris.size(); i += 3) {
-        float u = xyTris[i];
-        float v = xyTris[i + 1];
-
-        if (nz != 0) {
-            out.push_back(u); out.push_back(v); out.push_back(offset);
-        } else if (ny != 0) {
-            out.push_back(u); out.push_back(offset); out.push_back(v);
-        } else {
-            out.push_back(offset); out.push_back(v); out.push_back(u);
-        }
-    }
-
-    return out;
-}
-
-std::vector<float> Renderer3DShader::addNormals(const std::vector<float>& posTris,
-                                                  float nx, float ny, float nz) {
-    size_t vertCount = posTris.size() / 3;
-    std::vector<float> result;
-    result.reserve(vertCount * 6);
-    for (size_t i = 0; i < vertCount; i++) {
-        result.push_back(posTris[i * 3]);
-        result.push_back(posTris[i * 3 + 1]);
-        result.push_back(posTris[i * 3 + 2]);
-        result.push_back(nx);
-        result.push_back(ny);
-        result.push_back(nz);
-    }
-    return result;
-}
-
 void Renderer3DShader::buildBlackFaces() {
     float faceSize = 1.0f;
     float faceRadius = faceSize * 0.10f;
@@ -223,24 +137,6 @@ void Renderer3DShader::buildStickerTemplates() {
     }
 }
 
-void Renderer3DShader::buildStickerInfo() {
-    for (int cubeIndex = 0; cubeIndex < 27; cubeIndex++) {
-        int layer = cubeIndex / 9;
-        int posInLayer = cubeIndex % 9;
-        int row = posInLayer / 3;
-        int col = posInLayer % 3;
-
-        stickerInfos_[cubeIndex].clear();
-
-        if (layer == 2) stickerInfos_[cubeIndex].push_back({0, 0, (2 - row) * 3 + col});
-        if (layer == 0) stickerInfos_[cubeIndex].push_back({1, 1, (2 - row) * 3 + (2 - col)});
-        if (row == 2)   stickerInfos_[cubeIndex].push_back({2, 2, layer * 3 + col});
-        if (row == 0)   stickerInfos_[cubeIndex].push_back({3, 3, (2 - layer) * 3 + col});
-        if (col == 2)   stickerInfos_[cubeIndex].push_back({4, 4, (2 - row) * 3 + (2 - layer)});
-        if (col == 0)   stickerInfos_[cubeIndex].push_back({5, 5, (2 - row) * 3 + layer});
-    }
-}
-
 void Renderer3DShader::buildGeometry() {
     glGenVertexArrays(1, &vao_);
     glBindVertexArray(vao_);
@@ -252,7 +148,9 @@ void Renderer3DShader::buildGeometry() {
 
     buildBlackFaces();
     buildStickerTemplates();
-    buildStickerInfo();
+    for (int i = 0; i < 27; i++) {
+        stickerInfos_[i] = IRenderer3D::buildStickerInfoForCube(i);
+    }
 
     glBindVertexArray(0);
 }

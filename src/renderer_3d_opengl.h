@@ -27,38 +27,23 @@ private:
     const ViewState* viewState_ = nullptr;
     const ColorProvider* colorProvider_ = nullptr;
     const CubeAnimator* animator_ = nullptr;
-    
-    // Pre-computed geometry (eliminates per-frame trig and glBegin/glEnd overhead)
+
     struct FaceGeometry {
-        std::vector<float> vertices;  // interleaved x,y,z (3 floats per vertex)
+        std::vector<float> vertices;
         int vertexCount;
     };
-    
-    FaceGeometry cubeBlackFaceGeom_;  // One cube's 6 black faces
-    FaceGeometry stickerTemplates_[6];    // 6 face-direction sticker templates
-    FaceGeometry circleFillGeom_;       // Circle canvas fill triangles
-    FaceGeometry circleLineGeom_;       // Circle canvas line loop vertices
-    
-    // Pre-computed sticker info per cube (FIX #3: consistent data source)
-    struct StickerInfo {
-        int templateIdx;
-        int faceIdx;
-        int colorIdx;
-    };
+
+    FaceGeometry cubeBlackFaceGeom_;
+    FaceGeometry stickerTemplates_[6];
+    FaceGeometry circleFillGeom_;
+    FaceGeometry circleLineGeom_;
+
     std::vector<StickerInfo> stickerInfos_[27];
-    
-    // Geometry pre-computation (called once at construction)
+
     void buildGeometry();
-    static std::vector<float> buildRoundedRect2D(float size, float cornerRadius);
-    static std::vector<float> fanToTriangles(const std::vector<float>& fan2d);
-    static std::vector<float> transformFaceTo3D(const std::vector<float>& xyTris,
-                                                 float offset, float nx, float ny, float nz);
     void buildCubeBlackFaces();
     void buildStickerTemplates();
-    void buildStickerInfo();
     void buildCircleCanvas();
-    
-    // Render helpers
     void renderCircleCanvas();
 };
 

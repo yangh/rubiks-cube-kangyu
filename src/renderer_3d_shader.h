@@ -33,8 +33,6 @@ private:
     Shader rastShader_;
     bool shaderValid_ = false;
 
-    float cubieSize_ = 0.40f;
-
     GLuint vao_ = 0;
     GLuint blackFaceVBO_ = 0;
     int blackFaceVertexCount_ = 0;
@@ -43,11 +41,6 @@ private:
     GLuint instanceMatVBO_ = 0;
     GLuint instanceColorVBO_ = 0;
 
-    struct StickerInfo {
-        int templateIdx;
-        int faceIdx;
-        int colorIdx;
-    };
     std::vector<StickerInfo> stickerInfos_[27];
 
     struct {
@@ -62,16 +55,8 @@ private:
     void buildGeometry();
     void cacheUniformLocations();
     bool loadInstancedFunctions();
-
-    static std::vector<float> buildRoundedRect2D(float size, float cornerRadius);
-    static std::vector<float> fanToTriangles(const std::vector<float>& fan2d);
-    static std::vector<float> transformFaceTo3D(const std::vector<float>& xyTris,
-                                                 float offset, float nx, float ny, float nz);
-    static std::vector<float> addNormals(const std::vector<float>& posTris,
-                                          float nx, float ny, float nz);
     void buildBlackFaces();
     void buildStickerTemplates();
-    void buildStickerInfo();
 };
 
 #endif // RENDERER_3D_SHADER_H

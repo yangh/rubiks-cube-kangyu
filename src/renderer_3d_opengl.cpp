@@ -9,15 +9,7 @@ extern void glUseProgram(GLuint program);
 extern void glDisableVertexAttribArray(GLuint index);
 }
 
-// Face direction definitions: offset and normal for 6 faces
-static const struct { float offset; float nx; float ny; float nz; } kFaceDirs[6] = {
-    { 0.5f,    0.0f,  0.0f,  1.0f },   // 0: Front (+Z)
-    {-0.5f,    0.0f,  0.0f, -1.0f },   // 1: Back (-Z)
-    { 0.5f,    0.0f,  1.0f,  0.0f },   // 2: Up (+Y)
-    {-0.5f,    0.0f, -1.0f,  0.0f },   // 3: Down (-Y)
-    { 0.5f,    1.0f,  0.0f,  0.0f },   // 4: Right (+X)
-    {-0.5f,   -1.0f,  0.0f,  0.0f }    // 5: Left (-X)
-};
+// kFaceDirs is now in renderer_3d.h (shared)
 
 Renderer3DOpenGL::Renderer3DOpenGL() {
     // Setup GL state once at initialization
@@ -34,82 +26,6 @@ Renderer3DOpenGL::Renderer3DOpenGL() {
 }
 
 Renderer3DOpenGL::~Renderer3DOpenGL() {
-    // No VBOs to clean up (CPU-side geometry)
-}
-
-std::vector<float> Renderer3DOpenGL::buildRoundedRect2D(float size, float cornerRadius) {
-    float half = size / 2.0f;
-    float inner = half - cornerRadius;
-    int segments = 16;  // Same as original (FIX #2: pre-computed once)
-    
-    // Build triangle fan vertices in 2D (XY plane, centered at origin)
-    // FIX #2: Pre-compute all sin/cos values once
-    std::vector<float> fan;
-    fan.push_back(0.0f);  // center x
-    fan.push_back(0.0f);  // center y
-    
-    auto addCorner = [&](float cx, float cy, float startAngle) {
-        for (int i = 0; i <= segments; i++) {
-            float angle = startAngle + (M_PI / 2.0f) * i / segments;
-            fan.push_back(cx + cornerRadius * cosf(angle));
-            fan.push_back(cy + cornerRadius * sinf(angle));
-        }
-    };
-    
-    // Add 5 corners in CCW order (triangle fan winding)
-    addCorner(inner, -inner, -M_PI / 2.0f);   // Bottom-left
-    addCorner(inner,  inner,  0.0f);            // Top-left
-    addCorner(-inner, inner,  M_PI / 2.0f);     // Top-right
-    addCorner(-inner, -inner,  M_PI);             // Bottom-right
-    addCorner(inner,  -inner, -M_PI / 2.0f);   // Close to first
-    
-    return fan;
-}
-
-std::vector<float> Renderer3DOpenGL::fanToTriangles(const std::vector<float>& fan2d) {
-    // Convert triangle fan to GL_TRIANGLES
-    // FIX #1: Convert to triangles for batch rendering
-    // Triangle i = (center, vertex[i], vertex[i+1])
-    std::vector<float> tris;
-    tris.reserve((fan2d.size() / 2 - 1) * 9);  // (n-2) triangles × 3 coords × 3 floats per vertex
-    
-    for (size_t i = 1; i < fan2d.size() / 2 - 1; i++) {
-        int idx = i * 2;  // fan2d has [x, y] pairs
-        // Triangle: center, vertex[i], vertex[i+1]
-        tris.push_back(fan2d[0]);  tris.push_back(fan2d[1]);  tris.push_back(0.0f);  // Center
-        tris.push_back(fan2d[idx]);   tris.push_back(fan2d[idx + 1]);  tris.push_back(0.0f);  // Vertex i
-        tris.push_back(fan2d[idx + 2]); tris.push_back(fan2d[idx + 3]);  tris.push_back(0.0f);  // Vertex i+1
-    }
-    
-    return tris;
-}
-
-std::vector<float> Renderer3DOpenGL::transformFaceTo3D(const std::vector<float>& xyTris,
-                                                        float offset, float /*nx*/, float ny, float nz) {
-    std::vector<float> out;
-    out.reserve(xyTris.size());
-    
-    // Transform XY-plane triangle vertices to specific face orientation
-    for (size_t i = 0; i < xyTris.size(); i += 3) {
-        float u = xyTris[i];
-        float v = xyTris[i + 1];
-        
-        if (nz != 0) {      // ±Z faces (Front/Back)
-            out.push_back(u);
-            out.push_back(v);
-            out.push_back(offset);
-        } else if (ny != 0) { // ±Y faces (Up/Down)
-            out.push_back(u);
-            out.push_back(offset);
-            out.push_back(v);
-        } else {             // ±X faces (Right/Left)
-            out.push_back(offset);
-            out.push_back(v);
-            out.push_back(u);
-        }
-    }
-    
-    return out;
 }
 
 void Renderer3DOpenGL::buildCubeBlackFaces() {
@@ -154,52 +70,6 @@ void Renderer3DOpenGL::buildStickerTemplates() {
     }
 }
 
-void Renderer3DOpenGL::buildStickerInfo() {
-    // Pre-compute which stickers each cube has and how to look up their colors
-    // FIX #3: Ensures all sticker faces use the same cube state
-    // This eliminates per-frame logic for determining visible faces
-    
-    for (int cubeIndex = 0; cubeIndex < 27; cubeIndex++) {
-        int layer = cubeIndex / 9;
-        int posInLayer = cubeIndex % 9;
-        int row = posInLayer / 3;
-        int col = posInLayer % 3;
-        
-        stickerInfos_[cubeIndex].clear();
-        
-        // Front face (+Z, layer=2)
-        if (layer == 2) {
-            int idx = (2 - row) * 3 + col;
-            stickerInfos_[cubeIndex].push_back({0, 0, idx});  // Template 0 (+Z), face FRONT
-        }
-        // Back face (-Z, layer=0)
-        if (layer == 0) {
-            int idx = (2 - row) * 3 + (2 - col);
-            stickerInfos_[cubeIndex].push_back({1, 1, idx});  // Template 1 (-Z), face BACK
-        }
-        // Up face (+Y, row=2)
-        if (row == 2) {
-            int idx = layer * 3 + col;
-            stickerInfos_[cubeIndex].push_back({2, 2, idx});  // Template 2 (+Y), face UP
-        }
-        // Down face (-Y, row=0)
-        if (row == 0) {
-            int idx = (2 - layer) * 3 + col;
-            stickerInfos_[cubeIndex].push_back({3, 3, idx});  // Template 3 (-Y), face DOWN
-        }
-        // Right face (+X, col=2)
-        if (col == 2) {
-            int idx = (2 - row) * 3 + (2 - layer);
-            stickerInfos_[cubeIndex].push_back({4, 4, idx});  // Template 4 (+X), face RIGHT
-        }
-        // Left face (-X, col=0)
-        if (col == 0) {
-            int idx = (2 - row) * 3 + layer;
-            stickerInfos_[cubeIndex].push_back({5, 5, idx});  // Template 5 (-X), face LEFT
-        }
-    }
-}
-
 void Renderer3DOpenGL::buildCircleCanvas() {
     float radius = 1.5f;
     float yOffset = -1.6f;
@@ -235,7 +105,9 @@ void Renderer3DOpenGL::buildCircleCanvas() {
 void Renderer3DOpenGL::buildGeometry() {
     buildCubeBlackFaces();
     buildStickerTemplates();
-    buildStickerInfo();
+    for (int i = 0; i < 27; i++) {
+        stickerInfos_[i] = IRenderer3D::buildStickerInfoForCube(i);
+    }
     buildCircleCanvas();
 }
 
