@@ -39,6 +39,8 @@ private:
     int blackFaceVertexCount_ = 0;
     GLuint stickerVBOs_[6] = {};
     int stickerVertexCounts_[6] = {};
+    GLuint instanceVBO_ = 0;
+    GLuint colorVBO_ = 0;
 
     struct StickerInfo {
         int templateIdx;
@@ -48,10 +50,8 @@ private:
     std::vector<StickerInfo> stickerInfos_[27];
 
     struct {
-        GLint model = -1;
         GLint view = -1;
         GLint projection = -1;
-        GLint surfaceColor = -1;
         GLint cameraPos = -1;
         GLint lightPos[2] = {-1, -1};
         GLint lightColor = -1;
