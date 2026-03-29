@@ -2,7 +2,7 @@
 
 in vec3 vWorldPos;
 in vec3 vNormal;
-in vec3 vColor;
+flat in vec3 vColor;
 
 uniform vec3 uCameraPos;
 uniform vec3 uLightPos[2];
