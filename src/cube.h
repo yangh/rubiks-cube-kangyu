@@ -67,6 +67,7 @@ private:
     void rotateColY(bool prime, int col);
     void rotateLeft(bool prime);
     void rotateRight(bool prime);
+    void rotateDepthZ(bool prime, int depth);
     void rotateFront(bool prime);
     void rotateBack(bool prime);
     void rotateMiddle(bool prime);
