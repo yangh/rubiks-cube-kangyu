@@ -7,7 +7,6 @@
 #include <vector>
 
 typedef std::array<Color, 9> FaceColor;
-FaceColor fillFaceColor(Color color);
 
 enum class Face {
     FRONT,

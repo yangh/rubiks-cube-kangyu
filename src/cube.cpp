@@ -1,10 +1,6 @@
 #include "cube.h"
 #include <iostream>
 
-FaceColor fillFaceColor(Color color) {
-    return {color, color, color, color, color, color, color, color, color};
-}
-
 void RubiksCube::executeMove(Move move) {
     executeMove(move, true);
 }
@@ -74,12 +70,12 @@ void RubiksCube::redo() {
 }
 
 void RubiksCube::reset() {
-    front_ = fillFaceColor(Color::GREEN);
-    back_  = fillFaceColor(Color::BLUE);
-    left_  = fillFaceColor(Color::ORANGE);
-    right_ = fillFaceColor(Color::RED);
-    up_    = fillFaceColor(Color::WHITE);
-    down_  = fillFaceColor(Color::YELLOW);
+    front_.fill(Color::GREEN);
+    back_.fill (Color::BLUE);
+    left_.fill (Color::ORANGE);
+    right_.fill(Color::RED);
+    up_.fill   (Color::WHITE);
+    down_.fill (Color::YELLOW);
     moveHistory_.clear();
     redoHistory_.clear();
 }

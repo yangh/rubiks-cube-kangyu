@@ -55,15 +55,9 @@ public:
     RgbColor& right() { return customRight_; }
     RgbColor& up()    { return customUp_; }
     RgbColor& down()  { return customDown_; }
-    const RgbColor& front() const { return customFront_; }
-    const RgbColor& back()  const { return customBack_; }
-    const RgbColor& left()  const { return customLeft_; }
-    const RgbColor& right() const { return customRight_; }
-    const RgbColor& up()    const { return customUp_; }
-    const RgbColor& down()  const { return customDown_; }
 
     bool useCustomColors() const { return useCustomColors_; }
-    void setUseCustomColors(bool v) { useCustomColors_ = v; }
+    void setCustomColors(bool v) { useCustomColors_ = v; }
 
 private:
     RgbColor customFront_ = DefaultColorRGB::GREEN;

@@ -43,8 +43,6 @@ public:
     void reset();
 
     void setCustomConfig(const CubeConfig& config);
-    bool isAnimating() const;
-    float animationProgress() const;
     void resetView();
 
     void switchRenderer(RendererType type);

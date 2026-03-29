@@ -944,7 +944,7 @@ std::string Application::buildMoveHistoryString() const {
 
 void Application::addColorPicker(const char* id, const char* label, RgbColor& color) {
     if (ImGui::ColorEdit3(id, &color.r)) {
-        this->renderer_->colorProvider().setUseCustomColors(true);
+        this->renderer_->colorProvider().setCustomColors(true);
         saveRendererConfig();
     }
     ImGui::SameLine();
