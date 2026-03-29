@@ -52,6 +52,36 @@ void Renderer3DShader::buildShaders() {
         return;
     }
     shaderValid_ = true;
+    cacheUniformLocations();
+}
+
+void Renderer3DShader::cacheUniformLocations() {
+    loc_.view = cubieShader_.getLocation("view");
+    loc_.projection = cubieShader_.getLocation("projection");
+    loc_.cameraPos = cubieShader_.getLocation("cameraPos");
+    loc_.lightPos[0] = cubieShader_.getLocation("lightPos[0]");
+    loc_.lightPos[1] = cubieShader_.getLocation("lightPos[1]");
+    loc_.lightColor = cubieShader_.getLocation("lightColor");
+    loc_.gap = cubieShader_.getLocation("gap");
+    loc_.cubieSize = cubieShader_.getLocation("cubieSize");
+    loc_.resolution = cubieShader_.getLocation("resolution");
+    loc_.animAngle = cubieShader_.getLocation("animAngle");
+    loc_.animAxis = cubieShader_.getLocation("animAxis");
+
+    char name[64];
+    for (int i = 0; i < 27; i++) {
+        snprintf(name, sizeof(name), "animSliceMask[%d]", i);
+        loc_.animSliceMask[i] = cubieShader_.getLocation(name);
+
+        snprintf(name, sizeof(name), "cubiePositions[%d]", i);
+        loc_.cubiePositions[i] = cubieShader_.getLocation(name);
+    }
+    for (int i = 0; i < 54; i++) {
+        snprintf(name, sizeof(name), "faceColors[%d]", i);
+        loc_.faceColors[i] = cubieShader_.getLocation(name);
+    }
+
+    locationsCached_ = true;
 }
 
 void Renderer3DShader::setViewState(const ViewState* state) {
@@ -71,7 +101,7 @@ void Renderer3DShader::setCube(const RubiksCube* cube) {
 }
 
 void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
-    if (!viewState_ || !colorProvider_ || !animator_ || !cube_) {
+    if (!viewState_ || !colorProvider_ || !animator_ || !cube_ || !locationsCached_) {
         return;
     }
 
@@ -129,7 +159,7 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
                 for (int f = 0; f < 6; f++) {
                     if (!isExterior[f]) continue;
                     auto& sm = stickers[f];
-                    auto face = IRenderer3D::getCubeFace(renderCube, sm.faceIdx);
+                    const FaceColor& face = IRenderer3D::getCubeFace(renderCube, sm.faceIdx);
                     int idx = sm.localRow * 3 + sm.localCol;
                     auto rgb = colorProvider_->getFaceColorRgb(face[idx]);
                     int si = sm.stickerOffset + idx;
@@ -170,7 +200,7 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
     cubieShader_.use();
     cubieShader_.setMat4("view", glm::value_ptr(viewMatrix));
     cubieShader_.setMat4("projection", glm::value_ptr(projMatrix));
-    cubieShader_.setVec3("cameraPos", actualCamPos.x, actualCamPos.y, actualCamPos.z);
+    cubieShader_.setVec3At(loc_.cameraPos, actualCamPos.x, actualCamPos.y, actualCamPos.z);
 
     glm::vec3 camRight = glm::normalize(glm::vec3(viewMatrix[0][0], viewMatrix[1][0], viewMatrix[2][0]));
     glm::vec3 camUp = glm::normalize(glm::vec3(viewMatrix[0][1], viewMatrix[1][1], viewMatrix[2][1]));
@@ -178,36 +208,27 @@ void Renderer3DShader::prepareUniforms(int viewW, int viewH) {
     float lightDist = 5.0f;
     glm::vec3 lp0 = actualCamPos + (camRight * 0.7f + camUp * 0.8f + camForward * 0.7f) * lightDist;
     glm::vec3 lp1 = actualCamPos + (-camRight * 0.7f + camUp * 0.8f + camForward * 0.7f) * lightDist;
-    cubieShader_.setVec3("lightPos[0]", lp0.x, lp0.y, lp0.z);
-    cubieShader_.setVec3("lightPos[1]", lp1.x, lp1.y, lp1.z);
+    cubieShader_.setVec3At(loc_.lightPos[0], lp0.x, lp0.y, lp0.z);
+    cubieShader_.setVec3At(loc_.lightPos[1], lp1.x, lp1.y, lp1.z);
     cubieShader_.setVec3("lightColor", 1.0f, 1.0f, 1.0f);
-    cubieShader_.setFloat("gap", gap_);
-    cubieShader_.setFloat("cubieSize", cubieSize_ * cubeScale_);
+    cubieShader_.setFloatAt(loc_.gap, gap_);
+    cubieShader_.setFloatAt(loc_.cubieSize, cubieSize_ * cubeScale_);
     cubieShader_.setVec2("resolution", (float)viewW, (float)viewH);
-    cubieShader_.setFloat("animAngle", isAnimating ? -animAngle : 0.0f);
-    cubieShader_.setVec3("animAxis", animAxis.x, animAxis.y, animAxis.z);
+    cubieShader_.setFloatAt(loc_.animAngle, isAnimating ? -animAngle : 0.0f);
+    cubieShader_.setVec3At(loc_.animAxis, animAxis.x, animAxis.y, animAxis.z);
 
-    int animSliceMask[27] = {};
-    if (isAnimating) {
-        AnimationSlice animSlice = getAnimationSlice(animMove);
-        for (int i = 0; i < 27; i++) {
-            animSliceMask[i] = MoveLookup::isInSlice(i, animSlice) ? 1 : 0;
+    for (int i = 0; i < 27; i++) {
+        float mask = 0.0f;
+        if (isAnimating) {
+            mask = MoveLookup::isInSlice(i, getAnimationSlice(animMove)) ? 1.0f : 0.0f;
         }
-    }
-    for (int i = 0; i < 27; i++) {
-        char name[64];
-        snprintf(name, sizeof(name), "animSliceMask[%d]", i);
-        cubieShader_.setFloat(name, (float)animSliceMask[i]);
-    }
-    for (int i = 0; i < 27; i++) {
-        char name[64];
-        snprintf(name, sizeof(name), "cubiePositions[%d]", i);
-        cubieShader_.setVec3(name, cubiePositions[i*3], cubiePositions[i*3+1], cubiePositions[i*3+2]);
+        cubieShader_.setFloatAt(loc_.animSliceMask[i], mask);
+        cubieShader_.setVec3At(loc_.cubiePositions[i],
+            cubiePositions[i*3], cubiePositions[i*3+1], cubiePositions[i*3+2]);
     }
     for (int i = 0; i < 54; i++) {
-        char name[64];
-        snprintf(name, sizeof(name), "faceColors[%d]", i);
-        cubieShader_.setVec3(name, stickerColors[i*3], stickerColors[i*3+1], stickerColors[i*3+2]);
+        cubieShader_.setVec3At(loc_.faceColors[i],
+            stickerColors[i*3], stickerColors[i*3+1], stickerColors[i*3+2]);
     }
 }
 

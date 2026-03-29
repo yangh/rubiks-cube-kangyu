@@ -74,6 +74,9 @@ private:
     bool showAboutDialog_ = false;
     std::string lastScramble_ = "No scramble generated";
 
+    mutable std::string cachedHistoryStr_;
+    mutable size_t cachedHistorySize_ = static_cast<size_t>(-1);
+
     float sidebarWidth_ = 480.0f;
     float netViewHeight_ = 300.0f;
 };

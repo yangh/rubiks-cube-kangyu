@@ -66,8 +66,6 @@ public:
     void setUseCustomColors(bool v) { useCustomColors_ = v; }
 
 private:
-    RgbColor getRgbForColor(Color color) const;
-
     RgbColor customFront_ = DefaultColorRGB::GREEN;
     RgbColor customBack_  = DefaultColorRGB::BLUE;
     RgbColor customLeft_  = DefaultColorRGB::ORANGE;

@@ -31,7 +31,7 @@ public:
     virtual void setGap(float gap) = 0;
     virtual float getGap() const = 0;
 
-    static FaceColor getCubeFace(const RubiksCube& cube, int faceIdx) {
+    static const FaceColor& getCubeFace(const RubiksCube& cube, int faceIdx) {
         switch (faceIdx) {
             case 0: return cube.getFront();
             case 1: return cube.getBack();

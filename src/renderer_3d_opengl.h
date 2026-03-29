@@ -41,9 +41,9 @@ private:
     
     // Pre-computed sticker info per cube (FIX #3: consistent data source)
     struct StickerInfo {
-        int templateIdx;  // 0-5: which face-direction template to use
-        int faceIdx;      // 0=FRONT, 1=BACK, 2=UP, 3=DOWN, 4=RIGHT, 5=LEFT
-        int colorIdx;     // Index into the 9-element face color array (0-8)
+        int templateIdx;
+        int faceIdx;
+        int colorIdx;
     };
     std::vector<StickerInfo> stickerInfos_[27];
     

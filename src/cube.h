@@ -44,12 +44,12 @@ public:
     bool isValidColorConfiguration() const;
     std::string getValidationError() const;
 
-    FaceColor getFront() const { return front_; }
-    FaceColor getBack()  const { return back_;  }
-    FaceColor getLeft()  const { return left_;  }
-    FaceColor getRight() const { return right_; }
-    FaceColor getUp()    const { return up_;    }
-    FaceColor getDown()  const { return down_;  }
+    const FaceColor& getFront() const { return front_; }
+    const FaceColor& getBack()  const { return back_;  }
+    const FaceColor& getLeft()  const { return left_;  }
+    const FaceColor& getRight() const { return right_; }
+    const FaceColor& getUp()    const { return up_;    }
+    const FaceColor& getDown()  const { return down_;  }
 
 private:
     FaceColor front_;

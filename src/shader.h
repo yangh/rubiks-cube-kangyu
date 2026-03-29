@@ -4,6 +4,7 @@
 #include <imgui_impl_opengl3_loader.h>
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 extern "C" {
 extern void glUniform1f(GLint location, GLfloat v0);
@@ -31,6 +32,10 @@ public:
     void setVec2(const char* name, float x, float y);
     void setMat4(const char* name, const float* value);
     void setMat3(const char* name, const float* value);
+
+    GLint getLocation(const char* name);
+    void setFloatAt(GLint loc, float value);
+    void setVec3At(GLint loc, float x, float y, float z);
 
 private:
     GLuint program_ = 0;

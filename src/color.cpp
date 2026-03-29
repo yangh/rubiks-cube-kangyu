@@ -53,24 +53,8 @@ void ColorProvider::resetToDefaults() {
     useCustomColors_ = false;
 }
 
-RgbColor ColorProvider::getRgbForColor(Color color) const {
-    if (!useCustomColors_) {
-        return colorToRgb(color);
-    }
-    
-    switch (color) {
-        case Color::GREEN:  return customFront_;
-        case Color::BLUE:   return customBack_;
-        case Color::ORANGE: return customLeft_;
-        case Color::RED:    return customRight_;
-        case Color::WHITE:  return customUp_;
-        case Color::YELLOW: return customDown_;
-        default:            return colorToRgb(color);
-    }
-}
-
 uint32_t ColorProvider::getFaceColor(Color color) const {
-    RgbColor rgb = getRgbForColor(color);
+    RgbColor rgb = getFaceColorRgb(color);
     return static_cast<uint32_t>(255) << 24
          | static_cast<uint32_t>(rgb.b * 255) << 16
          | static_cast<uint32_t>(rgb.g * 255) << 8
@@ -78,5 +62,20 @@ uint32_t ColorProvider::getFaceColor(Color color) const {
 }
 
 RgbColor ColorProvider::getFaceColorRgb(Color color) const {
-    return getRgbForColor(color);
+    int idx = static_cast<int>(color);
+    if (idx < 0 || idx >= 6) return DefaultColorRGB::BLACK;
+
+    static const RgbColor defaults[] = {
+        DefaultColorRGB::WHITE, DefaultColorRGB::YELLOW,
+        DefaultColorRGB::RED,   DefaultColorRGB::ORANGE,
+        DefaultColorRGB::GREEN, DefaultColorRGB::BLUE
+    };
+
+    if (!useCustomColors_) return defaults[idx];
+
+    const RgbColor* custom[] = {
+        &customUp_, &customDown_, &customRight_,
+        &customLeft_, &customFront_, &customBack_
+    };
+    return *custom[idx];
 }

@@ -886,6 +886,7 @@ void Application::saveRendererConfig() {
 void Application::resetCube() {
     this->renderer_->reset();
     this->renderer_->resetView();
+    cachedHistorySize_ = static_cast<size_t>(-1);
 }
 
 void Application::scrambleCube() {
@@ -917,12 +918,19 @@ void Application::toggleFullscreen() {
 }
 
 std::string Application::buildMoveHistoryString() const {
-    std::string result;
     const std::vector<Move>& history = this->cube_.getMoveHistory();
+    if (history.size() == cachedHistorySize_) {
+        return cachedHistoryStr_;
+    }
+
+    std::string result;
     for (size_t i = 0; i < history.size(); ++i) {
         if (i > 0) result += " ";
         result += moveToString(history[i]);
     }
+
+    cachedHistoryStr_ = result;
+    cachedHistorySize_ = history.size();
     return result;
 }
 

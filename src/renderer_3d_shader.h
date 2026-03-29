@@ -31,11 +31,29 @@ private:
 
     Shader cubieShader_;
     bool shaderValid_ = false;
+    bool locationsCached_ = false;
 
-    float cubieSize_ = 0.40f;  // half-size of a single cubie
-    float cubieRadius_ = 0.04f;  // cubie corner radius
+    float cubieSize_ = 0.40f;
+    float cubieRadius_ = 0.04f;
+
+    struct {
+        GLint view = -1;
+        GLint projection = -1;
+        GLint cameraPos = -1;
+        GLint lightPos[2] = {-1, -1};
+        GLint lightColor = -1;
+        GLint gap = -1;
+        GLint cubieSize = -1;
+        GLint resolution = -1;
+        GLint animAngle = -1;
+        GLint animAxis = -1;
+        GLint animSliceMask[27] = {};
+        GLint cubiePositions[27] = {};
+        GLint faceColors[54] = {};
+    } loc_;
 
     void buildShaders();
+    void cacheUniformLocations();
     void prepareUniforms(int viewW, int viewH);
     void renderFullScreenQuad();
 };

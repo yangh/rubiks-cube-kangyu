@@ -110,3 +110,15 @@ void Shader::setMat3(const char* name, const float* value) {
     GLint loc = getUniformLocation(name);
     if (loc >= 0) glUniformMatrix3fv(loc, 1, GL_FALSE, value);
 }
+
+GLint Shader::getLocation(const char* name) {
+    return getUniformLocation(name);
+}
+
+void Shader::setFloatAt(GLint loc, float value) {
+    if (loc >= 0) glUniform1f(loc, value);
+}
+
+void Shader::setVec3At(GLint loc, float x, float y, float z) {
+    if (loc >= 0) glUniform3f(loc, x, y, z);
+}
